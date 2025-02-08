@@ -22,8 +22,8 @@ int main()
 
     int dec{36};
     std::cout << std::format("{:x}\n{:b}\n{:o}\n", dec, dec, dec);
-    std::print("----------------------------------\n");     //std::print prints without new line.
-    std::println("{:x}\n{:b}\n{:o}\n", dec, dec, dec);      //std::println prints with new line.
+    std::print("----------------------------------\n");       //std::print prints without new line.
+    std::println("{:x}\n{:b}\n{:o}\n", dec, dec, dec);        //std::println prints with new line.
 
     return 0;
 }
