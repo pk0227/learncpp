@@ -1,11 +1,12 @@
 // std::string_view can be initialized with many different types of strings
 // std::string_view parameters will accept many different types of string arguments
+// std::string_view is best used as a read-only function parameter
 
 #include <iostream>
 #include <string>
 #include <string_view>
 
-void printSV(std::string_view str)
+void printSV(std::string_view str)  // now a std::string_view, creates a view of the argument
 {
     std::cout << str << '\n';
 }
