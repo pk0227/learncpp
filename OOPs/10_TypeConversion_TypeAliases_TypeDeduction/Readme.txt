@@ -122,5 +122,26 @@ Casting vs initializing a temporary object:
         (the C++ standard calls these names “simple type specifiers”). So while int { x } is a valid conversion syntax, 
         unsigned int { x } is not.
 
-Prefer static_cast over initializing a temporary object when a conversion is desired.
+    Prefer static_cast over initializing a temporary object when a conversion is desired.
 
+Type deduction (auto):
+    -- Type deduction will not work for objects that either do not have initializers or have empty initializers. 
+       It also will not work when the initializer has type void (or any other incomplete type). 
+       Thus, the following is not valid:
+
+        auto a;
+        auto b { };
+        auto c { foo() };
+
+    --  Since function calls are valid expressions, we can even use type deduction when our initializer is a non-void function call.
+    --  Literal suffixes can be used in combination with type deduction to specify a particular type.
+    --  Variables using type deduction may also use other specifiers/qualifiers, such as const or constexpr.
+    --  type deduction will drop the const from deduced types.
+    --  If you want a deduced type to be const, you must supply the const yourself as part of the definition.
+    --  Type deduction for string literals const char*, not std::string.
+    --  you want the type deduced from a string literal to be std::string or std::string_view, you’ll need to use the s or sv literal suffixes.
+    --  a constexpr variable is implicitly const, and this const will be dropped during type deduction.
+
+    --  When using an auto return type, all return statements within the function must return values of the same type, otherwise an error will result.
+    --  Functions that use an auto return type must be fully defined before they can be used (a forward declaration is not sufficient).
+    --  Type deduction can’t be used for function parameter types.
