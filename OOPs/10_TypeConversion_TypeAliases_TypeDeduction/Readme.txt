@@ -9,13 +9,13 @@ Type Conversions
         -- Numeric Promotion / safe conversion / always value-preserving conversion
         -- Numeric Conversion / unsafe conversion / Data can be lost
 
-1.Numeric promotion categories
-    -- integral promotions
-    -- floating point promotions
+    1.Numeric promotion categories
+        -- integral promotions
+        -- floating point promotions
 
-    Integral promotions
-        -- bool, char, signed char, unsigned char, signed short, and unsigned short all get promoted to int.
-           if int cant hold entire range of the type, those get promoted to unsigned int.
+        Integral promotions
+            -- bool, char, signed char, unsigned char, signed short, and unsigned short all get promoted to int.
+               if int cant hold entire range of the type, those get promoted to unsigned int.
 
 NOTES : 
     1.  while integral promotion is value-preserving, it does not necessarily preserve the signedness (signed/unsigned) of the type.
@@ -23,16 +23,16 @@ NOTES :
         they are numeric conversions.
 
 
-2.Numeric Conversions categories
-    -- Value-preserving (safe)
-    -- Reinterpretive   (unsafe but no data loss)
-    -- Lossy            (unsafe and data may be lost)
+    2.Numeric Conversions categories
+        -- Value-preserving (safe)
+        -- Reinterpretive   (unsafe but no data loss)
+        -- Lossy            (unsafe and data may be lost)
 
-3. Narrowing conversions
+Narrowing conversions
     -- potentially unsafe numeric conversion.
     -- may not be able to hold all the values of the source type.
 
-    The following conversions are defined to be narrowing:
+The following conversions are defined to be narrowing:
 +-------------------------------+-------------------------------+---------------------------+------------------------------+---------
 | Conversion Type                   | Risk Description              | Allowed with constexpr?       | Example                       |
 +-------------------------------+-------------------------------+---------------------------+------------------------------+---------
@@ -85,21 +85,21 @@ C-style cast / C-style function-style cast:
     --  C-style casts can convert a derived object to a base class that is inaccessible (e.g. because it was privately inherited).
 
 static_cast:
-int x { 10 };
-std::cout << static_cast<double>(x) / y << '\n';
+        int x { 10 };
+        std::cout << static_cast<double>(x) / y << '\n';
 
---  static_cast<double>(x) returns a temporary double object containing the converted value 10.0. 
---  First, static_cast provides compile-time type checking. If we try to convert a value to a type and the compiler doesn’t know how to perform 
-    that conversion, we will get a compilation error.
-    int x { static_cast<int>("Hello") }; // invalid: will produce compilation error
---  Second, static_cast is (intentionally) less powerful than a C-style cast, as it will prevent certain kinds of dangerous conversions 
-    (such as those that require reinterpretation or discarding const).
---  Since static_cast uses direct initialization, any explicit constructors of the target class type 
-    will be considered when initializing the temporary object to be returned.
+    --  static_cast<double>(x) returns a temporary double object containing the converted value 10.0. 
+    --  First, static_cast provides compile-time type checking. If we try to convert a value to a type and the compiler doesn’t know how to perform 
+        that conversion, we will get a compilation error.
+        int x { static_cast<int>("Hello") }; // invalid: will produce compilation error
+    --  Second, static_cast is (intentionally) less powerful than a C-style cast, as it will prevent certain kinds of dangerous conversions 
+        (such as those that require reinterpretation or discarding const).
+    --  Since static_cast uses direct initialization, any explicit constructors of the target class type 
+        will be considered when initializing the temporary object to be returned.
 
 Casting vs initializing a temporary object:
---  static_cast<int>(x), which returns a temporary int object direct-initialized with x.
---  int { x }, which creates a temporary int object direct-list-initialized with x.
+    --  static_cast<int>(x), which returns a temporary int object direct-initialized with x.
+    --  int { x }, which creates a temporary int object direct-list-initialized with x.
 
     Three notable differences between the static_cast and the direct-list-initialized temporary:
     --  int { x } uses list initialization, which disallows narrowing conversions. 
