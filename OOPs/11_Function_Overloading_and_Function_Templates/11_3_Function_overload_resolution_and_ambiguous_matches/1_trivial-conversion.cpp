@@ -6,7 +6,15 @@ void func(const int)
 }
 
 /*
-//causes ambiguity
+//causes redefinition error as int and const int are considered same
+void func(int)
+{
+    std::cout << "int func" << std::endl;
+}
+*/
+
+/*
+//causes ambiguity  as both const int and const int& are equally good matches for an int argument
 void func(const int &)
 {
     std::cout << "const int& func" << std::endl;

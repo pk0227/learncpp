@@ -10,7 +10,7 @@ Key topics of this chapter.
 NOTE : return type is not Differentiating factor. So, typedefs, type aliases, const qualifier and return types 
 are not function overloading differentiators.
 
-verload resolution
+Overload resolution
     -- With overloaded functions, there can be many functions That function either matches (or can be made to match after type conversions are applied), 
        or it doesn’t (and a compile error results).
     -- Since a function call can only resolve to one of them, the compiler has to determine which overloaded function is the best match. 
