@@ -27,3 +27,33 @@ NOTES :
     -- Value-preserving (safe)
     -- Reinterpretive   (unsafe but no data loss)
     -- Lossy            (unsafe and data may be lost)
+
+3. Narrowing conversions
+    -- potentially unsafe numeric conversion.
+    -- may not be able to hold all the values of the source type.
+
+    The following conversions are defined to be narrowing:
++-------------------------------+-------------------------------+---------------------------+------------------------------+---------
+| Conversion Type                   | Risk Description              | Allowed with constexpr?       | Example                       |
++-------------------------------+-------------------------------+---------------------------+------------------------------+---------
+| Int   <- Float                    | Fractional part lost          | ❌                            | int x = 3.14;                 |
+| Float <- Double                   | Precision loss                | ✅ if value fits              | float f{3.0}; // OK           |
+| Float <- Int                      | Large int may round           | ✅ if exactly representable   | float f{42}; // OK            |
+| Smaller Int / Sign Change <- Int  | Overflow or reinterpretation  | ✅ if value fits exactly      | unsigned char c{100}; // OK   |
++-------------------------------+-------------------------------+---------------------------+------------------------------+---------
+
+Best practice : Because they can be unsafe and are a source of errors, 
+                avoid narrowing conversions whenever possible.
+
+                If you need to perform a narrowing conversion, 
+                use static_cast to convert it into an explicit conversion.
+
+                Brace initialization{} disallows narrowing conversions
+                When list-initializing ({}), narrowing conversions are checked only for compile-time constants.
+                -- If the source value is constexpr, and the destination cannot represent it exactly, → error.
+                -- If the source value is NOT constexpr (like a runtime variable), → no compile-time check — the compiler lets it through, possibly with a warning.
+                
+
+
+
+
