@@ -53,6 +53,8 @@ Best practice : Because they can be unsafe and are a source of errors,
                 -- If the source value is constexpr, and the destination cannot represent it exactly, → error.
                 -- If the source value is NOT constexpr (like a runtime variable), → no compile-time check — the compiler lets it through, possibly with a warning.
                 
+Use the typeid operator (included in the <typeinfo> header), to show the resulting type of an expression.
+
 
 
 
