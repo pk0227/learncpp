@@ -55,7 +55,72 @@ Best practice : Because they can be unsafe and are a source of errors,
                 
 Use the typeid operator (included in the <typeinfo> header), to show the resulting type of an expression.
 
+C++ supports 5 different types of casts: static_cast, dynamic_cast, const_cast, reinterpret_cast, and C-style casts. 
+The first four are sometimes referred to as named casts.
 
+|-----------------------------------------------------------------------------------------------------------------------------------|
+| Cast             | Description                                                                            | Safe?                 |
+|------------------|----------------------------------------------------------------------------------------|-----------------------|
+| static_cast      | Performs compile-time type conversions between related types.                          | Yes                   |
+| dynamic_cast     | Performs runtime type conversions on pointers or references in a polymorphic hierarchy.| Yes                   |
+| const_cast       | Adds or removes const.                                                                 | Only for adding const |
+| reinterpret_cast | Reinterprets the bit-level representation of one type as if it were another type.      | No                    |
+| C-style casts    | Performs some combination of static_cast, const_cast, or reinterpret_cast.             | No                    |
+|-----------------------------------------------------------------------------------------------------------------------------------|
 
+=> const_cast and reinterpret_cast should generally be avoided because they are only useful in rare cases and can be harmful if used incorrectly.
 
+C-style cast / C-style function-style cast:
+    --  std::cout << (double)x / y << '\n'; // C-style cast of x to double
+    --  std::cout << double(x) / y << '\n'; // function-style cast of x to double
+    
+    Avoid using C-style casts.
+    --  it can actually perform a variety of different conversions depending on how it is used. 
+        This can include a static cast, a const cast, or a reinterpret cast (the latter two of which we mentioned above you should avoid). 
+        A C-style cast does not make it clear which cast(s) will actual be performed, which not only makes your code that much harder to understand, 
+        but also opens the door for inadvertent misuse (where you think you’re implementing a simple cast and you end up doing something dangerous instead). 
+        Often this will end up producing an error that isn’t discovered until runtime.
+
+    One thing you can do with a C-style cast that you can’t do with C++ casts: 
+    --  C-style casts can convert a derived object to a base class that is inaccessible (e.g. because it was privately inherited).
+
+static_cast:
+int x { 10 };
+std::cout << static_cast<double>(x) / y << '\n';
+
+--  static_cast<double>(x) returns a temporary double object containing the converted value 10.0. 
+--  First, static_cast provides compile-time type checking. If we try to convert a value to a type and the compiler doesn’t know how to perform 
+    that conversion, we will get a compilation error.
+    int x { static_cast<int>("Hello") }; // invalid: will produce compilation error
+--  Second, static_cast is (intentionally) less powerful than a C-style cast, as it will prevent certain kinds of dangerous conversions 
+    (such as those that require reinterpretation or discarding const).
+--  Since static_cast uses direct initialization, any explicit constructors of the target class type 
+    will be considered when initializing the temporary object to be returned.
+
+Casting vs initializing a temporary object:
+--  static_cast<int>(x), which returns a temporary int object direct-initialized with x.
+--  int { x }, which creates a temporary int object direct-list-initialized with x.
+
+    Three notable differences between the static_cast and the direct-list-initialized temporary:
+    --  int { x } uses list initialization, which disallows narrowing conversions. 
+        This is great when initializing a variable, because we rarely intend to lose data in such cases. 
+        But when using a cast, it is presumed we know what we’re doing, and if we want to do a cast that might lose some data, we should be able to do that. 
+        The narrowing conversion restriction can be an impediment in this case.
+
+        On a 32-bit architecture, this will work fine (because a double can represent all the values that can be stored 
+        in a 32-bit int, so it isn’t a narrowing conversion). But on a 64-bit architecture, this is not the case, 
+        so converting a 64-bit int to a double is a narrowing conversion. And since list initialization disallows narrowing conversions, 
+        this won’t compile on architectures where int is 64-bits.
+
+    --  static_cast makes it clearer that we are intending to perform a conversion. 
+        Although the static_cast is more verbose than the direct-list-initialized alternative, 
+        in this case, that’s a good thing, as it makes the conversion easier to spot and search for. 
+        That ultimately makes your code safer and easier to understand.
+
+    --  Direct-list-initializion of a temporary only allows single-word type names. 
+        Due to a weird syntax quirk, there are several places within C++ where only single-word type names are allowed 
+        (the C++ standard calls these names “simple type specifiers”). So while int { x } is a valid conversion syntax, 
+        unsigned int { x } is not.
+
+Prefer static_cast over initializing a temporary object when a conversion is desired.
 
