@@ -10,7 +10,7 @@ Key topics of this chapter.
 NOTE : return type is not Differentiating factor. So, typedefs, type aliases, const qualifier and return types 
 are not function overloading differentiators.
 
-Overload resolution
+2. Overload resolution
     -- With overloaded functions, there can be many functions That function either matches (or can be made to match after type conversions are applied), 
        or it doesn’t (and a compile error results).
     -- Since a function call can only resolve to one of them, the compiler has to determine which overloaded function is the best match. 
@@ -55,3 +55,17 @@ Step 4) If no match is found via numeric conversion, the compiler tries to find 
 Step 5) If no match is found via user-defined conversion, the compiler will look for a matching function that uses ellipsis.
 
 Step 6) If no matches have been found by this point, the compiler gives up and will issue a compile error about not being able to find a matching function.
+
+
+3. Default arguments
+    -- Default arguments are inserted by the compiler at site of the function call.
+    -- Default arguments are useful when adding new parameters to existing functions — 
+       they prevent breaking old function calls by providing a default value, allowing existing code to work unchanged while letting new code pass a custom argument if needed.
+    -- Multiple default arguments : If a parameter is given a default argument, all subsequent parameters (to the right) must also be given default arguments.
+    -- Default arguments can not be redeclared, and must be declared before use : the default argument can be declared in either the forward declaration or the function definition, but not both.
+       The best practice is to declare the default argument in the forward declaration and not in the function definition, as the forward declaration is more likely to be seen by other files and included before use (particularly if it’s in a header file).
+    -- Default arguments and function overloading.
+    -- Default arguments can lead to ambiguous matches.
+    -- Default arguments don’t work for functions called through function pointers.
+
+
