@@ -95,7 +95,9 @@
     | C-style string/literal | Inexpensive conversion       | Expensive conversion                         |
     +------------------------+------------------------------+----------------------------------------------+
 
-
+7. Pointers
+    -- Use nullptr when you need a null pointer literal for initialization, assignment, or passing a null pointer to a function.
+    
     
 
 
