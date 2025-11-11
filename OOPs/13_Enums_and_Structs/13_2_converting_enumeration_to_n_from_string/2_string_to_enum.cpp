@@ -31,7 +31,8 @@ bool iequals(const std::string& a, const std::string& b)
     return std::equal(a.begin(), a.end(), b.begin(), charEqualIgnoreCase);
 }
 
-std::optional<std::string> getPetMatch(const std::string& input)
+std::optional<std::reference_wrapper<const std::string>> getPetMatch(const std::string& input)
+//std::optional<std::string> getPetMatch(const std::string& input)
 {
     for (const auto& pet : AvailablePets::currentPets)
     {
@@ -50,10 +51,15 @@ int main()
     //std::cin >> pet;            // Extraction operator >> doesn't know how to handle Pet Enum type. 
     std::cin >> input;
 
-    const std::optional<std::string>& e{getPetMatch(input)};
+    
+    //const std::optional<std::string>& e{getPetMatch(input)};
+    auto e{getPetMatch(input)};     // auto deduces to std::optional<std::reference_wrapper<const std::string>>
     
     if(e)
-        std::cout << "You have selected " << *e << "\n";
+    {
+        //std::cout << "You have selected " << *e << "\n";
+        std::cout << "You have selected " << e->get() << "\n";
+    }
     else
         std::cout << "Sorry! The pet type is unavailable\n";
 
