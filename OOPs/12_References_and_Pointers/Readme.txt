@@ -169,7 +169,14 @@
     -- auto* const also makes the deduced pointer a const pointer. const auto* makes the deduced pointer a pointer-to-const. If these are hard to remember, int* const is a const pointer (to int), so auto* const must be a const pointer. const int* is a pointer-to-const (int), so const auto* must be a pointer-to-const)
     -- Consider using auto* over auto when deducing a pointer type, as it allows you to explicitly reapply both the top-level and low-level const, and will error if a pointer type is not deduced.
 
-    
+10. std::optional
+    -- C++17 introduces std::optional, which is a class template type that implements an optional value.
+    -- a std::optional<T> can either have a value of type T, or not.
+    -- Prefer std::optional for optional return types.
+    -- Prefer function overloading for optional function parameters (when possible).
+    -- Otherwise, use std::optional<T> for optional arguments when T would normally be passed by value. 
+    -- Favor const T* when T is expensive to copy.
+    -- we recommend using std::optional<T> as an optional parameter only when T would normally be passed by value. Otherwise, use const T*
 
 
 
