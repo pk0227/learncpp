@@ -106,6 +106,43 @@
 
     -- Variables of a struct type can be const (or constexpr), and just like all const variables, they must be initialized.
     
+    Designated initializers
+    -- When initializing a struct from a list of values, the initializers are applied to the members in order of declaration.
+    -- Now consider what would happen if you were to update this struct definition to add a new member that is not the last member.
+    -- To help avoid this, C++20 adds a new way to initialize struct members called designated initializers. 
+       Designated initializers allow you to explicitly define which initialization values map to which members. 
+       The members can be initialized using list or copy initialization, and must be initialized in the same order in which they are declared in the struct, otherwise a warning or error will result. 
+       Members not designated an initializer will be value initialized.
+
+     -- When adding a new member to an aggregate, it’s safest to add it to the bottom of the definition list so the initializers for other members don’t shift.
+     -- Assignment with an initializer list.
+     -- Assignment with designated initializers.
+     -- Initializing a struct with another struct of the same type.
+
+    Default member initialization
+    -- Recapping the initialization possibilities
+        -- If an aggregate is defined with an initialization list:
+            -- If an explicit initialization value exists, that explicit value is used.
+            -- If an initializer is missing and a default member initializer exists, the default is used.
+            -- If an initializer is missing and no default member initializer exists, value initialization occurs.
+
+        -- If an aggregate is defined with no initialization list:
+            -- If a default member initializer exists, the default is used.
+            -- If no default member initializer exists, the member remains uninitialized.
+
+    -- Members are always initialized in the order of declaration.
+    -- Provide a default value for all members. This ensures that your members will be initialized even if the variable definition doesn’t include an initializer list.
+    -- For aggregates, prefer value initialization (with an empty braces initializer) to default initialization (with no braces).
+
+6. Passing and returning structs
+    -- Passing temporary structs, A few more things about temporary objects:
+        -- They are created and initialized at the point of definition, and are destroyed at the end of the full expression in which they are created.
+        -- Evaluation of a temporary object is an rvalue expression, it can only be used in places where rvalues are accepted.
+        -- When a temporary object is used as a function argument, it will only bind to parameters that accept rvalues. 
+        -- This includes pass by value and pass by const reference, and excludes pass by non-const reference and pass by address.
+
+    -- Returning structs, Deducing the return type.
+    
 
 
 
