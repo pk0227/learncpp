@@ -143,9 +143,31 @@
 
     -- Returning structs, Deducing the return type.
     
+7. Member selection with pointers and references
+    -- When using a pointer to access a member, use the member selection from pointer operator (->) instead of the member selection operator (.).
 
+8. Class templates
+    -- We know the challenge of having to create a separate (overloaded) function for each different set of types we want to work with.
+    -- Aggregate types have similar challenges
+    -- First, unlike functions, type definitions can’t be overloaded.
+    -- Second, although functions can be overloaded, functions with aggregate type parameter can only differ by return type, and overloaded functions can’t be differentiated solely by return type.
+    -- A “class type” is a struct, class, or union type. “class templates” on structs for simplicity, everything applies on struct equally well to classes.
+    -- Class templates with template type and non-template type members.
+    -- Class templates with multiple template types.
+    -- Making a function template work with more than one class type.
+    -- Both template definitions and type definitions are exempt from the one-definition rule, so this won’t cause problems.
 
-
+9. Class template argument deduction (CTAD) and deduction guides
+    -- Starting in C++17, when instantiating an object from a class template, the compiler can deduce the template types from the types of the object’s initializer.
+    -- CTAD is only performed if no template argument list is present.
+    -- Since CTAD is a form of type deduction, we can use literal suffixes to change the deduced type.
+    -- CTAD doesn’t compile in C++17.
+    -- In C++17, CTAD doesn’t know how to deduce the template arguments for aggregate class templates. To address this, we can provide the compiler with a deduction guide, which tells the compiler how to deduce the template arguments for a given class template.
+    -- Non-aggregates don’t need deduction guides in C++17 because the presence of a constructor serves the same purpose.
+    -- Type template parameters with default values.
+    -- CTAD doesn’t work with non-static member initialization.
+    -- CTAD doesn’t work with function parameters.
+    
 
 
 
