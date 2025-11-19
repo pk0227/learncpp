@@ -156,11 +156,178 @@ OOP brings a number of other useful concepts to the table:
     -- Prefer a member function when the function needs access to private (or protected) data that should not be exposed.
     -- Prefer a non-member function otherwise (especially for functions that do not modify the state of the object).
     
+7. Introduction to constructors
+    Constructors
+        -- A constructor is a special member function that is automatically called after a non-aggregate class type object is created.
+        -- Many new programmers are confused about whether constructors create the objects or not. They do not -- the compiler sets up the memory allocation for the object prior to the constructor call. 
+           The constructor is then called on the uninitialized object.
+        -- However, if a matching constructor cannot be found for a set of initializers, the compiler will error. So while constructors don’t create objects, the lack of a matching constructor will prevent creation of an object.
 
+        Beyond determining how an object may be created, constructors generally perform two functions:
+            -- They typically perform initialization of any member variables (via a member initialization list)
+            -- They may perform other setup functions (via statements in the body of the constructor). This might include things such as error checking the initialization values, opening a file or database, etc…
 
-
+        -- After the constructor finishes executing, we say that the object has been “constructed”, and the object should now be in a consistent, usable state.
     
+    Naming constructors
+        -- Constructors must have the same name as the class (with the same capitalization). For template classes, this name excludes the template parameters.
+        -- Constructors have no return type (not even void).
+        -- Constructors are typically part of the interface for your class. So, they are usually public.
+    
+    Constructor implicit conversion of arguments
+        -- the compiler will perform implicit conversion of arguments in a function call (if needed) in order to match a function definition where the parameters are a different type.
 
+    Constructors should not be const
+        -- A constructor needs to be able to initialize the object being constructed -- therefore, a constructor must not be const.
+
+    Constructors vs setters
+        -- Constructors are designed to initialize an entire object at the point of instantiation.
+        -- Setters are designed to assign a value to a single member of an existing object.
+
+8. Constructor member initializer lists
+    Member initialization via a member initialization list
+        -- To have a constructor initialize members, we do so using a member initializer list (often called a “member initialization list”). 
+        -- Do not confuse this with the similarly named “initializer list” that is used to initialize aggregates with a list of values.
+        -- You must use a direct form of initialization here (preferably using braces, but parentheses works as well) -- using copy initialization (with an equals) does not work here. 
+           Also note that the member initializer list does not end in a semicolon.
+
+    Member initialization order
+        -- the members in a member initializer list are always initialized in the order in which they are defined inside the class (not in the order they are defined in the member initializer list).
+        -- It’s also a good idea to avoid initializing members using the value of other members (if possible). That way, even if you do make a mistake in the initialization order, it shouldn’t matter because there are no dependencies between initialization values.
+
+    Member initializer list vs default member initializers and constructor function body
+        Members can be initialized in a few different ways:
+            -- If a member is listed in the member initializer list, that initialization value is used
+            -- Otherwise, if the member has a default member initializer, that initialization value is used
+            -- Otherwise, the member is default-initialized.
+
+        This means that if a member has both a default member initializer and is listed in the member initializer list for the constructor, 
+        the member initializer list value takes precedence.
+
+        -- The statements in the body of the constructor execute after the member initializer list has executed.
+        -- Once the member initializer list has finished executing, the object is considered initialized.
+        -- Once the function body has finished executing, the object is considered constructed.
+        -- Prefer using the member initializer list to initialize your members over assigning values in the body of the constructor.
+    
+    Detecting and handling invalid arguments to constructors
+        -- Inside the body of the constructor, we can use statements, so we have more options for detecting and handling errors. This is a good place to assert or static_assert that the arguments passed in are semantically valid, 
+           but that doesn’t actually handle runtime errors in a production build.
+
+        -- In such constructors failure cases, Throwing an exception is good idea.
+        -- If exceptions aren’t possible or desired, Instead of letting the user create the class directly, provide a function that either returns an instance of the class or something that indicates failure.
+           createObject() function returns a std::optional<Fraction> that optionally contains a valid Object.
+    
+9. Default constructors and default arguments
+    -- A default constructor is a constructor that accepts no arguments.
+
+    Value initialization vs default initialization for class types
+        -- If a class type has a default constructor, both value initialization and default initialization will call the default constructor.
+        -- Prefer value initialization over default initialization for all class types.
+    
+    Constructors with default arguments
+        -- As with all functions, the rightmost parameters of constructors can have default arguments.
+        -- If all of the parameters in a constructor have default arguments, the constructor is a default constructor (because it can be called with no arguments).
+
+    Overloaded constructors
+        -- A corollary of the above is that a class should only have one default constructor. If more than one default constructor is provided, the compiler will be unable to disambiguate which should be used.
+
+    An implicit default constructor
+        -- If a non-aggregate class type object has no user-declared constructors, the compiler will generate a public default constructor.
+        -- So that the class can be value or default initialized.
+    
+    Using = default to generate an explicitly defaulted default constructor
+        -- we can instead tell the compiler to generate a default constructor for us. This constructor is called an explicitly defaulted default constructor.
+           it can be generated by using the = default syntax.
+
+    -- If we have any user-defined constructor(other than default constructor), an implicit default constructor would not normally be generated.
+    -- Prefer an explicitly defaulted default constructor (= default) over a default constructor with an empty body.
+
+    Explicitly defaulted default constructor vs empty user-defined constructor
+        -- When value initializing a class, if the class has a user-defined default constructor, the object will be default initialized.
+        -- if the class has a default constructor that is not user-provided (that is, a default constructor that is either implicitly defined, or defined using = default), the object will be zero-initialized before being default initialized.
+    
+    -- Only create a default constructor when it makes sense
+
+10. Delegating constructors
+    -- Constructors are allowed to call other functions, including other member functions of the class.
+    -- Constructors should not be called directly from the body of another function. Doing so will either result in a compilation error, or will direct-initialize a temporary object.
+    -- If you do want a temporary object, prefer list-initialization (which makes it clear you are intending to create an object).
+
+    Delegating constructors
+        -- Constructors are allowed to delegate (transfer responsibility for) initialization to another constructor from the same class type. This process is sometimes called constructor chaining and such constructors are called delegating constructors.
+        -- First, a constructor that delegates to another constructor is not allowed to do any member initialization itself. So your constructors can delegate or initialize, but not both.
+        -- Second, it’s possible for one constructor to delegate to another constructor, which delegates back to the first constructor. This forms an infinite loop, and will cause your program to run out of stack space and crash. You can avoid this by ensuring all of your constructors resolve to a non-delegating constructor.
+        -- If you have multiple constructors, consider whether you can use delegating constructors to reduce duplicate code.
+        
+        Reducing constructors using default arguments.
+            -- Members for which the user must provide initialization values should be defined first (and as the leftmost parameters of the constructor). 
+               Members for which the user can optionally provide initialization values (because the default values are acceptable) should be defined second (and as the rightmost parameters of the constructor). 
+
+            -- Use of the static keyword in class allows us to have a special member that is shared by all Employee objects. Without the static, each Employee object would have its own independent member (which would work, but be a waste of memory).
+
+11. Temporary class objects
+        -- A temporary object (sometimes called an anonymous object or an unnamed object) is an object that has no name and exists only for the duration of a single expression.
+        -- Creating temporary objects via direct initialization.
+
+        Temporary objects and return by value
+            -- When a function returns by value, the object that is returned is a temporary object (initialized using the value or object identified in the return statement).
+
+        static_cast vs explicit instantiation of a temporary object
+            -- static_cast<int>(c) returns a temporary int that is direct-initialized with the value of c. int { c } creates a temporary int that is list-initialized with the value of c.
+               Either way, we get a temporary int initialized with the value of c, which is what we want.
+        
+        -- Prefer static_cast when converting to a fundamental type, and a list-initialized temporary when converting to a class type.
+        
+        -- Prefer static_cast when to create a temporary object when any of the following are true:
+            -- We need to performing a narrowing conversion.
+            -- We want to make it really obvious that we’re converting to a type that will result in some different behavior (e.g. a char to an int).
+            -- We want to use direct-initialization for some reason (e.g. to avoid list constructors taking precedence).
+
+        -- Prefer creating a new object (using list initialization) to create a temporary object when any of the following are true:
+            -- We want to use list-initialization (e.g. for the protection against narrowing conversions, or because we need to invoke a list constructor).
+            -- We need to provide additional arguments to a constructor to facilitate the conversion.
+
+12. Introduction to the copy constructor
+    The copy constructor
+        -- A copy constructor is a constructor that is used to initialize an object with an existing object of the same type.
+        -- C++ will create a public implicit copy constructor for you. By default, the implicit copy constructor will do memberwise initialization. This means each member will be initialized using the corresponding member of the class passed in as the initializer.
+        -- We know that Access controls work on a per-class basis (not a per-object basis). This means the member functions of a class can access the private members of any class object of the same type.
+           We use that to our advantage in the copy constructor in order to directly access the private members of the parameter object of the same type.
+        -- A copy constructor should not do anything other than copy an object. This is because the compiler may optimize the copy constructor out in certain cases.
+        -- Copy constructors should have no side effects beyond copying.
+        -- Prefer the implicit copy constructor, unless you have a specific reason to create your own.
+        -- If you write your own copy constructor, the parameter should be a const lvalue reference.
+
+        Pass by value and the copy constructor
+            -- When an object is passed by value, the argument is copied into the parameter. When the argument and parameter are the same class type, the copy is made by implicitly invoking the copy constructor.
+        
+        Return by value and the copy constructor
+            -- When the return type and the return value are the same class type, the temporary object is initialized by implicitly invoking the copy constructor.
+
+        Using = default to generate a default copy constructor
+            -- If a class has no copy constructor, the compiler will implicitly generate one for us. If we prefer, we can explicitly request the compiler create a default copy constructor for us using the = default syntax.
+
+        Using = delete to prevent copies
+            -- Occasionally we run into cases where we do not want objects of a certain class to be copyable. We can prevent this by marking the copy constructor function as deleted, using the = delete syntax.
+
+        -- The rule of three is a well known C++ principle that states that if a class requires a user-defined copy constructor, destructor, or copy assignment operator, then it probably requires all three. In C++11, this was expanded to the rule of five, which adds the move constructor and move assignment operator to the list.
+           Not following the rule of three/rule of five is likely to lead to malfunctioning code. We’ll revisit the rule of three and rule of five when we cover dynamic memory allocation.
+
+13. Class initialization and copy elision
+    -- In modern C++, copy initialization, direct initialization, and list initialization essentially do the same thing -- they initialize an object.
+    There are three key differences between the initialization forms:
+        -- List initialization disallows narrowing conversions.
+        -- Copy initialization only considers non-explicit constructors/conversion functions. 
+        -- List initialization prioritizes matching list constructors over other matching constructors.
+
+    -- constructor member initializer list, we can only use direct forms of initialization(direct initialization , direct list initialization), not copy initialization.
+
+    Copy elision
+        -- is a compiler optimization technique that allows the compiler to remove unnecessary copying of objects. In other words, in cases where the compiler would normally call a copy constructor, the compiler is free to rewrite the code to avoid the call to the copy constructor altogether. 
+           When the compiler optimizes away a call to the copy constructor, we say the constructor has been elided.
+        -- Unlike other types of optimization, copy elision is exempt from the “as-if” rule. 
+        -- Copy constructors should not have side effects other than copying -- if the compiler elides the call to the copy constructor, the side effects won’t execute, and the observable behavior of the program will change.
+        
 
 
         
