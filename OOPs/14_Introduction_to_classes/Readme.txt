@@ -328,6 +328,69 @@ OOP brings a number of other useful concepts to the table:
         -- Unlike other types of optimization, copy elision is exempt from the “as-if” rule. 
         -- Copy constructors should not have side effects other than copying -- if the compiler elides the call to the copy constructor, the side effects won’t execute, and the observable behavior of the program will change.
         
+14. Converting constructors and the explicit keyword
+    Converting constructors
+        -- A constructor that can be used to perform an implicit conversion is called a converting constructor. 
+        -- By default, all constructors are converting constructors.
+        -- Only one user-defined conversion may be applied.
+        -- An implicit conversion can be trivially converted into an explicit definition by using direct list initialization (or direct initialization).
+    
+    The explicit keyword
+        -- we can use the explicit keyword to tell the compiler that a constructor should not be used as a converting constructor.
+        -- For constructors with a separate declaration (inside the class) and definition (outside the class), the explicit keyword is used only on the declaration.
+        -- Explicit constructors can be used for direct and direct list initialization.
+        
+        Return by value and explicit constructors.
+            -- When we return a value from a function, if that value does not match the return type of the function, an implicit conversion will occur. Just like with pass by value, such conversions cannot use explicit constructors.
+        
+        Best practices for use of explicit
+            -- The modern best practice is to make any constructor that will accept a single argument explicit by default. This includes constructors with multiple parameters where most or all of them have default values. 
+            -- If such a conversion is actually desired in a particular case, it is trivial to convert the implicit conversion into an explicit definition using direct list initialization.
+            -- If an implicit conversion between types is both semantically equivalent and performant, you can consider making the constructor non-explicit.
+            -- Do not make copy or move constructors explicit, as these do not perform conversions.
+
+15. Constexpr aggregates and classes
+    Constexpr aggregates
+        -- aggregates implicitly support constexpr.
+
+    Constexpr class objects and constexpr constructors
+    Literal type
+        -- is any type for which it might be possible to create an object within a constant expression.
+        -- Put another way, an object can’t be constexpr unless the type qualifies as a literal type.
+        -- Non-aggregate does not qualify to be Literal type if its constructor isn't a constexpr.
+
+        Nomenclature
+        -- A literal and a literal type are distinct (but related) things. 
+        -- A literal is a constexpr value that is inserted into the source code. 
+        -- A literal type is a type that can be used as the type of a constexpr value. 
+        
+        -- A literal always has a literal type. However, a value or object with a literal type need not be a literal.
+
+        Some Examples
+        -- Scalar types (those holding a single value, such as fundamental types and pointers)
+        -- Reference types
+        -- Most aggregates
+        -- Classes that have a constexpr constructor
+
+    -- If you want your class to be able to be evaluated at compile-time, make your member functions and constructor constexpr.
+    -- Implicitly defined constructors are constexpr if they can be defined as such. Explicitly defaulted constructors must be explicitly defined as constexpr.
+    -- Constexpr is part of the interface of the class, and removing it later will break callers who are calling the function in a constant context.
+    -- Constexpr members may be needed with non-constexpr/non-const objects.
+    -- When a constexpr function is evaluating in a compile-time context, only constexpr functions can be called.
+    -- Constexpr member functions may be const or non-const.
+    
+    Constexpr non-const member functions can change data members.
+        -- A non-const member function can modify members of non-const objects.
+        -- A constexpr member function can be called in either runtime contexts or compile-time contexts.
+    
+    -- Constexpr functions that return const references (or pointers).
+        constexpr const int& getX() const { return m_x; }
+
+    -- A member function that returned a const pointer to const instead might look something like this.
+        constexpr const int* const getXPtr() const { return &m_x; }
+
+    
+
 
 
         
