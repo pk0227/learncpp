@@ -108,5 +108,4 @@
     -- The positive (+), negative (-) and logical not (!) operators all are unary operators, which means they only operate on one operand. 
        Because they only operate on the object they are applied to, typically unary operator overloads are implemented as member functions. 
     
-    -- So, the unary operators takes no parameters (it operates on the *this object).
-    
+    -- So, the unary operators take no parameters (it operates on the *this object).
