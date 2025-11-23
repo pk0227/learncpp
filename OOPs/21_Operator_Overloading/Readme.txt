@@ -169,8 +169,72 @@
         -- Functors can also have other member functions.
 
 11 — Overloading typecasts
-    -- 
-   
+    -- By default, C++ doesn’t know how to convert any of our program-defined classes.
+        example: If we can convert an int into a Cents (via a constructor), then we might also want to provide a way to convert a Cents back into an int. 
+    
+    Overloading a typecast
+        -- This is where overloading the typecast operators comes into play. Such a typecast can be used explicitly (via a cast) or implicitly by the compiler to perform conversions as needed.
+        -- Note that there should be a space between the word operator and the type we are casting to.
 
+        There are a few things worth noting here:
+            -- Overloaded typecasts must be non-static members, and should be const so they can be used with const objects.
+            -- Overloaded typecasts do not have explicit parameters, as there is no way to pass explicit arguments to them. They do still have a hidden *this parameter, pointing to the implicit object (which is the object to be converted).
+            -- Overloaded typecast do not declare a return type. The name of the conversion (e.g. int) is used as the return type, as it is the only return type allowed. This prevents redundancy in the declaration.
+        
+        -- You can provide overloaded typecasts for any data type you wish, including your own program-defined data types.
+
+    Explicit typecasts
+        -- Just like we can make constructors explicit so that they can’t be used for implicit conversions, we can also make our overloaded typecasts explicit for the same reason. 
+           Explicit typecasts can only be invoked by casting (e.g. static_cast) or by a form of direct initialization (either parenthesis or brace). 
+           They are not considered when doing copy-initialization.
+        
+        -- When to use converting constructors vs overloaded typecasts
+            -- Overloaded typecasts and converting constructors perform similar functions:
+                A converting constructor is a member function of class type B that defines how B is created from A.
+                An overloaded typecast is a member function of class type A that defines how A is converted to B.
+
+        -- When possible, prefer converting constructors, and avoid overloaded typecasts.
+
+        -- There are a few cases where an overloaded typecast should be used instead:
+            -- When providing a conversion to a fundamental type (since you can’t define constructors for these types). 
+               Most conventionally, these are used to provide a conversion to bool for cases where it makes sense to be able to use an object in a conditional statement.
+            -- When the conversion returns a reference or const reference.
+            -- When providing a conversion to a type you can’t add members to (e.g. a conversion to std::vector, since you can’t define constructors for these types either).
+            -- When you do not want the type being constructed to be aware of the type being converted from. This can be helpful for avoiding circular dependencies.
+
+        -- We should avoid defining both an overloaded typecast and a converting constructor that can serve the same conversion. Because, the result can be ambiguous (resulting in a compile error). 
+   
+12 — Overloading the assignment operator
+    -- The copy assignment operator (operator=) is used to copy values from one object to another already existing object.
+
+    Copy assignment vs Copy constructor
+        -- The purpose of the copy constructor and the copy assignment operator are almost equivalent -- both copy one object to another. 
+            The copy constructor initializes new objects. the copy constructor is used while passing or returning objects by value in functions.
+            The copy assignment operator replaces the contents of existing objects.
+    
+    -- The copy assignment operator must be overloaded as a member function.
+    -- Issues due to self-assignment : in cases where an assignment operator needs to dynamically assign memory, self-assignment can actually be dangerous.
+
+    Detecting and handling self-assignment
+        -- By checking if the address of our implicit object is the same as the address of the object being passed in as a parameter, we can have our assignment operator just return immediately without doing any other work.
+    
+    The implicit copy assignment operator
+        -- Unlike other operators, the compiler will provide an implicit public copy assignment operator for your class if you do not provide a user-defined one. This assignment operator does memberwise assignment 
+           (which is essentially the same as the memberwise initialization that default copy constructors do).
+        -- Just like other constructors and operators, you can prevent assignments from being made by making your copy assignment operator private or using the delete keyword.
+        -- Note that if your class has const members, the compiler will instead define the implicit operator= as deleted. This is because const members can’t be assigned, so the compiler will assume your class should not be assignable.
+        -- If you want a class with const members to be assignable (for all members that aren’t const), you will need to explicitly overload operator= and manually assign each non-const member.
+    
+13 — Shallow vs. deep copying
+     Shallow copying
+        -- Because C++ does not know much about your class, the default copy constructor and default assignment operators it provides use a copying method known as a memberwise copy (also known as a shallow copy). 
+        -- when designing classes that handle dynamically allocated memory, memberwise (shallow) copying can get us in a lot of trouble! This is because shallow copies of a pointer just copy the address of the pointer -- it does not allocate any memory or copy the contents being pointed to.
+     Deep copying
+        -- One answer to this problem is to do a deep copy on any non-null pointers being copied. A deep copy allocates memory for the copy and then copies the actual value, so that the copy lives in distinct memory from the source. 
+           This way, the copy and source are distinct and will not affect each other in any way. Doing deep copies requires that we write our own copy constructors and overloaded assignment operators.
+
+    -- The default copy constructor and default assignment operators do shallow copies, which is fine for classes that contain no dynamically allocated variables.
+    -- Classes with dynamically allocated variables need to have a copy constructor and assignment operator that do a deep copy.
+    -- Favor using classes in the standard library over doing your own memory management.
 
     
