@@ -157,8 +157,19 @@
             -- You could define your overloaded operator[] to take a double, a std::string, or whatever else you like.
             -- Overloading operator[] to take a std::string parameter can be useful when writing certain kinds of classes, such as those that use words as indices.
         
-        
+10 — Overloading the parenthesis operator
+    -- The parenthesis operator (operator()) is a particularly interesting operator in that it allows you to vary both the type AND number of parameters it takes.
+    -- The parenthesis operator must be implemented as a member function.
+    -- Prior to C++23, operator[] is limited to a single parameter, and therefore is not sufficient to let us directly index a two-dimensional array.
+       However, because the () operator can take as many parameters as we want it to have, we can declare a version of operator() that takes two integer index parameters.
+    
+     Functors
+        -- Operator() is also commonly overloaded to implement functors (or function object), which are classes that operate like functions. 
+           The advantage of a functor over a normal function is that functors can store data in member variables (since they are classes).
+        -- Functors can also have other member functions.
 
+11 — Overloading typecasts
+    -- 
    
 
 
