@@ -109,3 +109,57 @@
        Because they only operate on the object they are applied to, typically unary operator overloads are implemented as member functions. 
     
     -- So, the unary operators take no parameters (it operates on the *this object).
+
+7 — Overloading the comparison operators
+    -- Because the comparison operators are all binary operators that do not modify their left operands, we can make our overloaded comparison operators either normal functions or friend functions.
+    -- The most common comparison operators are ==, !=, <, >, <=, and >=.
+
+8 — Overloading the increment and decrement operators
+    -- Overloading the increment (++) and decrement (--) operators is pretty straightforward, with one small exception. There are actually two versions of the increment and decrement operators: 
+        a prefix increment and decrement (e.g. ++x; --y;)
+        a postfix increment and decrement (e.g. x++; y--;).
+    -- Because the increment and decrement operators are both unary operators and they modify their operands.
+       So, they’re best overloaded as member functions. 
+    
+    Overloading prefix increment and decrement
+        -- Note that we return *this. The overloaded increment and decrement operators return the current implicit object so multiple operators can be “chained” together.
+
+    Overloading postfix increment and decrement
+        -- Both prefix and postfix increment and decrement operators have the same name (eg. operator++), are unary, and take one parameter of the same type. 
+        -- To differentiate the two when overloading, the compiler looks to see if the overloaded operator has an int parameter. 
+            -- If the overloaded operator has an int parameter, the operator is a postfix overload.
+            -- If the overloaded operator has no parameter, the operator is a prefix overload.
+        -- The integer parameter in postfix overload is a dummy parameter.
+        -- Because the dummy parameter is not used in the function implementation, we have not even given it a name. 
+
+        -- The difference between the two overload versions is in the value they return. 
+            -- The overloaded prefix operators return the object after it has been incremented or decremented. We simply increment or decrement our member variables, and then return *this.
+            -- The postfix operators, on the other hand, need to return the state of the object before it is incremented or decremented. 
+               We use a temporary variable that holds the value of the object before it is incremented or decremented. Then the object itself can be incremented or decremented. 
+               And finally, the temporary variable is returned to the caller.
+
+               Note that this means the return value of the overloaded operator must be a non-reference.
+               Also note that this means the postfix operators are typically less efficient than the prefix operators because of the added overhead of instantiating a temporary variable and returning by value instead of reference. 
+
+9 — Overloading the subscript operator
+    -- An overloaded operator[] function will always take one parameter: the subscript that the user places between the hard braces.
+    -- Note that although you can provide a default value for the function parameter, actually using operator[] without a subscript inside is not considered a valid syntax, so there’s no point.
+    -- C++23 adds support for overloading operator[] with multiple subscripts.
+    -- operator[] returns a reference for storing value at the given index.
+    
+    Overloaded operator[] for const objects
+        -- we can define a non-const and a const version of operator[] separately. 
+           The non-const version will be used with non-const objects, and the const version with const-objects.
+        -- Detecting index validity using operator[] overloading.
+        -- Pointers to objects and overloaded operator[] don’t mix
+        
+        The function parameter does not need to be an integral type 
+            -- You could define your overloaded operator[] to take a double, a std::string, or whatever else you like.
+            -- Overloading operator[] to take a std::string parameter can be useful when writing certain kinds of classes, such as those that use words as indices.
+        
+        
+
+   
+
+
+    
