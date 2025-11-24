@@ -237,4 +237,5 @@
     -- Classes with dynamically allocated variables need to have a copy constructor and assignment operator that do a deep copy.
     -- Favor using classes in the standard library over doing your own memory management.
 
-    
+14 — Overloading operators and function templates
+    -- 

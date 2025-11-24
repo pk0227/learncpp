@@ -14,8 +14,10 @@ public:
 
     if (m_length) 
     {
-      m_string = new char[static_cast<std::size_t>(m_length + 1)];
+      //m_string = new char[static_cast<std::size_t>(m_length + 1)];
+      m_string = new char[static_cast<std::size_t>(m_length + 1)]{};
       std::strncpy(m_string, str, m_length);
+      //m_string[m_length] = '\0';  // Manually null-terminate the string
       //std::copy_n(str, m_length+1, m_string);
     }
   }
@@ -49,8 +51,10 @@ void MyString::deepCopy(const MyString& right)
 
     if (m_length) 
     {
-      m_string = new char[static_cast<std::size_t>(m_length + 1)];
+      //m_string = new char[static_cast<std::size_t>(m_length + 1)];
+      m_string = new char[static_cast<std::size_t>(m_length + 1)]{};
       std::strncpy(m_string, right.m_string, m_length);
+      //m_string[m_length] = '\0';  // Manually null-terminate the string
       //std::copy_n(right.m_string, m_length+1, m_string);
     }
 }
