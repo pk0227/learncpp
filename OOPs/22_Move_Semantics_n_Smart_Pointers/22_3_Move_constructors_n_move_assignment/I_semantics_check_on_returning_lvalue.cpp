@@ -29,7 +29,7 @@
 // Semantics evaluation rules in case of returning lvalue,
 // 1. Move constructor takes precedence over copy constructor
 // 2. Move constructor must not be deleted.
-// 3. If copy semantics, destructor are impilicitly provided by compiler, Then Move semantics are also implicitly provided. - No issue.
+// 3. If copy semantics, destructor are implicitly provided by compiler(No User defined/declared), Then Move semantics are also implicitly provided. - No issue.
 // 4. If Move semantics are explicitly defined (either defined by user or requested to compiler using default keyword),
 //        -- If copy semantics are NOT explicitly defined (either defined by user or requested to compiler using default keyword)
 //           then, they are implicitly deleted.

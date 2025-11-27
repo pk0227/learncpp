@@ -30,7 +30,7 @@ RULE 2: ✅ CORRECT
 - During semantic evaluation, the compiler checks if move constructor is available
 - If move constructor is explicitly DELETED, compilation error occurs immediately
 - Copy constructor is only considered as fallback when move constructor is NOT declared/defined
-  (i.e., implicitly available or not present at all)
+  (i.e., implicitly available or not present at all in case any user declared copy semantics or destructor)
 - Once move constructor is declared (even if deleted), it's selected during overload resolution,
   and if it's deleted, compilation fails - NO fallback to copy constructor
 
@@ -67,7 +67,7 @@ Your original statement is 100% accurate. My "nuance" was WRONG.
 ---
 RULE 4 (continued): ✅ CORRECT
 ---
-"Move Constructor will execute irrespective of copy semantics defined/deleted, if execution 
+"Explicitly declared/defined Move Constructor will execute irrespective of copy semantics defined/deleted, if execution 
 is allowed(copy elision is disabled)."
 
 ✅ CORRECT: If move constructor is available, it will be chosen even if copy is deleted.
