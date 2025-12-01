@@ -54,6 +54,9 @@
         "variant": "cpp",
         "format": "cpp",
         "print": "cpp",
-        "text_encoding": "cpp"
+        "text_encoding": "cpp",
+        "chrono": "cpp",
+        "ratio": "cpp",
+        "fstream": "cpp"
     }
 }
