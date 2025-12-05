@@ -191,4 +191,64 @@
         -- Because the stack is relatively small, it is generally not a good idea to do anything that 
            eats up lots of stack space. This includes allocating or copying large arrays or other memory-intensive structures.
     
+3 — Recursion
+    Recursive termination conditions
+        -- A recursive termination is a condition that, when met, will cause the recursive function to stop calling itself.
     
+    -- A recursive function without recursive termination condition will never return. this information is never being popped off
+       the stack! Consequently, at some point, the computer will run out of stack memory, stack overflow will result, and the 
+       program will crash or terminate.
+
+    Tail call 
+        -- is a function call that occurs at the tail (end) of a function. Functions with recursive tail calls are fairly easy for
+           the compiler to optimize into an iterative (non-recursive) function. Such a function would not cause the system to run 
+           out of stack space.
+
+    Memoization algorithms
+        -- It caches the results of expensive function calls so the result can be returned when the same input occurs again.
+    
+    Iterative Functions
+        -- Iterative functions (those using a for-loop or while-loop) are almost always more efficient than their recursive 
+           counterparts. This is because every time you call a function there is some amount of overhead that takes place in 
+           pushing and popping stack frames. Iterative functions avoid this overhead.
+
+    Recursive vs iterative
+    
+    In general, recursion is a good choice when most of the following are true:
+        -- The recursive code is much simpler to implement.
+        -- The recursion depth can be limited (e.g. there’s no way to provide an input that will cause it to recurse down 
+           100,000 levels).
+        -- The iterative version of the algorithm requires managing a stack of data.
+        -- This isn’t a performance-critical section of code.
+
+        However, if the recursive algorithm is simpler to implement, it may make sense to start recursively and then optimize 
+        to an iterative algorithm later.
+
+        Generally favor iteration over recursion, except when recursion really makes sense.
+
+4 — Command line arguments
+    Command line arguments are optional string arguments that are passed by the operating system to the program when it is 
+    launched. The program can then use them as input (or ignore them). Much like function parameters provide a way for a 
+    function to provide inputs to another function, command line arguments provide a way for people or programs to provide 
+    inputs to a program.
+
+    Using command line arguments
+        argc is an integer parameter containing a count of the number of arguments passed to the program 
+        (think: argc = argument count). argc will always be at least 1, because the first argument is always the name of 
+        the program itself. Each command line argument the user provides will cause argc to increase by 1.
+
+        argv is where the actual argument values are stored (think: argv = argument values, though the proper name is 
+        “argument vectors”). Although the declaration of argv looks intimidating, argv is really just a C-style array of 
+        char pointers (each of which points to a C-style string). The length of this array is argc.
+
+        NOTE : We cannot use a range-based for-loop to iterate through argv, since range-based for-loops don’t work on 
+               decayed C-style arrays.
+    
+    Dealing with numeric arguments
+        Command line arguments are always passed as strings, even if the value provided is numeric in nature. To use a 
+        command line argument as a number, we must convert it from a string to a number. 
+    
+        std::stringstream works much like std::cin. In this case, we’re initializing it with the value of argv[1], 
+        so that we can use operator>> to extract the value to an integer variable (the same as we would with std::cin).
+    
+        
