@@ -137,3 +137,7 @@
         -- Because, Partial template specialization for class works
                     Partial template specialization for member function doesn't work without partially specialized class definition.
                 
+6 — Partial template specialization for pointers
+   -- Ownership and lifetime issues
+   -- Go through the examples in 26_6_Partial_template_specialization_for_pointers folder. 
+   
