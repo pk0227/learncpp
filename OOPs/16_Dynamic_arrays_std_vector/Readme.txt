@@ -159,3 +159,105 @@
         -- The element type of a std::vector must not be defined as const (e.g. std::vector<const int> is disallowed).
         -- One of the biggest downsides of std::vector is that it cannot be made constexpr. If you need a constexpr array, use std::array.
     
+3 — std::vector and the unsigned length and subscript problem
+    The container length sign problem
+        -- Standard library container classes use unsigned values for the length (and indices) is problematic, as it makes it 
+           impossible to avoid unsigned values when using these types.
+        -- So, we are stuck with this choice and the unnecessary complexity it causes.
+    
+    A review: sign conversions are narrowing conversions, except when constexpr 
+        -- Sign conversions are narrowing because signed and unsigned types can’t represent each other’s full value range. 
+           When such conversions occur, compilers reject them in contexts that don’t allow narrowing (like list initialization), 
+           and may warn elsewhere.
+        -- But if the value is constexpr and safely fits in the destination type, the conversion is not considered narrowing. 
+           The compiler can verify it at compile time.
+        -- This safe, non-narrowing constexpr conversion (e.g., constexpr int → constexpr std::size_t) is used frequently.
+                int s { 5 };
+                [[maybe_unused]] unsigned int u { s }; // compile error: list initialization disallows narrowing conversion
+                                                       // if compiled with -Werror flag
+                foo(s);                                // possible warning: copy initialization allows narrowing conversion
+
+                constexpr int s { 5 };                 // now constexpr
+                [[maybe_unused]] unsigned int u { s }; // ok: s is constexpr and can be converted safely, 
+                                                       // not a narrowing conversion
+                foo(s);                                // ok: s is constexpr and can be converted safely, 
+                                                       // not a narrowing conversion
+
+    The length and indices of std::vector have type size_type
+        -- std::size_t is a typedef for some large unsigned integral type, usually unsigned long or unsigned long long.
+        -- Each of the standard library container classes defines a nested typedef member named size_type (sometimes written as 
+           T::size_type), which is an alias for the type used for the length (and indices, if supported) of the container.
+        -- Example : Member function of std::vector indicates that size() returns a value of size_type.
+        -- size_type is almost always an alias for std::size_t, but can be overridden (in rare cases) to use a different type.
+        -- All of the standard library containers except std::array use std::allocator to allocate memory. For these containers, 
+           T::size_type is derived from the size_type of the allocator used. 
+           std::allocator<T>::size_type is defined as std::size_t. Therefore, T::size_type defaults to std::size_t.
+        -- Only if a container uses a custom allocator with a different size_type will this type differ—but that’s rare and 
+           intentional.
+        -- When accessing the size_type member of a container class, we must scope qualify it with the fully templated name of 
+           the container class. For example, std::vector<int>::size_type.
+    
+    Getting the length of a std::vector using the size() member function or std::size()
+        -- Container classes have member function size(), which returns the length as unsigned size_type.
+                std::vector prime { 2, 3, 5, 7, 11 };
+                std::cout << "length: " << prime.size() << '\n'; // returns length as type `size_type` (alias for `std::size_t`)
+        -- Unlike std::string and std::string_view, which have both a length() and a size() member function to return length,
+           std::vector (and most other container types in C++) only has size().
+        -- From C++17, we can also use the std::size() non-member function.
+                std::vector prime { 2, 3, 5, 7, 11 };
+                std::cout << "length: " << std::size(prime); // returns length as type `size_type` (alias for `std::size_t`)
+        -- std::size() can also be used on non-decayed C-style arrays.
+        -- To use either of the above methods to store the length in a variable with a signed type, static_cast the result to the 
+           desired type to avoid a signed/unsigned conversion warning or error.
+                int length { static_cast<int>(prime.size()) }; // static_cast return value to int
+        
+    Getting the length of a std::vector using std::ssize()
+        -- C++20 introduces the std::ssize() non-member function, which returns the length as a large signed integral type 
+           (usually std::ptrdiff_t, which is the type normally used as the signed counterpart to std::size_t):
+                std::vector prime{ 2, 3, 5, 7, 11 };
+                std::cout << "length: " << std::ssize(prime); // C++20, returns length as a large signed integral type
+        -- This is the only function of the three which returns the length as a signed type.
+        
+        If you want to use this method to store the length in a variable with a signed type, you have a couple of options.
+            -- First, because the int type may be smaller than the signed type returned by std::ssize(), 
+               if you are going to assign the length to an int variable, you should static_cast the result to int to make any 
+               such conversion explicit (otherwise you might get a narrowing conversion warning or error):
+                    int length { static_cast<int>(std::ssize(prime)) }; // static_cast return value to int
+            -- Alternatively, you can use auto to have the compiler deduce the correct signed type to use for the variable:
+                    auto length { std::ssize(prime) }; // use auto to deduce signed type, as returned by std::ssize()
+    
+    Accessing array elements using operator[] does no bounds checking
+        -- operator[] does not do bounds checking. The index for operator[] can be non-const. 
+    
+    Accessing array elements using the at() member function does runtime bounds checking
+        -- The at() member function can be used to do array access with runtime bounds checking:
+                std::cout << prime.at(3); // print the value of element with index 3
+                std::cout << prime.at(9); // invalid index, throws an exception of type std::out_of_range. 
+                                          // If the exception is not handled, the program will be terminated. 
+        -- Just like operator[], the index passed to at() can be non-const.
+        -- Because it does runtime bounds checking on every call, at() is slower (but safer) than operator[].
+
+    Indexing std::vector with a constexpr signed int
+        -- Indexing a std::vector with a constexpr (signed) int, can let the compiler implicitly convert this to a std::size_t 
+           without it being a narrowing conversion:
+                std::cout << prime[3] << '\n';     // okay: 3 converted from int to std::size_t, not a narrowing conversion
+                constexpr int index { 3 };         // constexpr
+                std::cout << prime[index] << '\n'; // okay: constexpr index implicitly converted to std::size_t, not a narrowing 
+                                                   // conversion
+    
+    Indexing std::vector with a non-constexpr value
+        -- The subscripts used to index an array can be non-const:
+                std::size_t index { 3 };           // non-constexpr
+                std::cout << prime[index] << '\n'; // operator[] expects an index of type std::size_t, no conversion required
+    
+        -- When our subscript is a non-constexpr signed value, we run into problems:
+                int index { 3 };                   // non-constexpr
+                std::cout << prime[index] << '\n'; // possible warning: index implicitly converted to std::size_t, narrowing 
+                                                   // conversion
+        -- Another good alternative is instead of indexing the std::vector itself, index the result of the data() member function:
+                int index { 3 };                          // non-constexpr signed value
+                std::cout << prime.data()[index] << '\n'; // okay: no sign conversion warnings
+            Under the hood, std::vector holds its elements in a C-style array. The data() member function returns a pointer to 
+            this underlying C-style array, which we can then index. Since C-style arrays allow indexing with both signed and 
+            unsigned types, we don’t run into any sign conversion issues. 
+        
