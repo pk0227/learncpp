@@ -261,3 +261,264 @@
             this underlying C-style array, which we can then index. Since C-style arrays allow indexing with both signed and 
             unsigned types, we don’t run into any sign conversion issues. 
         
+4 — Passing std::vector
+    -- Passing a std::vector by value, causes an expensive copy. Therefore, Passing std::vector by (const) reference is 
+       recommended to avoid such copies.
+    
+    Passing std::vector of different element types
+        -- We must not pass vectors with different element types.
+        -- CTAD doesn’t (currently) work with function parameters.
+        -- We can create a function template that parameterizes the element type, and then C++ will use that function template 
+           to instantiate functions with actual types.
+                Example : const std::vector<T>& arr
+    
+    Passing a std::vector using a generic template or abbreviated function template
+        -- We can also create a function template that will accept any type of object.
+                Example : const T& arr
+        -- In C++20, we can use an abbreviated function template (via an auto parameter) to do the same thing.
+                Example : const auto& arr
+        -- Both of these will accept an argument of any type that will compile. This can be desirable when writing functions 
+           that we might want to operate on more than just a std::vector.
+        -- The potential downside of this method is that it may lead to bugs if the function is passed an object of a type that 
+           compiles but doesn’t make sense semantically.
+    
+    Asserting on array length
+        -- The compiler will happily let you pass in arrays where index is out of bounds.
+        -- One option here is to assert on arr.size(), which will catch such errors when run in a debug build configuration. 
+           Because std::vector::size() is a non-constexpr function, we can only do a runtime assert here.
+        -- A better option is to avoid using std::vector in cases where we need to assert on array length. Using a type that 
+           supports constexpr arrays (e.g. std::array) is probably a better choice, as we can static_assert on the length of 
+           a constexpr array.
+        -- The best option is to avoid writing functions that rely on the user passing in a vector with a minimum length in 
+           the first place.
+           
+5 — Returning std::vector, and an introduction to move semantics
+    -- When we need to pass a std::vector to a function, we pass it by (const) reference so that we do not make an expensive copy 
+       of the array data.
+    -- But, Surprisingly It is okay to return a std::vector by value.
+
+    Copy semantics
+        -- The term copy semantics refers to the rules that determine how copies of objects are made. 
+        -- When we say a type supports copy semantics, we mean that objects of that type are copyable, because the rules for 
+           making such copies have been defined.
+        -- Copy semantics are typically implemented via the copy constructor (and copy assignment operator).
+    
+    Introduction to move semantics
+        -- When ownership of data is transferred from one object to another, we say that data has been moved. 
+           The cost of such a move is typically trivial.
+        -- when the temporary was then destroyed at the end of the expression, it would no longer have any data to destroy, 
+           so we wouldn’t have to pay that cost either.
+        -- In move semantics, any data member that can be moved is moved, and any data member that can’t be moved is copied. 
+        
+    How move semantics is invoked
+        -- Normally, when an object is being initialized with (or assigned) an object of the same type, 
+           copy semantics will be used (assuming the copy isn’t elided).
+        -- However, when all of the following are true, move semantics will be invoked instead:
+            -- The type of the object supports move semantics.
+            -- The object is being initialized with (or assigned) an rvalue (temporary) object of the same type.
+            -- The move isn’t elided.
+        -- Many types don't support move semantics. However, std::vector and std::string both do!
+    
+    We can return move-capable types like std::vector by value
+        -- We can return move-capable types (like std::vector and std::string) by value. Such types will inexpensively move their
+           values instead of making an expensive copy.
+        -- Such types should still be passed by const reference.
+    
+    NOTE : Expensive-to-copy types shouldn’t be passed by value, but if they are move-capable they can be returned by value.
+
+    One of the most common things we do in C++ are,
+        1.  Construct the value to be passed.
+        2.  Actually pass the value to the function.
+        3.  Construct the value to be returned.
+        4.  Actually pass the return value back to the caller.
+
+            #include <iostream>
+            #include <vector>
+
+            std::vector<int> doSomething(std::vector<int> v2)
+            {
+                std::vector v3 { v2[0] + v2[0] }; // 3 -- construct value to be returned to caller
+                return v3; // 4 -- actually return value
+            }
+
+            int main()
+            {
+                std::vector v1 { 5 }; // 1 -- construct value to be passed to function
+                std::cout << doSomething(v1)[0] << '\n'; // 2 -- actually pass value
+
+                std::cout << v1[0] << '\n';
+
+                return 0;
+            }
+
+        We can’t optimize copies 1 and 3 at all. We need a std::vector to pass to the function, and we need a std::vector to 
+        return -- these objects have to be constructed. std::vector is an owner of its data, so it necessarily makes a copy 
+        of its initializer.
+        
+        Copy 2 is made because we’re passing by value from the caller to the called function. What other options do we have?
+            -- Can we pass by reference or address? Yes. 
+            -- Can this copy be elided? No. 
+                -- Elision only works when we’re making a redundant copy or move. There’s no redundant copy or move here.    
+            -- Can we use an out parameter here? No. 
+                -- We’re passing a value to the function, not getting a value back.
+            -- Can we use move semantics here? No. 
+                -- The argument is an lvalue. If we moved data from v1 to v2, v1 would become an empty vector, and subsequently 
+                   printing v1[0] would lead to undefined behavior.
+        
+        -- Clearly pass by const reference is our best option here, as it avoids the copy, and works with both lvalue and rvalue.
+    
+        Copy 4 is made because we’re passing by value from the called function back to the caller. What other options do we have?
+            -- Can we return by reference or address? No. 
+                -- Reference to a local variable will become dangling after the variable is destroyed when the function returns. 
+            -- Can this copy be elided? Yes, 
+                -- possibly. By rewriting the code (under the as-if rule) so that v3 is constructed in the scope of the caller 
+                   instead, we can avoid the copy that would otherwise be made when returning. 
+                   However, we are reliant upon the compiler realizing it can do this, so it is not guaranteed.
+            -- Can we use an out parameter here? Yes. Instead of constructing v3 as a local variable, we can construct an empty 
+               std::vector object in the scope of the caller, and pass it to the function by non-const reference. The function 
+               can then fill this parameter with data. When the function returns, this object will still exist. This avoids the 
+               copy, but also has some significant downsides and constraints: 
+                -- ugly calling semantics, doesn’t work with objects that don’t support assignment, 
+                -- it is challenging to write such functions that can work with both lvalue and rvalue arguments.
+            -- Can we use move semantics here? Yes. v3 is going to be destroyed when the function returns, so instead of copying 
+               v3 back to the caller, we can use move semantics to move its data to the caller, avoiding the copy.
+        
+        -- Elision is the best option here, but whether it happens is out of our control. The next best option for move-capable 
+           types is move semantics, which can be used in cases where the compiler doesn’t elide the copy. And for move-capable 
+           types, move semantics is invoked automatically when returning by value.
+
+        To summarize, for move-capable types, we prefer to pass by const reference, and return by value.
+
+6 — Arrays and loops
+    Arrays and loops
+        -- Accessing each element of a container in some order is called traversal, or traversing the container. Traversal is 
+           often called iteration, or iterating over or iterating through the container.
+    Templates, arrays, and loops unlock scalability
+        -- Arrays provide a way to store multiple objects without having to name each element.
+        -- Loops provide a way to traverse an array without having to explicitly list each element.
+        -- Templates provide a way to parameterize the element type.
+        -- Together, templates, arrays, and loops allow us to write code that can operate on a container of elements, 
+           regardless of the element type or number of elements in the container!
+    What we can do with arrays and loops
+        -- Calculate a new value based on the value of existing elements (e.g. average value, sum of values).
+        -- Search for an existing element (e.g. has exact match, count number of matches, find highest value).
+        -- Operate on each element (e.g. output each element, multiply all elements by 2).
+        -- Reorder the elements (e.g. sort the elements in ascending order).
+        -- Reordering the elements of a container is quite a bit more tricky, as doing so typically involves using a loop inside 
+           another loop. While we can do this manually, it’s better to use an existing algorithm from the standard libraries.
+    Arrays and off-by-one errors
+        -- When iterating arrays with indices, use index < length (not <= length) to avoid off‑by‑one errors and out‑of‑bounds 
+           access.
+
+7 — Arrays, loops, and sign challenge solutions
+    -- std::vector (and other container classes) uses unsigned integral type std::size_t for length and indices.
+       This causes issues. Example : printing an array in reverse order like this,
+            for(std::size_t index{arr.size()}; index >= 0; index--)     // index is unsigned
+
+        -- Since index is unsigned, the loop never terminates. It exhibits undefined behavior. It might print garbage values, 
+           or crash the application.
+    
+    Leave signed/unsigned conversion warnings off
+        -- Signed/unsigned conversion warnings are often disabled by default because indexing standard containers with signed 
+           types would generate many warnings, cluttering build logs and hiding real issues.
+        -- While disabling these warnings is the easiest workaround, it’s not recommended, as it also suppresses legitimate 
+           sign-conversion warnings that can lead to bugs.
+    
+    Unsigned loop variables
+        -- Containers define size_type (usually std::size_t) for lengths/indices.
+        -- Using size_type is consistent but verbose (std::vector<int>::size_type).
+        -- In templates, dependent names require typename (e.g.,  :   typename std::vector<T>::size_type).
+        -- With decltype(arr)::size_type, the compiler deduces the type.
+            If arr is a reference, you must strip the reference first:
+                for (typename std::remove_reference_t<decltype(arr)>::size_type i{0}; i < arr.size(); ++i)
+        -- Since size_type is almost always std::size_t, most developers just use std::size_t directly for loops.
+
+        Rule of thumb: Prefer std::size_t for indexing unless you’re working with custom allocators. But know how to handle 
+        decltype + remove_reference_t when writing generic templates.
+    
+    Using a signed loop variable
+        -- Using a signed loop variable aligns with the general best practice of favoring signed types for quantities, improving 
+           consistency across code even though standard containers use unsigned indices.
+        When using signed loop variables, you must handle three things:
+            -- Choose an appropriate signed type
+            -- Obtain the container length as a signed value
+            -- Safely convert the signed index to an unsigned type when indexing
+    
+    What signed type should we use?
+    Good options for signed loop indices:
+        -- int: Fine for most cases and small/medium arrays.
+        -- std::ptrdiff_t: Preferred for large arrays; signed counterpart to std::size_t.
+        -- Type alias: Improves readability and future-proofing:
+                using Index = std::ptrdiff_t;
+        -- auto: Let the compiler deduce the signed type when possible.
+        -- C++23 Z suffix: Creates a signed counterpart to size_t literals:
+                for (auto i{0Z}; i < static_cast<std::ptrdiff_t>(arr.size()); ++i)
+
+    Getting the length of an array as a signed value
+        -- Pre-C++20, the best way is to static_cast the return value of the size() member function or std::size() to a 
+           signed type.     Example : for (auto index{ static_cast<std::ptrdiff_t>(arr.size())-1 }; index >= 0; --index)
+        -- In C++20, use std::ssize():
+            for (auto index{ std::ssize(arr)-1 }; index >= 0; --index) // std::ssize introduced in C++20
+    
+    Index the underlying C-style array instead
+        -- We believe that this method is the best of the indexing options:
+            -- We can use signed loop variables and indices.
+            -- We don’t have to define any custom types or type aliases.
+            -- The hit to readability from using data() isn’t very big.
+            -- There should be no performance hit in optimized code.
+    
+    The sane choice: avoid indexing
+        -- Indexing has many pitfalls (signed/unsigned issues, off-by-one errors). A better approach is to avoid 
+           integral indices altogether.
+        -- Prefer range-based for loops or iterators to traverse containers. If the index is only used for traversal, 
+           don’t use it.
+        Rule of thumb : avoid array indexing with integral values whenever possible.
+    
+8 — Range-based for loops (for-each)
+        -- C++ provides range-based for loops to traverse containers without explicit indexing. They are simpler, safer, and work
+           with common array types such as std::vector, std::array, and C-style arrays.
+        
+    Range-based for loops
+    The range-based for statement has a syntax that looks like this:
+        for (element_declaration : array_object)
+            statement;
+    
+    -- Favor range-based for loops over regular for-loops when traversing containers.
+    
+    Range-based for loops and empty containers
+        -- If the container being traversed has no elements, the body of the range-based for-loop will simply not execute.
+    
+    Range-based for loops and type deduction using the auto keyword
+        -- Use type deduction (auto) with range-based for loops to have the compiler deduce the type of the array element. 
+           This avoids redundant typing and prevents accidental type mismatches.
+            for (auto elem : arr) { /* ... */ }
+        -- Another benefit to using auto is that if the element type of the array is ever updated (e.g. from int to long), 
+           auto will automatically deduce the updated element type, ensuring they stay in sync and preventing type conversion
+           from occurring.
+        
+    Avoid element copies using references
+        -- Copying std::string in a loop is expensive; prefer referencing elements (e.g., const auto& word) to avoid unnecessary 
+           copies.
+                for (const auto& word : words)
+                    std::cout << word << '\n';
+    
+    When to use auto vs auto& vs const auto&
+        -- For range-based for loops, prefer to define the element type as:
+            -- auto when you want to modify copies of the elements.
+            -- auto& when you want to modify the original elements.
+            -- const auto& otherwise (when you just need to view the original elements).
+
+    Range-based for loops and other standard container types
+        -- Range-based for loops won’t work with decayed C-style arrays. This is because a range-based for-loop needs to know 
+           the length of the array to know when traversal is complete, and decayed C-style arrays do not contain this information.
+        -- Range-based for loops also won’t work with enumerations.
+    
+    Getting the index of the current element
+        -- Range-based for loops don’t provide indices because some iterable types (e.g., std::list) don’t support them. 
+           We can maintain a manual counter since iteration is sequential, but if we need the index, a traditional for loop 
+           may be clearer.
+    
+    Range-based for loops in reverse 
+        -- Range-based for loops iterate only forwards. Before C++20, reverse traversal required normal for loops. 
+           Since C++20, std::views::reverse (Ranges) allows clean reverse iteration with range-based for loops.
+    
