@@ -522,3 +522,222 @@
         -- Range-based for loops iterate only forwards. Before C++20, reverse traversal required normal for loops. 
            Since C++20, std::views::reverse (Ranges) allows clean reverse iteration with range-based for loops.
     
+9 — Array indexing and length using enumerators
+    -- One of the bigger documentation problems with arrays is that integer indices do not provide any information to the 
+       programmer about the meaning of the index.
+    
+    Using unscoped enumerators for indexing
+        -- Since unscoped enumerations will implicitly convert to a std::size_t, this means we can use unscoped enumerations 
+           as array indices to help document the meaning of the index:
+        -- Because enumerators are implicitly constexpr, conversion of an enumerator to an unsigned integral type is not 
+           considered a narrowing conversion, thus avoiding signed/unsigned indexing problems.
+    
+    Using a non-constexpr unscoped enumeration for indexing
+        -- Underlying type of an unscoped enum is implementation defined (could be either a signed or unsigned integral type).
+        -- Because enumerators are implicitly constexpr, as long as we stick to indexing with unscoped enumerators, 
+           we won’t run into sign conversion issues.
+        -- However, if we define a non-constexpr variable of the enumeration type, and then try to index our std::vector with 
+           that, we may get sign conversion warnings on any platform that defaults unscoped enumerations to a signed type
+        -- An alternate option is to explicitly specify the underlying type of the enumeration to be an unsigned int.
+    
+    Using a count enumerator
+        -- Count enumerator, as its value represents the count of previously defined enumerators.
+        -- If all the prior enumerators are using default values (which is recommended) this enumerator will have a default 
+           value matching the count of the preceding enumerators.
+    
+        Asserting on array length with a count enumerator
+            -- If our array is constexpr (std::array (and C-style arrays)), then we should use static_assert. 
+            -- If our array is non-constexpr (std::vector as it doesn’t support constexpr), then we should use assert .
+        
+    Arrays and enum classes
+        -- Because unscoped enumerations pollute the namespace they are defined in with their enumerators, it is preferable to 
+           use enum classes in cases where the enum is not already contained in another scope region (e.g. a namespace or class).
+        -- However, because enum classes don’t have an implicit conversion to integral types, we run into a problem when we try 
+           to use their enumerators as array indices.
+
+10 — std::vector resizing and capacity
+    Fixed-size arrays vs dynamic arrays
+        -- Array types that have a significant limitation: the length of the array must be known at the point of instantiation, 
+           and then cannot be changed.
+        -- Both std::array and C-style arrays are fixed-size array types. 
+
+    Dynamic array (Resizable array)  
+        -- An array whose size can be changed after instantiation.
+        -- std::vector is a dynamic array. 
+    
+    Resizing a std::vector at runtime
+        -- First, when we resized the vector, the existing element values were preserved! 
+        -- Second, the new elements are value-initialized (which performs default-initialization for class types, and 
+           zero-initialization for other types).
+    
+    The length vs capacity of a std::vector
+        -- Capacity is how many elements the std::vector has allocated storage for.
+        -- Length is how many elements are currently being used.
+        -- We can ask a std::vector for its capacity via the capacity() member function.
+    
+    Reallocation of storage, and why it is expensive
+    -- When a std::vector changes the amount of storage it is managing, this process is called reallocation.
+        -- The std::vector acquires new memory with capacity for the desired number of elements. 
+           These elements are value-initialized.
+        -- The elements in the old memory are copied (or moved, if possible) into the new memory. 
+           The old memory is then returned to the system.
+        -- The capacity and length of the std::vector are set to the new values.
+
+    -- From the outside, it looks like the std::vector has been resized. But internally, the memory (and all of the elements) 
+       have actually been replaced which is computationally an expensive process. So, Avoid unnecessary reallocations.
+    
+    Why differentiate length and capacity?
+        -- If a std::vector only kept track of its length, then every resize() request would result in an expensive reallocation
+           to the new length. Separating length and capacity gives the std::vector the ability to be smarter for reallocations.
+        -- Tracking capacity separately from length allows the std::vector to avoid some reallocations when length is changed.
+    
+    Vector indexing is based on length, not capacity
+        -- operator[] and at() member function are only valid if it is between 0 and the vector’s length (not its capacity).
+    
+    Shrinking a std::vector
+        -- Resizing up: increases length (and capacity if needed).
+        -- Resizing down: decreases length, but capacity stays the same.
+        -- Memory concern: reclaiming memory for a few elements is wasteful, but large unused capacity can matter.
+        -- Solution: shrink_to_fit() requests capacity reduction to match size.
+    Note : This request is non-binding—implementations may honor, partially honor, or ignore it.
+
+16.11 — std::vector and stack behavior
+    What is a stack?
+        -- The order in which items are added to and removed from a stack can be described as last-in, first-out (LIFO). 
+    
+    Stacks in programming
+        -- In programming, a stack is a container data type where the insertion and removal of elements occurs in a LIFO manner. 
+           This is commonly implemented via two operations named push and pop:
+
+        +-----------+-------------------------------------+----------+-------------------------------------------+
+        | Operation | Behavior                            | Required | Notes                                     |
+        +-----------+-------------------------------------+----------+-------------------------------------------+
+        | Push      | Put new element on top of stack     | Yes      |                                           |
+        | Pop       | Remove the top element from stack   | Yes      | May return the removed element or void    |
+        +-----------+-------------------------------------+----------+-------------------------------------------+
+    
+        Many stack implementations optionally support other useful operations as well:
+        +---------------+-------------------------------------------+----------+------------------------+
+        | Operation     | Behavior                                  | Required | Notes                  |
+        +---------------+-------------------------------------------+----------+------------------------+
+        | Top / Peek    | Get the top element on the stack          | Optional | Does not remove item   |
+        | Empty         | Determine if stack has no elements        | Optional |                        |
+        | Size          | Count of elements on the stack            | Optional |                        |
+        +---------------+-------------------------------------------+----------+------------------------+
+
+    Stacks in C++
+        -- Some languages have a dedicated stack type, but this is limiting because a pure stack interface can’t support tasks 
+           like iterating without modification.
+        -- In C++, stack operations are provided by containers like std::vector, std::deque, and std::list, allowing them to be 
+           used as stacks while retaining their full container functionality.
+    
+    Stack behavior with std::vector
+        -- Stack behavior in std::vector is implemented via the following member functions:
+        +-----------------+-----------------+----------------------------------------+---------------------------------------+
+        | Function Name   | Stack Operation | Behavior                               | Notes                                 |
+        +-----------------+-----------------+----------------------------------------+---------------------------------------+
+        | push_back()     | Push            | Put new element on top of stack        | Adds element to end of vector         |
+        | pop_back()      | Pop             | Remove the top element from the stack  | Returns void; removes element at end  |
+        | back()          | Top / Peek      | Get the top element on the stack       | Does not remove item                  |
+        | emplace_back()  | Push            | Alternate, often more efficient push   | Constructs element at end of vector   |
+        +-----------------+-----------------+----------------------------------------+---------------------------------------+
+    
+    -- push_back() and emplace_back() will increment the length of a std::vector, and will cause a reallocation to occur if 
+       the capacity is not sufficient to insert the value.
+    
+    Extra capacity from pushing
+    -- How much extra capacity is allocated is left up to the compiler’s implementation of std::vector, and different compilers 
+       typically do different things:
+        -- GCC and Clang doubles the current capacity. When the last resize is triggered, the capacity is doubled from 2 to 4.
+        -- Visual Studio 2022 multiplies the current capacity by 1.5. When the last resize is triggered, the capacity is changed 
+           from 2 to 3.
+    As a result, the prior program may have a slightly different output depending on what compiler you are using.
+
+    Resizing a vector doesn’t work with stack behavior
+        -- The resize() member function changing the length of the vector is fine when we’re intending to use subscripts to 
+           access elements (since our indices need to be less than the length to be valid), but it causes problems when 
+           we’re using the vector as a stack.
+        -- Vector as stack behavior needs some way to change the capacity (to avoid future reallocations) without changing 
+           the length (which has the side effect of adding new elements to our stack).
+
+    The reserve() member function changes the capacity (but not the length)
+        -- The reserve() member function can be used to reallocate a std::vector without changing the current length.
+        -- The resize() member function changes the length of the vector, and the capacity (if necessary).
+        -- The reserve() member function changes just the capacity (if necessary)
+
+        To increase the number of elements in a std::vector:
+            -- Use resize() when accessing a vector via indexing. This changes the length of the vector so our indices will 
+               be valid.
+            -- Use reserve() when accessing a vector using stack operations. This adds capacity without changing the length 
+               of the vector.
+    
+    push_back() vs emplace_back()
+        -- Both push_back() and emplace_back() push an element onto the stack. If the object to be pushed already exists, 
+           push_back() and emplace_back() are equivalent, and push_back() should be preferred.
+        -- In cases where we are creating a temporary object (of the same type as the vector’s element) for the purpose of 
+           pushing it onto the vector, emplace_back() can be more efficient:
+            -- emplace_back() forwards them (using a feature called perfect forwarding) to the vector, where they are used to 
+               create and initialize the object inside the vector. This avoids a copy that would have otherwise been made.
+        -- push_back() won’t use explicit constructors, whereas emplace_back() will. This makes emplace_back more dangerous, 
+           as it is easier to accidentally invoke an explicit constructor to perform some conversion that doesn’t make sense.
+        -- Prior to C++20, emplace_back() doesn’t work with aggregate initialization.
+
+16.12 — std::vector<bool>
+    What is std::vector<bool>
+        -- std::vector<bool> is a specialized implementation of std::vector.
+        -- It packs boolean values as bits (≈ 8 bools per byte) to save memory.
+        -- This is achieved via class template specialization.
+
+    Comparison with std::bitset
+        -- std::bitset is designed specifically for bit manipulation.
+        -- std::vector<bool> does not provide bit-manipulation member functions.
+        -- std::bitset has a fixed size known at compile time.
+    
+    Basic Usage
+        -- Works similarly to a normal std::vector for:
+            -- Initialization
+            -- Indexing (operator[])
+            -- Iteration
+        -- Values print as 0 and 1 when streamed.
+
+    Tradeoffs and Problems
+        1. Memory Overhead
+            -- std::vector<bool> itself has significant overhead.
+            -- Small vectors may use more memory, not less.
+        2. Performance Issues
+            -- Performance depends heavily on the library implementation.
+            -- Optimized implementations can be fast.
+            -- Poor implementations can be slower than alternatives.
+        3. Not a Real Container ❌
+            -- Not guaranteed to be contiguous in memory.
+            -- Does not store bool objects, stores bits instead.
+            -- Does not meet the C++ container requirements.
+        4. Incompatibility with Generic Code    
+            -- operator[] does not return bool&.
+            -- Generic code that works for std::vector<T> often breaks for T = bool.
+    
+    Why It Is Discouraged
+        -- Behavior differs from other std::vector<T> specializations.
+        -- Causes subtle bugs and incompatibilities.
+        -- No way to disable the optimized (bit-packed) version.
+        -- Modern consensus: avoid using it.
+
+    Recommended Alternatives
+    Use std::bitset
+        -- When the number of bits is known at compile time.
+        -- Suitable for a moderate number of bits (e.g. < 64k).
+        -- Provides explicit bit operations.
+    Use std::vector<char>
+        -- When you need a resizable container.
+        -- Behaves like a normal container.
+        -- Prefer when memory savings are not critical.
+    Use a Dynamic Bitset (3rd Party)
+        -- Example: boost::dynamic_bitset.
+        -- When you need a dynamic-sized bitset with bit operations.
+    
+    Best Practice ⭐
+        -- Favor std::bitset, std::vector<char>, or third‑party dynamic bitsets over std::vector<bool>.
+
+
+
+
