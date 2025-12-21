@@ -1,0 +1,15 @@
+
+https://www.google.com/search?q=Modern+C%2B%2B+Multithreading+Github&client=tablet-android-oppo-rvo2&hs=mYd9&sca_esv=b83ae5ae575c3e79&biw=1333&bih=620&sxsrf=AE3TifNJZqt2C6Mv-M0LH9fSZlAvC5hRRw%3A1765640197158&ei=BYg9aYulCfiJ4-EPh4L98AE&ved=0ahUKEwjLu4Km8rqRAxX4xDgGHQdBHx4Q4dUDCBE&uact=5&oq=Modern+C%2B%2B+Multithreading+Github&gs_lp=Egxnd3Mtd2l6LXNlcnAiIE1vZGVybiBDKysgTXVsdGl0aHJlYWRpbmcgR2l0aHViMggQIRigARjDBEioO1DaJFj0MXABeACQAQCYAbwBoAGKCaoBAzAuOLgBA8gBAPgBAZgCB6AClQjCAgoQABiwAxjWBBhHwgIHECMYsAIYJ8ICCBAAGAcYCBgewgIIEAAYCBgNGB7CAggQABiABBiiBMICBRAAGO8FwgIIEAAYogQYiQXCAgoQIRigARjDBBgKmAMAiAYBkAYIkgcFMS41LjGgB6YmsgcFMC41LjG4B4AIwgcJMi0yLjIuMi4xyAeNAYAIAA&sclient=gws-wiz-serp
+
+https://github.com/methylDragon/coding-notes/blob/master/C%2B%2B/07%20C%2B%2B%20-%20Threading%20and%20Concurrency.md#2.1
+
+https://github.com/KozakHou/Parallel_Computing_HPC
+
+https://github.com/federico-busato/Modern-CPP-Programming
+
+https://github.com/anthonywilliams/ccia_code_samples?tab=readme-ov-file
+
+
+https://github.com/djeada/Parallel-And-Concurrent-Programming/blob/master/notes/02_multithreading.md
+
+
