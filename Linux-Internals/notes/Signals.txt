@@ -1,0 +1,295 @@
+===========================
+POSIX SIGNALS – COMPLETE NOTES
+(Single-thread & Multi-thread)
+===========================
+
+--------------------------------------------------
+1. WHAT IS A SIGNAL?
+--------------------------------------------------
+A signal is an asynchronous notification sent by the kernel to a process
+(or a specific thread) to notify that an event has occurred.
+
+Examples:
+- Ctrl+C           -> SIGINT
+- kill(pid, SIGTERM)
+- Segmentation fault -> SIGSEGV
+
+Signals are:
+- Asynchronous
+- Delivered in user-mode
+- Handled in process context (NOT interrupt context)
+
+--------------------------------------------------
+2. SIGNAL DISPOSITION (HANDLER)
+--------------------------------------------------
+Signal disposition defines what happens when a signal is delivered:
+- Default action
+- Ignore
+- Custom handler
+
+IMPORTANT:
+Signal disposition is PROCESS-WIDE.
+
+Meaning:
+- All threads in a process share the same signal handler.
+- You CANNOT have different handlers per thread.
+
+Installed using:
+    signal()     (legacy, unsafe)
+    sigaction()  (preferred)
+
+--------------------------------------------------
+3. sigaction() – WHY IT IS PREFERRED
+--------------------------------------------------
+sigaction() atomically installs:
+- Handler function
+- Mask during handler execution (sa_mask)
+- Behavioral flags (sa_flags)
+
+Example:
+
+    struct sigaction sa{};
+    sa.sa_handler = handler;
+    sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGTERM);
+    sa.sa_flags = SA_RESTART;
+
+    sigaction(SIGINT, &sa, nullptr);
+
+Why sigaction is preferred:
+- No race conditions
+- Portable & POSIX-compliant
+- signal() has undefined / legacy semantics
+
+--------------------------------------------------
+4. SIGNAL MASKING – CORE IDEA
+--------------------------------------------------
+Signal masking means blocking delivery of signals.
+
+IMPORTANT DISTINCTION:
+- Masking blocks DELIVERY, not GENERATION.
+- Masked signals become PENDING.
+
+--------------------------------------------------
+5. SIGNAL MASK: PER-THREAD (CRITICAL)
+--------------------------------------------------
+Each thread has its OWN signal mask.
+
+This is one of the most important rules.
+
+Therefore:
+- Thread A may block SIGINT
+- Thread B may not
+- Kernel will never deliver SIGINT to Thread A
+
+--------------------------------------------------
+6. APIs FOR MASKING
+--------------------------------------------------
+sigprocmask():
+- Single-threaded programs ONLY
+- UNSPECIFIED behavior in multithreaded programs
+- DO NOT use with threads
+
+pthread_sigmask():
+- Correct API for multithreaded programs
+- Changes mask of the CALLING THREAD only
+
+Example:
+
+    sigset_t set;
+    sigemptyset(&set);
+    sigaddset(&set, SIGINT);
+    pthread_sigmask(SIG_BLOCK, &set, nullptr);
+
+--------------------------------------------------
+7. SIGNAL DELIVERY IN MULTI-THREADED PROGRAMS
+--------------------------------------------------
+When a process-directed signal (e.g., SIGINT) arrives:
+
+Kernel:
+1. Looks for threads that do NOT block the signal
+2. Chooses ONE eligible thread (choice unspecified)
+3. Executes the handler in that thread’s context
+
+If all threads block the signal:
+- Signal remains pending
+
+--------------------------------------------------
+8. IMPORTANT CLARIFICATION (COMMON CONFUSION)
+--------------------------------------------------
+Incorrect:
+"Each time a signal is sent, a different thread should handle it"
+
+Correct:
+- Kernel may choose the SAME eligible thread repeatedly
+- No round-robin or fairness guarantee
+
+--------------------------------------------------
+9. MASKING DURING HANDLER EXECUTION (sa_mask)
+--------------------------------------------------
+When a handler is invoked:
+
+Kernel automatically blocks:
+- The signal being handled
+- Signals listed in sa_mask
+
+This applies:
+- Only to the thread executing the handler
+- Only for the duration of the handler
+
+IMPORTANT:
+sa_mask does NOT apply to other threads.
+
+--------------------------------------------------
+10. sa_flags – HOW THEY APPLY
+--------------------------------------------------
+sa_flags are process-wide definitions but take effect
+in the context of the thread handling the signal.
+
+Examples:
+- SA_RESTART   : restart interrupted syscalls
+- SA_NODEFER   : allow same signal to re-enter handler
+- SA_RESETHAND : reset disposition after one delivery
+
+--------------------------------------------------
+11. ASYNC-SIGNAL-SAFETY (VERY IMPORTANT)
+--------------------------------------------------
+Inside a signal handler, ONLY async-signal-safe functions are allowed.
+
+NOT SAFE:
+- std::cout
+- printf
+- new / delete
+- mutexes
+- std::string
+
+SAFE:
+- write()
+- _exit()
+- sigatomic_t access
+
+Correct handler example:
+
+    void handler(int) {
+        const char msg[] = "SIGINT\n";
+        write(STDOUT_FILENO, msg, sizeof(msg)-1);
+    }
+
+--------------------------------------------------
+12. sigwait() – WHAT IT IS
+--------------------------------------------------
+sigwait() is a SYNCHRONOUS way to handle signals.
+
+Instead of:
+- Asynchronous signal handler
+
+You do:
+- Block signal
+- Explicitly wait for it
+
+sigwait():
+- Suspends calling thread
+- Returns signal number
+- No async-signal-safety issues
+- Runs in normal thread context
+
+--------------------------------------------------
+13. RULE FOR sigwait() (MANDATORY)
+--------------------------------------------------
+The signals waited on by sigwait():
+- MUST be BLOCKED in the calling thread
+- SHOULD be blocked in all other threads
+
+If not:
+- Kernel may deliver signal to another thread
+- sigwait() will never wake up
+
+--------------------------------------------------
+14. CORRECT sigwait() DESIGN PATTERN
+--------------------------------------------------
+Best practice in multithreaded programs:
+
+1. Block signal in main thread BEFORE creating workers
+2. All threads inherit the blocked mask
+3. Create one dedicated signal-handling thread
+4. That thread calls sigwait()
+
+Example:
+
+Main:
+    pthread_sigmask(SIG_BLOCK, SIGINT);
+
+Signal thread:
+    sigwait(SIGINT);
+
+Workers:
+    Never see SIGINT
+
+--------------------------------------------------
+15. WHY sigwait() DOES NOT USE sigaction()
+--------------------------------------------------
+sigwait():
+- Consumes the signal
+- DOES NOT invoke a handler
+- DOES NOT use sigaction at all
+
+So:
+- Either use sigaction() OR sigwait()
+- Mixing them is incorrect and confusing
+
+--------------------------------------------------
+16. ANSWER TO A MAJOR CONFUSION
+--------------------------------------------------
+Question:
+"If sigwait handles the signal, who calls the signal handler?"
+
+Answer:
+- sigwait does NOT call a signal handler
+- It replaces signal handlers entirely
+
+That is the point.
+
+--------------------------------------------------
+17. THREAD-DIRECTED vs PROCESS-DIRECTED SIGNALS
+--------------------------------------------------
+Process-directed:
+- SIGINT, SIGTERM, kill(pid)
+- Delivered to any eligible thread
+
+Thread-directed:
+- pthread_kill(thread, sig)
+- Delivered ONLY to that thread (if unblocked)
+
+--------------------------------------------------
+18. FINAL MENTAL MODEL (MEMORIZE THIS)
+--------------------------------------------------
+- Signal disposition: PROCESS-WIDE
+- Signal mask: PER-THREAD
+- Signal delivery: ONE eligible thread
+- sa_mask: applies only during handler execution
+- sigwait(): synchronous, handler-free signal handling
+
+--------------------------------------------------
+19. WHEN TO USE WHAT
+--------------------------------------------------
+Use sigaction():
+- Simple programs
+- Legacy code
+- When async delivery is acceptable
+
+Use sigwait():
+- Multithreaded programs
+- Clean shutdown logic
+- Deterministic behavior
+- C++ programs (preferred)
+
+--------------------------------------------------
+20. ONE-LINE INTERVIEW SUMMARY
+--------------------------------------------------
+"In multithreaded programs, signal handlers are process-wide, signal
+masks are per-thread, and sigwait with a dedicated signal thread is the
+preferred and safest design."
+
+===========================
+END OF NOTES
+===========================

@@ -1,0 +1,231 @@
+============================================================
+sleep(), wait(), pause() – COMPLETE & CONFUSION-FREE NOTES
+(Single-threaded and Multi-threaded C/C++)
+============================================================
+
+------------------------------------------------------------
+0. Big Picture (Very Important)
+------------------------------------------------------------
+These functions are often confused because they all "block".
+But they block for VERY DIFFERENT REASONS:
+
+- sleep()  -> time-based blocking
+- wait()   -> child-process synchronization
+- pause()  -> signal-based blocking
+
+They solve DIFFERENT problems and are NOT interchangeable.
+
+------------------------------------------------------------
+1. sleep()
+------------------------------------------------------------
+Purpose:
+- Suspend the CALLING THREAD for a specified duration.
+- Time-based blocking.
+
+Prototype:
+- unsigned int sleep(unsigned int seconds);
+
+Header:
+- <unistd.h>
+
+Behavior:
+- Returns 0 if full sleep completed.
+- Returns remaining seconds if interrupted by a signal.
+
+Single-threaded program:
+- Only one thread exists → whole process effectively sleeps.
+
+Multi-threaded program:
+- ONLY the calling thread sleeps.
+- Other threads continue executing normally.
+
+Example:
+------------------------------------------------------------
+    sleep(5);   // calling thread sleeps for 5 seconds
+------------------------------------------------------------
+
+Signal interaction:
+- If a signal arrives and a handler runs,
+  sleep() returns early.
+
+Important notes:
+- sleep() does NOT wait for signals.
+- sleep() does NOT synchronize threads or processes.
+- sleep() is NOT precise for timing (signals may interrupt).
+
+Interview one-liner:
+- "sleep() suspends the calling thread for N seconds."
+
+------------------------------------------------------------
+2. wait() / waitpid()
+------------------------------------------------------------
+Purpose:
+- Parent process waits for CHILD PROCESS termination.
+- Process synchronization (NOT thread synchronization).
+
+Prototype:
+- pid_t wait(int *status);
+- pid_t waitpid(pid_t pid, int *status, int options);
+
+Header:
+- <sys/wait.h>
+
+Behavior:
+- Blocks until a child exits.
+- Returns child PID.
+- Fills exit status.
+
+Single-threaded program:
+- Parent process blocks until child terminates.
+
+Multi-threaded program:
+- Only the CALLING THREAD blocks.
+- Other threads in parent process continue running.
+
+Example:
+------------------------------------------------------------
+    if (fork() == 0) {
+        _exit(0);   // child
+    } else {
+        int status;
+        wait(&status);  // parent waits for child
+    }
+------------------------------------------------------------
+
+Signal interaction:
+- If a signal interrupts wait(), it may return early
+  with errno = EINTR (unless SA_RESTART is used).
+
+Important notes:
+- wait() has NOTHING to do with sleep or signals directly.
+- wait() is for PROCESS lifecycle management.
+- No child → wait() fails.
+
+Interview one-liner:
+- "wait() blocks until a child process terminates."
+
+------------------------------------------------------------
+3. pause()
+------------------------------------------------------------
+Purpose:
+- Suspend the CALLING THREAD until ANY signal is delivered.
+- Signal-based blocking.
+
+Prototype:
+- int pause(void);
+
+Header:
+- <unistd.h>
+
+Behavior:
+- Blocks indefinitely.
+- Returns only when a signal handler runs.
+- Always returns -1 with errno = EINTR.
+
+Single-threaded program:
+- Entire process waits for a signal.
+
+Multi-threaded program:
+- ONLY the calling thread pauses.
+- Other threads continue running.
+
+Example:
+------------------------------------------------------------
+    void handler(int) {}
+
+    signal(SIGINT, handler);
+    pause();   // waits until SIGINT (or any signal) arrives
+------------------------------------------------------------
+
+Signal interaction:
+- pause() RETURNS AFTER the signal handler finishes.
+- pause() does NOT consume the signal itself.
+
+Important notes:
+- pause() has NO timeout.
+- pause() is commonly replaced by sigwait() in MT programs.
+
+Interview one-liner:
+- "pause() blocks the calling thread until a signal arrives."
+
+------------------------------------------------------------
+4. sleep() vs pause() vs wait() (Side-by-Side)
+------------------------------------------------------------
+
+sleep():
+- Reason to block: TIME
+- Unblocks when: time expires or signal interrupts
+- Used for: delays
+
+pause():
+- Reason to block: SIGNAL
+- Unblocks when: signal handler executes
+- Used for: waiting for signals
+
+wait():
+- Reason to block: CHILD PROCESS
+- Unblocks when: child terminates
+- Used for: process synchronization
+
+------------------------------------------------------------
+5. Single-thread vs Multi-thread (Mental Model)
+------------------------------------------------------------
+
+Single-threaded program:
+- sleep()  -> whole process sleeps
+- pause()  -> whole process waits for signal
+- wait()   -> process waits for child exit
+
+Multi-threaded program:
+- sleep()  -> only calling thread sleeps
+- pause()  -> only calling thread waits for signal
+- wait()   -> only calling thread waits for child
+- Other threads continue normally
+
+KEY RULE:
+- Blocking calls ALWAYS block the calling thread, not the process.
+
+------------------------------------------------------------
+6. Common Confusions (Cleared)
+------------------------------------------------------------
+
+❌ "pause() is like sleep()"
+✔ No. pause() waits for SIGNAL, sleep() waits for TIME.
+
+❌ "wait() is for threads"
+✔ No. wait() is for CHILD PROCESSES only.
+
+❌ "sleep() waits for signals"
+✔ No. sleep() is time-based; signals only interrupt it.
+
+❌ "pause() handles the signal"
+✔ No. pause() just waits; handler handles the signal.
+
+------------------------------------------------------------
+7. Where sigwait() Fits (Important)
+------------------------------------------------------------
+- sigwait() is a BETTER alternative to pause() in MT programs.
+- sigwait() synchronously receives signals.
+- Avoids async signal handlers.
+
+pause():
+- async
+- handler-based
+- unsafe in MT programs
+
+sigwait():
+- synchronous
+- thread-controlled
+- preferred in MT programs
+
+------------------------------------------------------------
+8. Interview One-Liners (Memorize)
+------------------------------------------------------------
+- sleep()  → "Time-based suspension of calling thread"
+- wait()   → "Parent waits for child process termination"
+- pause()  → "Thread waits until a signal arrives"
+- sigwait()→ "Thread synchronously waits for a signal"
+
+============================================================
+END OF NOTES
+============================================================
