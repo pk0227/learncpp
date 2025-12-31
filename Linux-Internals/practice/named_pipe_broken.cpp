@@ -44,6 +44,7 @@ int main()
 */
     
         close(rd);
+        exit(0);
     }
 
     int wd { open(fifo_name, O_WRONLY) };
@@ -62,6 +63,7 @@ int main()
     close(wd);
 
     unlink(fifo_name);
+    wait(nullptr);
 
     return 0;
 }
