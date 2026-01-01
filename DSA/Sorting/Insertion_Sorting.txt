@@ -1,0 +1,226 @@
+╔══════════════════════════════════════════════════════════╗
+║              I N S E R T I O N   S O R T                 ║
+║        Complete Notes (Theory + Code + Analysis)         ║
+╚══════════════════════════════════════════════════════════╝
+
+
+══════════════════════════════════════════════════════════
+0) WHAT IS INSERTION SORT?
+══════════════════════════════════════════════════════════
+• Insertion Sort is a comparison-based sorting algorithm
+• It builds the sorted array ONE ELEMENT AT A TIME
+• Similar to how we sort playing cards in our hand
+• Maintains a sorted subarray on the LEFT side
+
+
+══════════════════════════════════════════════════════════
+1) CORE IDEA (INTUITION)
+══════════════════════════════════════════════════════════
+• Assume the first element is already sorted
+• Take the next element (key)
+• Shift all larger elements ONE POSITION to the right
+• Insert the key at its correct position
+
+
+══════════════════════════════════════════════════════════
+2) VISUAL WALKTHROUGH (STEP-BY-STEP)
+══════════════════════════════════════════════════════════
+
+Initial array:
+[ 5, 2, 4, 6, 1, 3 ]
+
+Step 1:
+Sorted | Unsorted
+[ 5 ]  | [ 2, 4, 6, 1, 3 ]
+
+Insert 2:
+• Compare 2 with 5
+• Shift 5 right
+• Insert 2
+
+[ 2, 5 ] | [ 4, 6, 1, 3 ]
+
+Insert 4:
+• Shift 5 → right
+• Insert 4 between 2 and 5
+
+[ 2, 4, 5 ] | [ 6, 1, 3 ]
+
+Insert 6:
+• Already in correct position
+
+[ 2, 4, 5, 6 ] | [ 1, 3 ]
+
+Insert 1:
+• Shift 6,5,4,2 → right
+• Insert 1 at beginning
+
+[ 1, 2, 4, 5, 6 ] | [ 3 ]
+
+Insert 3:
+• Shift 6,5,4 → right
+• Insert 3 after 2
+
+FINAL SORTED ARRAY:
+[ 1, 2, 3, 4, 5, 6 ]
+
+
+══════════════════════════════════════════════════════════
+3) WHY INSERTION SORT WORKS
+══════════════════════════════════════════════════════════
+• Left side is ALWAYS sorted
+• Each iteration places exactly ONE element correctly
+• Shifting (not swapping) makes it efficient for small data
+
+
+══════════════════════════════════════════════════════════
+4) BASIC ALGORITHM (PSEUDOCODE)
+══════════════════════════════════════════════════════════
+for i = 1 to n-1
+    key = arr[i]
+    j = i - 1
+
+    while j >= 0 AND arr[j] > key
+        arr[j + 1] = arr[j]
+        j--
+
+    arr[j + 1] = key
+
+
+══════════════════════════════════════════════════════════
+5) INSERTION SORT – C++ IMPLEMENTATION
+══════════════════════════════════════════════════════════
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void insertionSort(vector<int>& arr)
+{
+    int n = arr.size();
+
+    for(int i = 1; i < n; i++)
+    {
+        int key = arr[i];
+        int j = i - 1;
+
+        // Shift elements to the right
+        while(j >= 0 && arr[j] > key)
+        {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+
+        // Insert key
+        arr[j + 1] = key;
+    }
+}
+
+
+══════════════════════════════════════════════════════════
+6) TIME COMPLEXITY (STEP-BY-STEP)
+══════════════════════════════════════════════════════════
+
+► BEST CASE
+Condition:
+• Array already sorted
+
+Behavior:
+• Inner while loop never runs
+• One comparison per element
+
+Time Complexity:
+O(n)
+
+
+► AVERAGE CASE
+Condition:
+• Random order
+
+Behavior:
+• Each element shifts ~ half of sorted part
+• Total shifts ≈ n² / 4
+
+Time Complexity:
+O(n²)
+
+
+► WORST CASE
+Condition:
+• Reverse sorted array
+
+Behavior:
+• Each new element shifts ALL previous elements
+• Total shifts = 1 + 2 + ... + (n-1)
+
+Mathematical sum:
+(n - 1)n / 2
+
+Time Complexity:
+O(n²)
+
+
+══════════════════════════════════════════════════════════
+7) SPACE COMPLEXITY
+══════════════════════════════════════════════════════════
+• Sorting is done IN-PLACE
+• Only a few variables (key, i, j)
+
+Space Complexity:
+O(1)
+
+
+══════════════════════════════════════════════════════════
+8) STABILITY
+══════════════════════════════════════════════════════════
+• Insertion Sort is STABLE
+• Equal elements retain their relative order
+
+
+══════════════════════════════════════════════════════════
+9) ADAPTIVENESS (IMPORTANT FEATURE)
+══════════════════════════════════════════════════════════
+• Insertion Sort is ADAPTIVE
+• Performs faster when data is nearly sorted
+• Time reduces toward O(n) as disorder decreases
+
+
+══════════════════════════════════════════════════════════
+10) SUMMARY TABLE
+══════════════════════════════════════════════════════════
+
++-------------+--------------------+------------------+
+| Case        | Time Complexity    | Space Complexity |
++-------------+--------------------+------------------+
+| Best        | O(n)               | O(1)             |
+| Average     | O(n²)              | O(1)             |
+| Worst       | O(n²)              | O(1)             |
++-------------+--------------------+------------------+
+
+
+══════════════════════════════════════════════════════════
+11) WHEN SHOULD YOU USE INSERTION SORT?
+══════════════════════════════════════════════════════════
+✓ Very small datasets
+✓ Nearly sorted arrays
+✓ Online sorting (data arrives gradually)
+✓ Hybrid algorithms (used inside Quick / Merge sort)
+
+
+══════════════════════════════════════════════════════════
+12) WHEN SHOULD YOU NOT USE IT?
+══════════════════════════════════════════════════════════
+✗ Large datasets
+✗ Highly unordered data
+✗ Performance-critical systems
+
+
+══════════════════════════════════════════════════════════
+13) INTERVIEW ONE-LINER
+══════════════════════════════════════════════════════════
+Insertion Sort builds a sorted array incrementally by
+shifting larger elements and inserting the current key
+in the correct position. It is stable, adaptive, in-place,
+and runs in O(n²) time in average and worst cases.
+
+══════════════════════════════════════════════════════════

@@ -1,0 +1,160 @@
+==========================================================
+QUICK SORT – TIME & SPACE COMPLEXITY (STEP-BY-STEP)
+==========================================================
+
+----------------------------------------------------------
+0) WHAT COSTS TIME IN QUICK SORT?
+----------------------------------------------------------
+• Partition operation scans the array once
+• Cost of partition = Θ(n)
+• This cost occurs at EVERY recursive call
+
+General recurrence relation:
+T(n) = T(left part) + T(right part) + Θ(n)
+
+The behavior depends entirely on how the pivot splits the array.
+
+----------------------------------------------------------
+1) BEST CASE TIME COMPLEXITY
+----------------------------------------------------------
+Condition:
+• Pivot always splits array into two equal halves
+
+Split:
+n → n/2  +  n/2
+
+Recurrence:
+T(n) = T(n/2) + T(n/2) + n
+
+Recursion tree:
+Level 0:      n        → work = n
+Level 1:    n/2 n/2    → work = n
+Level 2:   n/4 n/4...  → work = n
+...
+Last level: 1
+
+Number of levels:
+• Each level halves n
+• Levels = log₂(n)
+
+Total work:
+• Work per level = n
+• Number of levels = log n
+
+BEST CASE TIME:
+O(n log n)
+
+----------------------------------------------------------
+BEST CASE SPACE COMPLEXITY
+----------------------------------------------------------
+• Recursion depth = log n
+• Each call uses constant space
+
+BEST CASE SPACE:
+O(log n)
+
+----------------------------------------------------------
+2) AVERAGE CASE TIME COMPLEXITY
+----------------------------------------------------------
+Condition:
+• Pivot splits array reasonably well on average
+• Example split: n → 3n/4 + n/4
+
+Recurrence:
+T(n) = T(3n/4) + T(n/4) + n
+
+Key idea:
+• All elements are still processed once per level
+• Recursion depth is still proportional to log n
+
+AVERAGE CASE TIME:
+O(n log n)
+
+----------------------------------------------------------
+AVERAGE CASE SPACE COMPLEXITY
+----------------------------------------------------------
+• Expected recursion depth ≈ log n
+
+AVERAGE CASE SPACE:
+O(log n)
+
+----------------------------------------------------------
+3) WORST CASE TIME COMPLEXITY
+----------------------------------------------------------
+Condition:
+• Pivot is always smallest or largest element
+• Happens when:
+  - Array already sorted
+  - Reverse sorted
+  - Bad pivot selection
+
+Split:
+n → (n - 1) + 0
+
+Recurrence:
+T(n) = T(n - 1) + n
+
+Expansion:
+T(n) = n + (n - 1) + (n - 2) + ... + 1
+
+Mathematical sum:
+n(n + 1) / 2
+
+WORST CASE TIME:
+O(n²)
+
+----------------------------------------------------------
+WORST CASE SPACE COMPLEXITY
+----------------------------------------------------------
+• Recursion depth = n
+• Each recursive call remains on stack
+
+WORST CASE SPACE:
+O(n)
+
+----------------------------------------------------------
+4) IMPORTANT CLARIFICATION (COMMON CONFUSION)
+----------------------------------------------------------
+Quick Sort is IN-PLACE because:
+• No extra arrays are used
+
+But recursion uses stack memory:
+• Best / Average: O(log n)
+• Worst: O(n)
+
+----------------------------------------------------------
+5) SUMMARY TABLE
+----------------------------------------------------------
+
++----------------+----------------------+----------------------+----------------------+
+| Scenario       | Time Complexity      | Space Complexity     | Reason               |
++----------------+----------------------+----------------------+----------------------+
+| Best Case      | O(n log n)           | O(log n)             | Pivot splits array   |
+|                |                      |                      | into equal halves    |
+|----------------+----------------------+----------------------+----------------------|
+| Average Case   | O(n log n)           | O(log n)             | Random / balanced    |
+|                |                      |                      | partitions on avg    |
+|----------------+----------------------+----------------------+----------------------|
+| Worst Case     | O(n^2)               | O(n)                 | Pivot always smallest|
+|                |                      |                      | or largest element   |
++----------------+----------------------+----------------------+----------------------+
+
+Additional Properties (often asked with the table)
++----------------------+------------------------------+
+| Property             | Quick Sort                   |
++----------------------+------------------------------+
+| In-place             | Yes (no extra arrays)        |
+| Stable               | No                           |
+| Comparison-based     | Yes                          |
+| Recursion used       | Yes                          |
++----------------------+------------------------------+
+
+----------------------------------------------------------
+6) ONE-LINE INTERVIEW SUMMARY
+----------------------------------------------------------
+Quick Sort performs Θ(n) work per partition. Balanced partitions
+give log n recursion depth leading to O(n log n) time, while
+skewed partitions lead to linear depth and O(n²) time. Space
+complexity depends on recursion depth.
+
+==========================================================

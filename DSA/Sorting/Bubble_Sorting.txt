@@ -1,0 +1,199 @@
+╔══════════════════════════════════════════════════════════╗
+║                B U B B L E   S O R T                     ║
+║          Complete Notes (Theory + Code + Analysis)       ║
+╚══════════════════════════════════════════════════════════╝
+
+
+══════════════════════════════════════════════════════════
+0) WHAT IS BUBBLE SORT?
+══════════════════════════════════════════════════════════
+• Bubble Sort is a comparison-based sorting algorithm
+• It repeatedly compares ADJACENT elements
+• Swaps them if they are in the wrong order
+• Larger elements gradually move to the END of the array
+
+Why the name "Bubble"?
+• Large elements rise to the top (end) like air bubbles
+
+
+══════════════════════════════════════════════════════════
+1) CORE IDEA (INTUITION)
+══════════════════════════════════════════════════════════
+• One full pass pushes ONE largest element to its final place
+• After each pass, the unsorted portion shrinks
+• Repeating passes eventually sorts the array completely
+
+
+══════════════════════════════════════════════════════════
+2) ONE PASS WALKTHROUGH
+══════════════════════════════════════════════════════════
+Initial array:
+[ 5, 1, 4, 2, 8 ]
+
+Pass 1:
+(5,1) → swap → [1,5,4,2,8]
+(5,4) → swap → [1,4,5,2,8]
+(5,2) → swap → [1,4,2,5,8]
+(5,8) → no swap
+
+Result after Pass 1:
+• Largest element (8) is in FINAL position
+
+
+══════════════════════════════════════════════════════════
+3) WHY MULTIPLE PASSES?
+══════════════════════════════════════════════════════════
+• Each pass fixes EXACTLY ONE element
+• After k passes → last k elements are sorted
+• Worst case requires (n - 1) passes
+
+
+══════════════════════════════════════════════════════════
+4) BASIC ALGORITHM (PSEUDOCODE)
+══════════════════════════════════════════════════════════
+for i = 0 to n-2
+    for j = 0 to n-i-2
+        if arr[j] > arr[j+1]
+            swap(arr[j], arr[j+1])
+
+
+══════════════════════════════════════════════════════════
+5) OPTIMIZED BUBBLE SORT (IMPORTANT)
+══════════════════════════════════════════════════════════
+Optimization:
+• Track whether any swap happens in a pass
+• If NO swap occurs → array is already sorted
+• Stop immediately (early exit)
+
+This optimization improves BEST CASE performance.
+
+
+══════════════════════════════════════════════════════════
+6) BUBBLE SORT – C++ IMPLEMENTATION
+══════════════════════════════════════════════════════════
+
+#include <iostream>
+#include <vector>
+using namespace std;
+
+void bubbleSort(vector<int>& arr)
+{
+    int n = arr.size();
+    bool swapped;
+
+    for(int i = 0; i < n - 1; i++)
+    {
+        swapped = false;
+
+        for(int j = 0; j < n - i - 1; j++)
+        {
+            if(arr[j] > arr[j + 1])
+            {
+                swap(arr[j], arr[j + 1]);
+                swapped = true;
+            }
+        }
+
+        // Early exit if already sorted
+        if(!swapped)
+            break;
+    }
+}
+
+
+══════════════════════════════════════════════════════════
+7) TIME COMPLEXITY (STEP-BY-STEP)
+══════════════════════════════════════════════════════════
+
+► BEST CASE
+Condition:
+• Array already sorted
+
+Behavior:
+• First pass → no swaps
+• Algorithm terminates early
+
+Time Complexity:
+O(n)
+
+
+► AVERAGE CASE
+Condition:
+• Random input order
+
+Behavior:
+• Nested loops run fully
+• Comparisons = n(n-1)/2
+
+Time Complexity:
+O(n²)
+
+
+► WORST CASE
+Condition:
+• Reverse sorted array
+
+Behavior:
+• Maximum comparisons and swaps
+• Every comparison leads to a swap
+
+Time Complexity:
+O(n²)
+
+
+══════════════════════════════════════════════════════════
+8) SPACE COMPLEXITY
+══════════════════════════════════════════════════════════
+• Sorting is done IN-PLACE
+• Only a few temporary variables are used
+
+Space Complexity:
+O(1)
+
+
+══════════════════════════════════════════════════════════
+9) STABILITY
+══════════════════════════════════════════════════════════
+• Bubble Sort is STABLE
+• Equal elements NEVER change their relative order
+
+
+══════════════════════════════════════════════════════════
+10) SUMMARY TABLE
+══════════════════════════════════════════════════════════
+
++-------------+--------------------+------------------+
+| Case        | Time Complexity    | Space Complexity |
++-------------+--------------------+------------------+
+| Best        | O(n) (optimized)   | O(1)             |
+| Average     | O(n²)              | O(1)             |
+| Worst       | O(n²)              | O(1)             |
++-------------+--------------------+------------------+
+
+
+══════════════════════════════════════════════════════════
+11) WHEN SHOULD YOU USE BUBBLE SORT?
+══════════════════════════════════════════════════════════
+✓ Learning sorting fundamentals
+✓ Understanding swaps and comparisons
+✓ Very small datasets
+✓ Educational / academic purposes
+
+
+══════════════════════════════════════════════════════════
+12) WHEN SHOULD YOU NOT USE IT?
+══════════════════════════════════════════════════════════
+✗ Large datasets
+✗ Performance-critical applications
+✗ Real-world production systems
+
+
+══════════════════════════════════════════════════════════
+13) INTERVIEW ONE-LINER
+══════════════════════════════════════════════════════════
+Bubble Sort repeatedly compares adjacent elements and swaps
+them if required. It is a stable, in-place algorithm with
+O(n²) average and worst-case time complexity and O(n) best
+case when optimized with early exit.
+
+══════════════════════════════════════════════════════════
