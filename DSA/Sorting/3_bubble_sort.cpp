@@ -57,7 +57,7 @@ int main()
 
     bubble_sort::bubble_sort(arr);
 
-    std::cout << "Before Sorting\n";
+    std::cout << "After Sorting\n";
     printVector(arr);
 
     return 0;
