@@ -318,6 +318,17 @@ ll_node* get_middle_node(ll_node* head)
 
     if(fast->next == nullptr)
         return slow->next;
+/*
+    ll_node* fast{head}, *slow{head};
+
+    while(fast && fast->next)
+    {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+
+    return slow;
+*/
 
     return head;
 }
@@ -513,9 +524,271 @@ ll_node* remove_loop(ll_node* head)
     return nullptr;
 }
 
+ll_node* reverse_linked_list(ll_node* head)
+{
+    if(head == nullptr)
+    {
+        std::cout << "***** head is empty *****\n";
+        return head;
+    }
+
+    ll_node* it{head}, *temp{head};
+
+    while(it)
+    {
+        it = it->next;
+        if(it)
+        {
+            temp->next = it->next;
+            it->next = head;
+
+            head = it;
+            it = temp;
+        }
+    }
+
+    return head;
+}
+
+ll_node* get_even_ll(int length)
+{
+    ll_node* head {nullptr};
+    int val{};
+    
+    for(int i{}; i < length; i++)
+    {
+        ll_node* temp { new ll_node{val, nullptr} };
+        temp->val = val;
+        head = insert_at_end(head, temp);
+        val += 2;
+    }
+
+    return head;
+}
+
+ll_node* get_odd_ll(int length)
+{
+    ll_node* head {nullptr};
+    int val{1};
+    
+    for(int i{}; i < length; i++)
+    {
+        ll_node* temp { new ll_node{val, nullptr} };
+        temp->val = val;
+        head = insert_at_end(head, temp);
+        val += 2;
+    }
+
+    return head;
+}
+
+ll_node* merge_two_ll(ll_node* even, ll_node* odd)
+{
+    if(even == nullptr || odd == nullptr)
+    {
+        std::cout << "***** even/odd list is empty *****\n";
+        return nullptr;
+    }
+
+    ll_node* merged{nullptr};
+
+    while(even && odd)
+    {
+        ll_node* temp {even};
+        even = even->next;
+        temp->next = nullptr;
+        merged = insert_at_end(merged, temp);
+
+        temp = odd;
+        odd = odd->next;
+        temp->next = nullptr;
+        merged = insert_at_end(merged, temp); 
+    }
+
+    if(even)
+        merged = insert_at_end(merged, even);
+
+    if(odd)
+        merged = insert_at_end(merged, odd);
+
+    return merged;
+}
+
+bool intersect_ll(ll_node* list1, ll_node* list2, int position)
+{
+    for(; list2->next; list2 = list2->next);
+
+    int i{};
+    for(i; (i < position) && list1; i++, list1 = list1->next);
+
+    if(i == position)
+    {
+        list2->next = list1;
+        return true;
+    }
+
+    return false;
+}
+
+bool check_intersection_exists(ll_node* list1, ll_node* list2)
+{
+    ll_node* indicator_node{nullptr};
+
+    while(true)
+    {
+        if((list1) && (list1->next == nullptr) && (indicator_node == nullptr))
+        {
+            indicator_node = list1;
+            list1 = list1->next;
+        }
+
+        if((list2) && (list2->next == nullptr) && (indicator_node == nullptr))
+        {
+            indicator_node = list2;
+            list2 = list2->next;
+        }
+
+        if( ( list1 && (list1 == indicator_node) ) || ( list2 && (list2 == indicator_node) ) )
+            return true;
+
+        if(!list1 && !list2)
+            return false;
+
+        if(list1)
+            list1 = list1->next;
+        if(list2)
+            list2 = list2->next;
+    }
+}
+
+bool is_palindrome(unsigned int num)
+{
+    unsigned int new_num{}, temp{num};
+
+    for(int i{}; temp; i++)
+    {
+        new_num = (new_num *10) + (temp % 10);
+        temp /= 10;
+    }
+
+    if(new_num == num)
+        return true;
+    else 
+        return false;
+
+}
+
+ll_node* get_palindrome_ll(unsigned long int num)
+{
+    ll_node* res{nullptr};
+
+//    if(is_palindrome(num))
+    {
+       unsigned long int temp{num};
+       while(temp)
+       {
+            ll_node* tmp { new ll_node{static_cast<int>(temp % 10), nullptr} };
+            //res = insert_at_end(res, tmp);
+            res = insert_at_begining(res, tmp);
+            temp /= 10;
+       }
+    }
+//    else
+    {
+//        std::cout << "given number is NOT a palindrome\n";
+    }
+
+    return res;
+}
+
+bool check_palindrome_exists(ll_node* palindrome)
+{
+    if(palindrome == nullptr)
+    {
+        std::cout << "no palindrom linked list exits\n";
+        return false;
+    }
+/*
+    ll_node* fast{palindrome}, *slow{palindrome};
+
+    while(fast && fast->next)
+    {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+*/  
+    ll_node* middle { get_middle_node(palindrome) };
+    if(middle->next == nullptr)
+    {
+        if(palindrome->val == middle->val)
+            return true;
+        else 
+            return false;
+    }
+
+    ll_node* head {middle->next};
+    middle->next = nullptr;
+    
+    head = reverse_linked_list(head);
+    middle->next = head;
+    print_linked_list(palindrome);
+
+    ll_node* it1{palindrome}, *it2{middle->next};
+
+    while( (it1 != middle) && (it2) )
+    {
+        if(it1->val != it2->val)
+            return false;
+
+        it1 = it1->next;
+        it2 = it2->next;
+    }
+
+    if(it2)
+    {
+        if(it1->val != it2->val)
+            return false;
+    }
+/*
+    ll_node* head {slow->next}, *it{slow->next}, *tmp{nullptr};
+    while(it)
+    {
+        tmp = it;
+        it = it->next;
+        
+        if(it)
+        {
+            tmp->next = it->next;
+            it->next = head;
+            head = it;
+            it = tmp; 
+        }
+    }
+
+    slow->next = head;
+    print_linked_list(palindrome);
+
+    it = palindrome;
+    tmp = slow->next;
+
+    while( (it != slow) && (tmp) )
+    {
+        if(it->val != tmp->val)
+            return false;
+
+        it = it->next;
+        tmp = tmp->next;
+    }
+*/  
+    return true;
+}
+
 int main(int argc, char* argv[])
 {
     ll_node *head{ load_linked_list(std::stoi(std::string{argv[1]})) };
+    ll_node* list1{nullptr}, *list2{nullptr};
+    ll_node* palindrome{nullptr};
+    int list1_length{}, list2_length{};
 
     if(head)
         print_linked_list(head);
@@ -540,6 +813,14 @@ int main(int argc, char* argv[])
             std::cout << " 11 - Loop starts at position\n";
             std::cout << " 12 - Loop starts at node\n";
             std::cout << " 13 - Remove loop\n";
+            std::cout << " 14 - Reverse linked list\n";
+            std::cout << " 15 - Merge two linked lists\n";
+            std::cout << " 16 - Create two linked lists for intersection\n";
+            std::cout << " 17 - Intersect two linked lists\n";
+            std::cout << " 18 - Check if Intersection exists between the two linked lists\n";
+            std::cout << " 19 - Generate palindrome linked list\n";
+            std::cout << " 20 - Check the palindrome linked list is really palindrme or not\n";
+            std::cout << " 100 - quit\n";
             std::cout << "=====================================================\n";
 
             int input{};
@@ -553,6 +834,12 @@ int main(int argc, char* argv[])
 
             switch(input)
             {
+                case 100:
+                    {
+                        exit = true;
+                        break;
+                    }
+
                 case 0:
                     {
                         print_linked_list(head);
@@ -714,6 +1001,155 @@ int main(int argc, char* argv[])
                         break;
                     }
 
+                case 14:
+                    {
+                        head = reverse_linked_list(head); 
+                        break;
+                    }
+
+                case 15:
+                    {
+                        ll_node* even{nullptr}, *odd{nullptr};
+                        int even_length{}, odd_length{};
+
+                        std::cout << "Enter length of even linked list : ";
+                        std::cin >> even_length;
+
+                        if(std::cin)
+                        {
+                            std::cout << "Enter length of odd linked list : ";
+                            std::cin >> odd_length;
+
+                            if(std::cin.fail())
+                            {
+                                input_failed = true;
+                                goto CLEAR;
+                            }
+                        }
+                        else 
+                        {
+                            input_failed = true;
+                            goto CLEAR;
+                        }
+
+                        even = get_even_ll(even_length);
+                        odd = get_odd_ll(odd_length);
+
+                        std::cout << "\nEven ll : \n";
+                        print_linked_list(even);
+
+                        std::cout << "\nOdd ll : \n";
+                        print_linked_list(odd);
+                        
+                        ll_node* merged { merge_two_ll(even, odd) };
+                        std::cout << "\nMerged linked list : \n";
+                        print_linked_list(merged);
+                        
+                        free_linked_list(merged);
+                        break;
+                    }
+
+                case 16:
+                    {
+                        free_linked_list(list1);
+                        free_linked_list(list2);
+
+                        std::cout << "Enter list1 length : ";
+                        std::cin >> list1_length;
+                        std::cout << "Enter list2 length : ";
+                        std::cin >> list2_length;
+
+                        list1 = load_linked_list(list1_length);    
+                        list2 = load_linked_list(list2_length);    
+
+                        std::cout << "\nlist1 ll : \n";
+                        print_linked_list(list1);
+
+                        std::cout << "\nlist2 ll : \n";
+                        print_linked_list(list2);
+
+                        break;
+                    }
+                
+                case 17:
+                    {
+                        if((list1 == nullptr) || (list2 == nullptr))
+                        {
+                            std::cout << "lists do not exist\n";
+                        }
+                        else 
+                        {
+                            int position{};
+                            std::cout << "Enter the position of list1 at which list2 intersects : ";
+                            std::cin >> position;
+                        
+                            while(position >= list1_length)
+                            {
+                                std::cout << "***** position should be less than list1 length *****\n";
+                                std::cout << "Enter the position of list1 at which list2 intersects : ";
+                                std::cin >> position;
+                            }
+
+                            if(intersect_ll(list1, list2, position))
+                            {
+                                std::cout << "\nlist2 has beed intersected to list1 at position " << position << "\n";
+                                std::cout << "\nlist1 ll : \n";
+                                print_linked_list(list1);
+
+                                std::cout << "\nlist2 ll : \n";
+                                print_linked_list(list2);
+                            }
+                            else 
+                                std::cout << "\n***** intersection failed *****\n";
+                        }
+
+                        break;
+                    }
+                
+                case 18:
+                    {
+                        if(check_intersection_exists(list1, list2))
+                        {
+                            std::cout << "INTERSECTION FOUND\n";
+                        }
+                        else 
+                            std::cout << "***** NO INTERSECTION DETECTED *****\n";
+                        
+                        break;
+                    }
+                
+                case 19:
+                    {
+                        unsigned long int palindrome_number{};
+                        std::cout << "Enter palindrome number : ";
+                        std::cin >> palindrome_number;
+
+                        free_linked_list(palindrome);
+                        palindrome = get_palindrome_ll(palindrome_number);
+
+                        if(palindrome)
+                        {
+                            std::cout << "Palindrome linked list created\n";
+                            print_linked_list(palindrome);
+                        }
+                        else 
+                            std::cout << "***** Error in creating palindrome *****\n";
+
+                        break;
+                    }
+                
+                case 20:
+                    {
+                        if(check_palindrome_exists(palindrome))
+                        {
+                            std::cout << "Palindrome linked list is really Palindrome\n";
+                        }
+                        else
+                            std::cout << "***** Palindrome NOT FOUND *****\n";
+
+                        break;
+                    }
+
                 default:
                     std::cout << "Invalid choice\n";
                     break;
@@ -734,5 +1170,7 @@ CLEAR:
         head = nullptr;
     }
 
+    free_linked_list(list1);
+    free_linked_list(list2);
     return 0;
 }
