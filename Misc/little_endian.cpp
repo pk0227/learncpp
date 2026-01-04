@@ -4,7 +4,7 @@
 int main()
 {
     int endian {0x12345678};
-    char *ptr {reinterpret_cast<char *>(&endian)};
+    unsigned char *ptr {reinterpret_cast<unsigned char *>(&endian)};
     
     std::cout << std::hex << endian << "\n";
     std::cout << static_cast<int>(ptr[0]) << "\n";
