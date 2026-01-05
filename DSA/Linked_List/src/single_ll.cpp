@@ -783,6 +783,64 @@ bool check_palindrome_exists(ll_node* palindrome)
     return true;
 }
 
+ll_node* rotate_right(ll_node* head, int num)
+{
+    if(head == nullptr)
+    {
+        std::cout << "***** head is empty *****\n";
+        return head;
+    }
+
+    ll_node* it{head};
+
+    for(int i{}; i < num; i++)
+    {
+        ll_node* prev{nullptr};
+        while(it->next)
+        {
+            prev = it;
+            it = it->next;
+        }
+
+        if(prev)
+        {
+            prev->next = nullptr;
+            it->next = head;
+            head = it;
+        }    
+    }
+
+    return head;
+}
+
+ll_node* rotate_left(ll_node* head, int num)
+{
+    if(head == nullptr)
+    {
+        std::cout << "***** head is empty *****\n";
+        return head;
+    }
+
+    if(head->next == nullptr)
+        return head;
+
+    for(int i{}; i < num; i++)
+    {
+        ll_node* tmp {head};
+        head = head->next;
+        tmp->next = nullptr;
+
+        ll_node* it{head};
+
+        while(it->next)
+            it = it->next;
+
+        it->next = tmp;
+    }
+
+    return head;
+}
+
 int main(int argc, char* argv[])
 {
     ll_node *head{ load_linked_list(std::stoi(std::string{argv[1]})) };
@@ -820,6 +878,8 @@ int main(int argc, char* argv[])
             std::cout << " 18 - Check if Intersection exists between the two linked lists\n";
             std::cout << " 19 - Generate palindrome linked list\n";
             std::cout << " 20 - Check the palindrome linked list is really palindrme or not\n";
+            std::cout << " 21 - Rotate right by k\n";
+            std::cout << " 22 - Rotate left by k\n";
             std::cout << " 100 - quit\n";
             std::cout << "=====================================================\n";
 
@@ -1146,6 +1206,28 @@ int main(int argc, char* argv[])
                         }
                         else
                             std::cout << "***** Palindrome NOT FOUND *****\n";
+
+                        break;
+                    }
+
+                case 21:
+                    {
+                        int num{};
+                        std::cout << "The number of times you want to rotate linked list to right : ";
+                        std::cin >> num;
+                        head = rotate_right(head, num);
+                        print_linked_list(head);
+
+                        break;
+                    }
+
+                case 22:
+                    {
+                        int num{};
+                        std::cout << "The number of times you want to rotate linked list to left : ";
+                        std::cin >> num;
+                        head = rotate_left(head, num);
+                        print_linked_list(head);
 
                         break;
                     }
