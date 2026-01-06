@@ -309,6 +309,148 @@ Node* reverse_ll(Node *head)
     return head;
 }
 
+bool make_loop_at_given_index(Node *head, int position)
+{
+    if(!is_list_existed(head))
+        return false;
+
+    Node *it{head};
+    int i{};
+    for(i; (i < position) && it; i++)
+        it = it->next;
+
+    if(it == nullptr)
+    {
+        std::cout << "\n\n***** Invalid position to make loop *****\n\n";
+        return false;
+    }
+    else if(it && (i == position))
+    {
+        Node *tmp {it};
+
+        for(; it->next; it = it->next);
+
+        it->next = tmp;
+    }
+
+    return true;
+}
+
+int find_loop_at_index(Node *head)
+{
+    if(!is_list_existed(head) || (head->next == nullptr))
+        return -1;
+
+    if(head->next == head)
+        return 0;
+    
+    Node *fast{head}, *slow{head};
+
+    while(fast && fast->next)
+    {
+        slow = slow->next;
+        fast = fast->next->next;
+
+        if(slow == fast)
+            break;
+    }
+
+    if(slow && fast && (slow == fast))
+    {
+        slow = head;
+        int position{};
+
+        while(slow != fast)
+        {
+            slow = slow->next;
+            fast = fast->next;
+            position++;
+        }
+
+        return position;
+    }
+
+    return -1;
+}
+
+Node* find_loop_at_node(Node *head)
+{
+    if(!is_list_existed(head) || (head->next == nullptr) || (head->next == head))
+        return head;
+
+    Node *fast{head}, *slow{head};
+
+    while(fast && fast->next)
+    {
+        slow = slow->next;
+        fast = fast->next->next;
+
+        if(slow == fast)
+            break;
+    }
+
+    if(slow && fast && (slow == fast))
+    {
+        slow = head;
+        while(slow != fast)
+        {
+            slow = slow->next;
+            fast = fast->next;
+        }
+        return slow;
+    }
+    
+    return nullptr;
+}
+
+Node* remove_loop_ll(Node *head)
+{
+    if(!is_list_existed(head) || (head->next == nullptr))
+        return head;
+
+    if(head->next == head)
+    {
+        head->next = nullptr;
+        return head;
+    }
+
+    Node *fast{head}, *slow{head};
+    while(fast && fast->next)
+    {
+        slow = slow->next;
+        fast = fast->next->next;
+
+        if(slow == fast)
+            break;
+    }
+
+    if(slow && fast && (slow == fast))
+    {
+        slow = head;
+        Node *prev{nullptr};
+
+        while(slow != fast)
+        {
+            slow = slow->next;
+            prev = fast;
+            fast = fast->next;
+        }
+
+        if(prev)
+            prev->next = nullptr;
+        else 
+        {
+            fast = head;
+            fast = fast->next;
+            for(; fast->next != head; fast = fast->next);
+
+            fast->next = nullptr;
+        }
+    }
+
+    return head;
+}
+
 int main(int argc, char* argv[])
 {
     bool exit {false}, input_failed{false};
@@ -332,6 +474,9 @@ int main(int argc, char* argv[])
         std::cout << " 7 - print_reverse\n";
         std::cout << " 8 - find_middle_ll\n";
         std::cout << " 9 - reverse_ll\n";
+        std::cout << " 10 - make_loop_at_given_index\n";
+        std::cout << " 11 - find_loop_at_index/node\n";
+        std::cout << " 12 - remove_loop_ll\n";
         std::cout << " 100 - quit\n";
         std::cout << "==================================================================\n";
 
@@ -413,6 +558,36 @@ int main(int argc, char* argv[])
             case 9:
                 {
                     head = reverse_ll(head);
+                    print_linked_list(head);
+                    break;
+                }
+            case 10:
+                {
+
+                    int position { get_valid_value("Enter position at which loop to be made") };
+                    if(make_loop_at_given_index(head, position))
+                        std::cout << "Loop has been made at " << position << "\n";
+                    else 
+                        std::cout << "***** Loop failed *****\n";
+
+                    break;
+                }
+
+            case 11:
+                {
+                    int index { find_loop_at_index(head) };
+                    Node *node { find_loop_at_node(head) };
+                    if( (index == -1) || (node == nullptr) )
+                        std::cout << "\n\n***** Loop doesn't exist *****\n\n";
+                    else 
+                        std::cout << "Loop has been found at " << index << " and value " << node->value << "\n";
+
+                    break;
+                }
+            
+            case 12:
+                {
+                    head = remove_loop_ll(head);
                     print_linked_list(head);
                     break;
                 }
