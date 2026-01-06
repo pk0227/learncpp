@@ -1,8 +1,10 @@
+#include <ctime>
 #include <ios>
 #include <iostream>
 #include <limits>
 #include <random>
 #include <string>
+#include <string_view>
 
 struct Node 
 {
@@ -46,6 +48,8 @@ void print_reverse(Node *head)
             std::cout << head->value << " -> ";
         else 
             std::cout << head->value;
+
+        head = head->prev;
     }
     std::cout << "\n";
 }
@@ -79,11 +83,11 @@ bool free_linked_list(Node *head)
         {
             Node *tmp = head;
             head = head->next;
-            head->prev = nullptr;
+            if(head)
+                head->prev = nullptr;
 
             delete tmp;
         }
-
         return true;
     }
     else 
@@ -102,11 +106,205 @@ Node* load_linked_list(int length)
     {
         int value { dist(gen) };
         Node *tmp { new Node{ value, nullptr, nullptr } };
-        head = add_at_begin(head, tmp);
+        //head = add_at_begin(head, tmp);
+        head = add_at_end(head, tmp);
         std::cout << value << " ";
     }
 
     std::cout << "\n";
+
+    return head;
+}
+
+int get_valid_value(const std::string_view sv)
+{
+    int value{};
+
+    while(true)
+    {
+        std::cout << sv << " : ";
+        std::cin >> value;
+
+        if(std::cin.fail())
+        {
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
+        }
+        break;
+    }
+
+    return value;
+}
+
+bool is_list_existed(Node *head)
+{
+    if(head)
+        return true;
+    else 
+    {
+        std::cout << "List doesn't exist\n";
+        return false;        
+    }
+}
+
+Node* add_at_position(Node *head, Node *tmp, int position)
+{
+    if(!is_list_existed(head))
+        return head;
+
+    Node *it {head}, *prev{nullptr};
+    int i{};
+
+    for(i; (i < position) && it; i++)
+    {
+        prev = it;
+        it = it->next;
+    }
+
+    if(!position && !prev)
+    {
+        tmp->next = head;
+        head->prev = tmp;
+        head = tmp;
+    }
+    else if(it)
+    {
+        prev->next = tmp;
+        tmp->prev = prev;
+        tmp->next = it;
+        it->prev = tmp;
+    }
+    else if( (i == position) && !it )
+    {
+        prev->next = tmp;
+        tmp->prev = prev;
+    }
+    else 
+        std::cout << "\n\n***** Invalid Position *****\n\n";
+
+    return head;
+}
+
+Node* delete_at_begin(Node *head)
+{
+    if(!is_list_existed(head))
+        return head;
+
+    Node *tmp {head};
+    head = head->next;
+    if(head)
+        head->prev = nullptr;
+
+    delete tmp;
+
+    return head;
+}
+
+Node* delete_at_end(Node *head)
+{
+    if(!is_list_existed(head))
+        return head;
+    
+    Node *it{head};
+    for(; it->next; it = it->next);
+
+    if(it->prev)
+    {
+        it->prev->next = nullptr;
+        delete it;
+    }
+    else if(it->prev == nullptr)
+    {
+        head = it->next;
+        delete it;
+    }
+
+    return head;
+}
+
+Node* delete_at_position(Node *head, int position)
+{
+    if(!is_list_existed(head))
+        return head;
+
+    Node *it{head};
+    for(int i{}; (i < position) && it; i++)
+    {
+        it = it->next;
+    }
+
+    if(it == nullptr)
+    {
+        std::cout << "\n\n***** Invalid position to delete node *****\n\n";
+    }
+    else 
+    {
+        if(it->prev)
+        {
+            it->prev->next = it->next;
+            if(it->next)
+                it->next->prev = it->prev;
+        }
+        else 
+            head = it->prev;
+
+        delete it;
+    }
+        
+    return head;
+}
+
+Node *find_middle_ll(Node *head)
+{
+    if(!is_list_existed(head) || (head->next == nullptr))
+        return head;
+
+    Node *fast{head}, *slow{nullptr};
+
+    while(fast && fast->next)
+    {
+        if(slow)
+            slow = slow->next;
+        else 
+            slow = fast;
+
+        fast = fast->next->next;
+    }
+
+    if(fast == nullptr)
+        return slow;
+    else if(fast->next == nullptr)
+        return slow->next;
+
+    return nullptr;
+}
+
+Node* reverse_ll(Node *head)
+{
+    if(!is_list_existed(head))
+        return head;
+
+    Node *it{head};
+    while(it)
+    {
+        Node *tmp {it};
+        it = it->next;
+
+        if(it)
+        {
+            tmp->next = it->next;
+            if(it->next)
+                it->next->prev = tmp;
+                
+            it->next = head;
+            it->prev = nullptr;
+            head->prev = it;
+            head = it;
+
+            it = tmp;
+        }
+    }
 
     return head;
 }
@@ -116,7 +314,7 @@ int main(int argc, char* argv[])
     bool exit {false}, input_failed{false};
     int length { std::stoi( std::string{ argv[1] } ) };
     Node *head { nullptr };
-    //head = load_linked_list(length);
+    head = load_linked_list(length);
 
     if(head)
         print_linked_list(head);
@@ -128,17 +326,16 @@ int main(int argc, char* argv[])
         std::cout << " 1 - add_at_begin\n";
         std::cout << " 2 - add_at_end\n";
         std::cout << " 3 - add_at_position\n";
+        std::cout << " 4 - delete_at_begin\n";
+        std::cout << " 5 - delete_at_end\n";
+        std::cout << " 6 - delete_at_position\n";
         std::cout << " 7 - print_reverse\n";
+        std::cout << " 8 - find_middle_ll\n";
+        std::cout << " 9 - reverse_ll\n";
+        std::cout << " 100 - quit\n";
         std::cout << "==================================================================\n";
 
-        int choice{};
-        std::cout << "Enter your choice : ";
-        std::cin >> choice;
-        if(std::cin.fail())
-        {
-            input_failed = true;
-            goto CLEAR;
-        }
+        int choice { get_valid_value("Enter your choice") };
         
         switch(choice)
         {
@@ -150,57 +347,85 @@ int main(int argc, char* argv[])
             
             case 1:
                 {
-                    int value{};
-                    while(true)
-                    {
-                        std::cout << "Enter value to be added : ";
-                        std::cin >> value;
-                        if(std::cin.fail())
-                        {
-                            std::cin.clear();
-                            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                            continue;
-                        }
-                        break;
-                    }
+                    int value { get_valid_value("Enter value to be added") };
 
                     Node *tmp { new Node{ value, nullptr, nullptr } };
                     head = add_at_begin(head, tmp);
+                    print_linked_list(head);
                     break;
                 }
 
             case 2:
                 {
-                    int value{};
-                    while(true)
-                    {
-                        std::cout << "Enter value to be added : ";
-                        std::cin >> value;
-                        if(std::cin.fail())
-                        {
-                            std::cin.clear();
-                            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                            continue;
-                        }
-                        break;
-                    }
+                    int value { get_valid_value("Enter value to be added") };
 
                     Node *tmp { new Node{ value, nullptr, nullptr } };
                     head = add_at_end(head, tmp);
+                    print_linked_list(head);
+                    break;
+                }
+            case 3:
+                {
+                    int value { get_valid_value("Enter value to be added") };
+                    Node *tmp { new Node{value, nullptr, nullptr} };
+
+                    int position { get_valid_value("Enter position at which the new node to be added") };
+
+                    head = add_at_position(head, tmp, position);
+                    print_linked_list(head);
+                    break;
+                }
+            case 4:
+                {
+                    head = delete_at_begin(head);
+                    print_linked_list(head);
                     break;
                 }
 
+            case 5:
+                {
+                    head = delete_at_end(head);
+                    print_linked_list(head);
+                    break;
+                }
+
+            case 6:
+                {
+                    int position { get_valid_value("Enter position at which the new node to be deleted") };
+                    head = delete_at_position(head, position);
+                    print_linked_list(head);
+                    break;
+                }
+
+            case 7:
+                {
+                    print_reverse(head);
+                    break;
+                }
+            case 8:
+                {
+                    Node *middle { find_middle_ll(head) };
+                    if(middle)
+                        std::cout << "Middle Node : " << middle->value << "\n";
+                    break;
+                }
+
+            case 9:
+                {
+                    head = reverse_ll(head);
+                    print_linked_list(head);
+                    break;
+                }
+
+            case 100:
+                exit = true;
+                break;
+
             default:
-                std::cout << "Invalid Choice\n";
+                std::cout << "\n\nInvalid Choice\n\n";
                 break;
         }
 
-CLEAR:
-        if(input_failed)
-        {
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-        }
     }
 
     free_linked_list(head);
