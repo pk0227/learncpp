@@ -1,15 +1,144 @@
 #include <array>
-#include <chrono>
 #include <cstddef>
-#include <filesystem>
+#include <format>
 #include <iostream>
 #include <cstring>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <random>
 #include <sstream>
-#include <thread>
+#include <string>
 #include <vector>
+
+namespace sort 
+{
+    template <typename T, std::size_t N>
+    void insertion_sort(std::array<T, N>& arr)
+    {
+        std::ptrdiff_t size { std::ssize(arr) };
+        for(auto i{1Z}; i < size; i++)
+        {
+            auto key { arr[i] };
+            std::ptrdiff_t j{i-1};
+
+            while(j>=0 && (arr[j] >= key))
+            {
+                arr[j+1] = arr[j];
+                j--;
+            }
+
+            arr[j+1] = key;
+        }
+    }
+
+    template <typename T, std::size_t N>
+    void bubble_sort(std::array<T, N>& arr)
+    {
+        std::ptrdiff_t size { std::ssize(arr) };
+
+        for(auto i{0Z}; i < size-1; i++)
+        {
+            bool swapped{};
+            for(auto j{0Z}; j < size-1-i; j++)
+            {
+                if(arr[j+1] < arr[j])
+                {
+                    std::swap(arr[j+1], arr[j]);
+                    swapped = true;
+                }
+            }
+
+            if(!swapped)
+                break;
+        }
+    }
+
+    template <typename T, std::size_t N>
+    void selection_sort(std::array<T, N>& arr)
+    {
+        std::ptrdiff_t size { std::ssize(arr) };
+
+        for(auto i{0Z}; i < size-1; i++)
+        {
+            auto min_index{i};
+            for(auto j{i+1}; j < size; j++)
+            {
+                if(arr[j] < arr[min_index])
+                    min_index = j;
+            }
+            std::swap(arr[i], arr[min_index]);
+        }
+    }
+
+    template <typename T, std::size_t N>
+    void merge(std::array<T, N>& arr, std::ptrdiff_t low, std::ptrdiff_t mid, std::ptrdiff_t high)
+    {
+        std::ptrdiff_t left {low};
+        std::ptrdiff_t right {mid+1};
+       
+        T temp[high-low+1];
+        std::ptrdiff_t index{};
+
+        while((left <= mid) && (right <= high))
+        {
+            if(arr[left] <= arr[right])
+                temp[index++] = arr[left++];
+            else 
+                temp[index++] = arr[right++];
+        }
+
+        while(left <= mid)
+            temp[index++] = arr[left++];
+
+        while(right <= high)
+            temp[index++] = arr[right++];
+        
+        for(index = low; index <= high; index++)
+            arr[index] = temp[index-low];
+    }
+
+    template <typename T, std::size_t N>
+    void merge_sort(std::array<T, N>& arr, std::ptrdiff_t low, std::ptrdiff_t high)
+    {
+        if(low < high)
+        {
+            std::ptrdiff_t mid { (low+high)/2 };
+            merge_sort(arr, low, mid);
+            merge_sort(arr, mid+1, high);
+            merge(arr, low, mid, high);
+        }
+    }
+
+    template <typename T, std::size_t N>
+    std::ptrdiff_t partition(std::array<T, N>& arr, std::ptrdiff_t low, std::ptrdiff_t high)
+    {
+        T pivot { arr[high] };
+        std::ptrdiff_t pi { low-1 };
+
+        for(auto i{low}; i < high; i++)     // i should start from low, not from 0
+        {
+            if(arr[i] < pivot)
+            {
+                pi++;
+                std::swap(arr[i], arr[pi]);
+            }
+        }
+        std::swap(arr[pi+1], arr[high]);
+        return pi+1;
+    }
+
+    template <typename T, std::size_t N>
+    void quick_sort(std::array<T, N>& arr, std::ptrdiff_t low, std::ptrdiff_t high)
+    {
+        if(low < high)
+        {
+            std::ptrdiff_t pivot { partition(arr, low, high) };
+            quick_sort(arr, low, pivot-1);
+            quick_sort(arr, pivot+1, high);
+        }
+    }
+}
 
 template <typename T>
 class user_stack 
@@ -170,20 +299,22 @@ public:
 
     bool push(T &in)
     {
-        if(m_min.is_empty())
-            m_min.push(in);
-        else 
+        if(!m_main.is_full() && !m_min.is_full())
         {
-            T out{};
-            m_min.peek(out);
-            if(in < out)
+            if(m_min.is_empty())
                 m_min.push(in);
-        }
-        
-        if(!m_main.is_full())
-        {
+            else 
+            {
+                T out{};
+                m_min.peek(out);
+                if(in < out)
+                {
+                    m_min.push(in);
+                }
+            }
+
             m_main.push(in);
-            return true;        
+            return true;
         }
         else 
             return false;
@@ -193,7 +324,7 @@ public:
     {
        if(!m_main.is_empty())
        {
-           T out{}, min_out{};
+           T min_out{};
            m_main.pop(out);
 
            m_min.peek(min_out);
@@ -237,7 +368,7 @@ void print_array(const std::array<T, N>& arr)
             ss << arr[i] << " ]";
     }
 
-    std::cout << ss.str() << "\n";
+    std::cout << std::format("{:<50}", ss.str());
 }
 
 template <typename T, std::size_t N>
@@ -257,49 +388,234 @@ std::array<T, N> get_arry()
     return arr;
 }
 
-int main(int argc, char* argv[])
+int get_int_value_from_user(const char* str)
 {
-    if(argc == 2)
-        validate_parentheses(argv[1]);
-
-    std::array<int, 10> arr{ get_arry<int, 10>() }, result{};
-    
-    std::cout << "Before NGE...\n";
-    print_array(arr);
-
-    next_greater_element(arr, result);
-
-    std::cout << "After NGE...\n";
-    print_array(result);
-
-    min_stack<int, 10> ms{};
-
-    for(auto i{0Z}; ms.push(arr[i]); i++);
-
-
-    // below logic has error, not working properly, check it.
+    int input{};
     while(true)
     {
-        int pop_out{}, min_out{};
-        bool pop_flag{}, min_flag{};
-
-        pop_flag = ms.pop(pop_out);
-        min_flag = ms.getMin(min_out);
-
-        if(!pop_flag && !min_flag)
-            break;
-        else 
+        std::cout << str << " : ";
+        std::cin >> input;
+        if(std::cin.fail())
         {
-            if(pop_out == min_out)
-                std::cout << pop_out << " - " << min_out << "\n";
-            else 
-                std::cout << pop_out << " - \n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
+        }
+        break;
+    }
+
+    return input;
+}
+
+template <typename T, std::size_t M, std::size_t N>
+auto merge_two_sorted_arrays(std::array<T, M>& arr1, std::array<T, N>& arr2)
+{
+    //user_stack<T> us(M);
+    std::ptrdiff_t i{}, j{}, k{};
+
+    T result[M+N]{};
+
+    while((i < M) && (j < N))
+    {
+        if(arr1[i] <= arr2[j])
+        {
+            result[k++] = arr1[i++];
+            //us.push(arr1[i++]);
+        }
+        else
+        {
+            result[k++] = arr2[j++];
+            //us.push(arr2[j++]);
+        }
+/*
+        if(!us.is_empty())
+        {
+            T out{};
+            us.pop(out);
+            result[k++] = out;
+        }
+*/
+    }
+
+    while(i < M)
+        result[k++] = arr1[i++];
+
+    while(j < N)
+        result[k++] = arr2[j++];
+
+    for(const auto& el : result)
+        std::cout << el << " ";
+    std::cout << "\n";
+
+    return true;
+}
+
+int main(int argc, char* argv[])
+{
+    std::cout << "=======================================================\n";
+    std::cout << "1 - Validate Parentheses\n";
+    std::cout << "2 - Next Greater Element\n";
+    std::cout << "3 - Min Stack\n";
+    std::cout << "4 - Merge two sorted arays in result array\n";
+    std::cout << "100 - Exit\n\n\n";
+
+    bool exit{};
+
+    while(!exit)
+    {
+        int input {get_int_value_from_user("Enter input")};
+        std::cout << "\n";
+        switch(input)
+        {
+            case 1:
+                {
+                    if(argc == 2)
+                        validate_parentheses(argv[1]);
+                
+                    break;
+                }
+
+            case 2:
+                {
+                    std::array<int, 10> arr{ get_arry<int, 10>() }, result{};
+
+                    std::cout << "Before NGE...\n";
+                    print_array(arr);
+                    std::cout << "\n";
+
+                    next_greater_element(arr, result);
+
+                    std::cout << "After NGE...\n";
+
+                    break;
+                }
+
+            case 3:
+                {
+                    std::array<int, 10> arr{ get_arry<int, 10>() };
+                    print_array(arr);
+                    std::cout << "\n";
+
+                    min_stack<int, 10> ms{};
+
+                    for(auto i{0Z}; ms.push(arr[i]); i++);
+
+                    int out{};
+                    ms.getMin(out);
+                    std::cout << "getMin : " << out << "\n";
+
+                    int pop_out{}, min_out{};
+                    bool pop_flag{}, min_flag{};
+
+                    while(true)
+                    {
+                        min_flag = ms.getMin(min_out);
+                        pop_flag = ms.pop(pop_out);
+
+                        if(min_flag && pop_flag)
+                        {
+                            if(pop_out == min_out)
+                                std::cout << pop_out << " - " << min_out << "\n";
+                            else 
+                                std::cout << pop_out << " - \n";
+
+                        }
+                        else 
+                            break;
+                    }
+
+                    break;
+                }
+
+            case 4:
+                {
+                    /*
+                    std::array<int, 10> arr{ get_arry<int, 10>() }, result{};
+                    
+                    result = arr;
+                    std::cout << "Quick Sorted Array :\n";
+                    print_array(result);
+                    sort::quick_sort(result, 0, std::ssize(result)-1);
+                    std::cout << "  =>  ";
+                    print_array(result);
+                    std::cout << "\n";
+
+                    std::cout << "==========================================================\n";
+
+                    result = arr;
+                    std::cout << "Merge Sorted Array :\n";
+                    print_array(result);
+                    sort::merge_sort(result, 0, std::ssize(result)-1);
+                    std::cout << "  =>  ";
+                    print_array(result);
+                    std::cout << "\n";
+
+                    std::cout << "==========================================================\n";
+
+                    result = arr;
+                    std::cout << "Bubble Sorted Array :\n";
+                    print_array(result);
+                    sort::bubble_sort(result);
+                    std::cout << "  =>  ";
+                    print_array(result);
+                    std::cout << "\n";
+
+                    std::cout << "==========================================================\n";
+
+                    result = arr;
+                    std::cout << "Selection Sorted Array :\n";
+                    print_array(result);
+                    sort::selection_sort(result);
+                    std::cout << "  =>  ";
+                    print_array(result);
+                    std::cout << "\n";
+
+                    std::cout << "==========================================================\n";
+
+                    result = arr;
+                    std::cout << "Insertion Sorted Array :\n";
+                    print_array(result);
+                    sort::insertion_sort(result);
+                    std::cout << "  =>  ";
+                    print_array(result);
+                    std::cout << "\n";
+
+                    std::cout << "==========================================================\n";
+                    */
+
+                    std::array<int, 10> arr1{ get_arry<int, 10>() };
+                    std::array<int, 5> arr2{ get_arry<int, 5>() };
+                    
+                    print_array(arr1);
+                    std::cout << "  =>  ";
+                    sort::insertion_sort(arr1);
+                    print_array(arr1);
+                    std::cout << "\n";
+
+                    print_array(arr2);
+                    std::cout << "  =>  ";
+                    sort::selection_sort(arr2);
+                    print_array(arr2);
+                    std::cout << "\n";
+
+                    auto result { merge_two_sorted_arrays(arr1, arr2) };
+
+                    break;
+                }
+
+            case 100:
+                {
+                    exit = true;
+                    break;
+                }
+
+            default:
+                {
+                    std::cout << "Invalid Input\n";
+                    break;
+                }
         }
 
-        std::cout << "pop_flag : " << pop_flag << "\n";
-        std::cout << "min_flag : " << min_flag << "\n";
-
-        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     return 0;
