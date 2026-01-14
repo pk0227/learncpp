@@ -5,7 +5,6 @@
  * deque_examples Run: ./deque_examples
  */
 
-#include <algorithm>
 #include <deque>
 #include <iostream>
 #include <vector>
@@ -95,10 +94,10 @@ int main() {
 
     for (int x : data) {
       window.push_back(x);
-      if (window.size() > k) {
+      if (window.size() > static_cast<size_t>(k)) {
         window.pop_front(); // O(1) - efficient!
       }
-      if (window.size() == k) {
+      if (window.size() == static_cast<size_t>(k)) {
         std::cout << "     [";
         for (size_t i = 0; i < window.size(); ++i) {
           std::cout << window[i];

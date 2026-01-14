@@ -65,7 +65,7 @@ public:
     }
 
     // Capacity check - evict LRU item (back of list)
-    if (cache.size() == capacity) {
+    if (cache.size() == static_cast<size_t>(capacity)) {
       auto lru = items.back();
       cache.erase(lru.first);
       items.pop_back();
@@ -260,7 +260,7 @@ public:
     }
 
     // Evict if full
-    if (cache.size() == capacity) {
+    if (cache.size() == static_cast<size_t>(capacity)) {
       // Find LRU (smallest timestamp)
       auto lru = std::min_element(cache.begin(), cache.end(),
                                   [](const auto &a, const auto &b) {

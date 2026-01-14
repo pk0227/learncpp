@@ -178,7 +178,7 @@ int main() {
 
     for (int num : nums) {
       pq.push(num);
-      if (pq.size() > k) {
+      if (pq.size() > static_cast<size_t>(k)) {
         pq.pop(); // Remove smallest
       }
     }
@@ -217,7 +217,7 @@ int main() {
       std::cout << val << " ";
 
       // Add next element from same array
-      if (elem_idx + 1 < arrays[arr_idx].size()) {
+      if (static_cast<size_t>(elem_idx + 1) < arrays[arr_idx].size()) {
         pq.push({arrays[arr_idx][elem_idx + 1], arr_idx, elem_idx + 1});
       }
     }

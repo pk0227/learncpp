@@ -36,16 +36,16 @@ public:
   std::vector<int> twoSum(std::vector<int> &nums, int target) {
     std::unordered_map<int, int> seen; // value -> index
 
-    for (int i = 0; i < nums.size(); ++i) {
+    for (size_t i = 0; i < nums.size(); ++i) {
       int complement = target - nums[i];
 
       // Check if complement exists
       if (seen.find(complement) != seen.end()) {
-        return {seen[complement], i};
+        return {seen[complement], static_cast<int>(i)};
       }
 
       // Store current number
-      seen[nums[i]] = i;
+      seen[nums[i]] = static_cast<int>(i);
     }
 
     return {}; // No solution found

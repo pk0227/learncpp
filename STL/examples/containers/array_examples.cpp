@@ -23,6 +23,9 @@ int main() {
     std::cout << "   arr1: ";
     for (int x : arr1)
       std::cout << x << " ";
+    std::cout << "\n   arr2: ";
+    for (int x : arr2)
+      std::cout << x << " ";
     std::cout << "\n   arr3 (default): ";
     for (int x : arr3)
       std::cout << x << " ";

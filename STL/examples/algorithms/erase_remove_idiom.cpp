@@ -220,7 +220,7 @@ void commonMistakes() {
     std::cout << "Mistake 1: Only calling std::remove\n";
     std::cout << "Before: size = " << v.size() << "\n";
 
-    std::remove(v.begin(), v.end(), 2); // ❌ Doesn't change size!
+    (void)std::remove(v.begin(), v.end(), 2); // ❌ Doesn't change size!
 
     std::cout << "After std::remove: size = " << v.size() << " (unchanged!)\n";
     std::cout << "Elements: ";
