@@ -4,6 +4,11 @@ Welcome to your comprehensive STL interview preparation materials!
 
 ## 📖 Start Here
 
+> **🚨 IMPORTANT UPDATE:**  
+> A new, structured roadmap is available!  
+> 👉 **[OPEN THE ROADMAP: STL_Learning_Roadmap.md](file:///home/prashanth/learncpp_workspace/STL/STL_Learning_Roadmap.md)**  
+> *Follow that file for the "Crawl -> Walk -> Run" progression.*
+
 1. **[Master Index](file:///home/prashanth/learncpp_workspace/STL/00_Master_Index.md)** - Your navigation hub
 2. **[Quick Reference](file:///home/prashanth/learncpp_workspace/STL/07_Quick_Reference.md)** - Cheat sheet for review
 
