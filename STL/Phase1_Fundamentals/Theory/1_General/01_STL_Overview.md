@@ -323,8 +323,8 @@ Every operation has **documented complexity**:
 Now that you understand the big picture:
 
 1. [**Design Philosophy**](02_Design_Philosophy.md) - Why STL is designed this way
-2. [**Iterators Deep Dive**](03_Iterators_Deep_Dive.md) - Master the glue layer
-3. [**Container Guides**](containers/sequence_containers.md) - Deep dive into each container
+2. [**Iterators Deep Dive**](../3_Iterators/03_Iterators_Deep_Dive.md) - Master the glue layer
+3. [**Container Guides**](../2_Containers/sequence_containers.md) - Deep dive into each container
 
 ---
 

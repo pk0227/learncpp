@@ -504,7 +504,7 @@ l.sort();  // O(n log n) with bidirectional iterators
 
 ## ⚠️ Iterator Invalidation - Preview
 
-Different operations invalidate iterators in different ways. This is covered in detail in [Iterator Invalidation & Pitfalls](file:///home/prashanth/learncpp_workspace/STL/05_Iterator_Invalidation.md).
+Different operations invalidate iterators in different ways. This is covered in detail in [Iterator Invalidation & Pitfalls](../../../Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md).
 
 ### Quick Reference
 
@@ -616,9 +616,9 @@ auto dist = std::distance(l.begin(), l.end());  // O(n)
 
 ## 📚 Next Steps
 
-1. [**Container Selection Guide**](file:///home/prashanth/learncpp_workspace/STL/04_Container_Selection_Guide.md) - Choose containers based on iterator needs
-2. [**Iterator Invalidation**](file:///home/prashanth/learncpp_workspace/STL/05_Iterator_Invalidation.md) - Avoid common pitfalls
-3. [**Algorithms**](file:///home/prashanth/learncpp_workspace/STL/algorithms/algorithms_overview.md) - See iterators in action
+1. [**Container Selection Guide**](../../../Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md) - Choose containers based on iterator needs
+2. [**Iterator Invalidation**](../../../Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md) - Avoid common pitfalls
+3. [**Algorithms**](../4_Algorithms/algorithms_overview.md) - See iterators in action
 
 ---
 

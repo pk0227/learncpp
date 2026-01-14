@@ -11,8 +11,8 @@ This workspace is structured to help you master the C++ Standard Template Librar
 
 ## 📂 Quick Links
 
-1.  **[Master Index](Phase1_Fundamentals/Theory/00_Master_Index.md)** - Navigation hub for all materials.
-2.  **[Quick Reference](Phase1_Fundamentals/Theory/07_Quick_Reference.md)** - Cheat sheet for last-minute review.
+1.  **[Master Index](Phase1_Fundamentals/Theory/1_General/00_Master_Index.md)** - Navigation hub for all materials.
+2.  **[Quick Reference](Phase1_Fundamentals/Theory/1_General/07_Quick_Reference.md)** - Cheat sheet for last-minute review.
 
 ## 🗺️ Directory Structure
 

@@ -12,12 +12,12 @@ This roadmap follows a strict **"Crawl, Walk, Run"** progression.
 *Goal: Understand every container type and their basic usage syntax.*
 
 ### Step 1: Theoretical Foundation (Read First)
-*   **[01_STL_Overview.md](Phase1_Fundamentals/Theory/01_STL_Overview.md)** -> The Big Picture.
-*   **[02_Design_Philosophy.md](Phase1_Fundamentals/Theory/02_Design_Philosophy.md)** -> Why STL exists.
-*   **[07_Quick_Reference.md](Phase1_Fundamentals/Theory/07_Quick_Reference.md)** -> Big-O Cheat Sheet (Keep this open).
+*   **[01_STL_Overview.md](Phase1_Fundamentals/Theory/1_General/01_STL_Overview.md)** -> The Big Picture.
+*   **[02_Design_Philosophy.md](Phase1_Fundamentals/Theory/1_General/02_Design_Philosophy.md)** -> Why STL exists.
+*   **[07_Quick_Reference.md](Phase1_Fundamentals/Theory/1_General/07_Quick_Reference.md)** -> Big-O Cheat Sheet (Keep this open).
 
 ### Step 2: Sequence Containers (Arrays & Lists)
-*   **Theory**: `Phase1_Fundamentals/Theory/containers/sequence_containers.md` (Vector vs List vs Deque)
+*   **Theory**: `Phase1_Fundamentals/Theory/2_Containers/sequence_containers.md` (Vector vs List vs Deque)
 *   **Practice**:
     *   `Phase1_Fundamentals/Code/containers/vector_examples.cpp` (**Master this**)
     *   `Phase1_Fundamentals/Code/containers/list_examples.cpp` (Linked Lists)
@@ -27,22 +27,22 @@ This roadmap follows a strict **"Crawl, Walk, Run"** progression.
 
 ### Step 3: Associative Containers (Trees & Hash Maps)
 *   **Theory**:
-    *   `Phase1_Fundamentals/Theory/containers/associative_containers.md` (Sets/Maps - Red-Black Trees)
-    *   `Phase1_Fundamentals/Theory/containers/unordered_containers.md` (Unordered Maps - Hash Tables)
+    *   `Phase1_Fundamentals/Theory/2_Containers/associative_containers.md` (Sets/Maps - Red-Black Trees)
+    *   `Phase1_Fundamentals/Theory/2_Containers/unordered_containers.md` (Unordered Maps - Hash Tables)
 *   **Practice**:
     *   `Phase1_Fundamentals/Code/containers/set_map_examples.cpp` (Ordered)
     *   `Phase1_Fundamentals/Code/containers/unordered_examples.cpp` (Hash-based)
 
 ### Step 4: Adaptors (Restricted Interfaces)
-*   **Theory**: `Phase1_Fundamentals/Theory/containers/container_adaptors.md`
+*   **Theory**: `Phase1_Fundamentals/Theory/2_Containers/container_adaptors.md`
 *   **Practice**: `Phase1_Fundamentals/Code/containers/adaptors_examples.cpp` (Stack, Queue, Priority Queue)
 
 ### Step 5: Algorithms & Utilities
-*   **Theory**: `Phase1_Fundamentals/Theory/03_Iterators_Deep_Dive.md` (The glue between containers and algorithms)
+*   **Theory**: `Phase1_Fundamentals/Theory/3_Iterators/03_Iterators_Deep_Dive.md` (The glue between containers and algorithms)
 *   **Practice**:
     *   `Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp` (Sorting, Searching)
-    *   `Phase1_Fundamentals/Theory/utilities/functors_lambdas.md` (Custom comparators - Theory)
-    *   `Phase1_Fundamentals/Theory/utilities/utility_types.md` (Pairs, Tuples - Theory)
+    *   `Phase1_Fundamentals/Theory/5_Utilities/functors_lambdas.md` (Custom comparators - Theory)
+    *   `Phase1_Fundamentals/Theory/5_Utilities/utility_types.md` (Pairs, Tuples - Theory)
 
 ---
 

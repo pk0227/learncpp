@@ -19,13 +19,13 @@ This material is designed for **progressive learning**:
 ## 🎯 Core Concepts
 
 ### Essential Reading (Start Here)
-1. [**STL Overview**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/01_STL_Overview.md)  
+1. [**STL Overview**](01_STL_Overview.md)  
    High-level architecture, components, and how they work together
 
-2. [**Design Philosophy**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/02_Design_Philosophy.md)  
+2. [**Design Philosophy**](02_Design_Philosophy.md)  
    Why STL is designed this way - critical for senior interviews
 
-3. [**Iterators Deep Dive**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/03_Iterators_Deep_Dive.md)  
+3. [**Iterators Deep Dive**](../3_Iterators/03_Iterators_Deep_Dive.md)  
    Complete guide to iterator categories, traits, and mechanics
 
 ---
@@ -33,7 +33,7 @@ This material is designed for **progressive learning**:
 ## 📦 Containers
 
 ### Sequence Containers
-[**Sequence Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/containers/sequence_containers.md)
+[**Sequence Containers Guide**](../2_Containers/sequence_containers.md)
 - `std::array` - Fixed-size, zero-overhead
 - `std::vector` - Dynamic array, most used
 - `std::deque` - Double-ended queue
@@ -41,17 +41,17 @@ This material is designed for **progressive learning**:
 - `std::forward_list` - Singly linked list
 
 ### Associative Containers (Ordered)
-[**Associative Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/containers/associative_containers.md)
+[**Associative Containers Guide**](../2_Containers/associative_containers.md)
 - `std::set` / `std::multiset` - Red-Black Tree
 - `std::map` / `std::multimap` - Key-value pairs
 
 ### Unordered Containers (Hash-based)
-[**Unordered Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/containers/unordered_containers.md)
+[**Unordered Containers Guide**](../2_Containers/unordered_containers.md)
 - `std::unordered_set` / `std::unordered_multiset`
 - `std::unordered_map` / `std::unordered_multimap`
 
 ### Container Adaptors
-[**Container Adaptors Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/containers/container_adaptors.md)
+[**Container Adaptors Guide**](../2_Containers/container_adaptors.md)
 - `std::stack` - LIFO
 - `std::queue` - FIFO
 - `std::priority_queue` - Heap-based
@@ -60,28 +60,28 @@ This material is designed for **progressive learning**:
 
 ## 🧮 Algorithms
 
-1. [**Algorithms Overview**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/algorithms_overview.md)
-2. [**Algorithm Examples Code**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp)
+1. [**Algorithms Overview**](../4_Algorithms/algorithms_overview.md)
+2. [**Algorithm Examples Code**](../../Code/algorithms/algorithm_examples.cpp)
 
 ---
 
 ## 🎓 Advanced Topics (Senior Level)
 
 ### Critical for Interviews
-1. [**Container Selection Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md) ⭐  
+1. [**Container Selection Guide**](../../../Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md) ⭐  
    Decision-making framework - **most asked in senior interviews**
 
-2. [**Iterator Invalidation & Pitfalls**](file:///home/prashanth/learncpp_workspace/STL/Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md) ⭐  
+2. [**Iterator Invalidation & Pitfalls**](../../../Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md) ⭐  
    Common bugs and safe patterns
 
 ### Utilities
-1. [**Functors & Lambdas**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/utilities/functors_lambdas.md)  
+1. [**Functors & Lambdas**](../5_Utilities/functors_lambdas.md)  
    Function objects, predicates, custom comparators
 
-2. [**Utility Types**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/utilities/utility_types.md)  
+2. [**Utility Types**](../5_Utilities/utility_types.md)  
    `pair`, `tuple`, `optional`, `variant`, `any`
 
-3. [**Memory & Allocators**](file:///home/prashanth/learncpp_workspace/STL/Phase3_Optimization/Memory-Optimization/README.md)  
+3. [**Memory & Allocators**](../../../Phase3_Optimization/Memory-Optimization/README.md)  
    Allocator concepts, RAII principles
 
 ---

@@ -407,8 +407,8 @@ public:
 
 ## 📚 See Also
 
-- [STL Overview](file:///home/prashanth/learncpp_workspace/STL/01_STL_Overview.md)
-- [Quick Reference](file:///home/prashanth/learncpp_workspace/STL/07_Quick_Reference.md)
+- [STL Overview](../1_General/01_STL_Overview.md)
+- [Quick Reference](../1_General/07_Quick_Reference.md)
 
 ---
 

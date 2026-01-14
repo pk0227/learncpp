@@ -7,7 +7,7 @@ This directory contains comprehensive documentation on STL algorithms for interv
 ### 1. Non-Modifying Algorithms
 Algorithms that don't modify the container.
 
-**File:** See `../Code/algorithms/algorithm_examples.cpp`
+**File:** See `../../Code/algorithms/algorithm_examples.cpp`
 
 - `std::find` / `find_if` - Find element
 - `std::count` / `count_if` - Count occurrences
@@ -19,7 +19,7 @@ Algorithms that don't modify the container.
 ### 2. Modifying Algorithms
 Algorithms that modify the container.
 
-**File:** See `../Code/algorithms/algorithm_examples.cpp`
+**File:** See `../../Code/algorithms/algorithm_examples.cpp`
 
 - `std::copy` / `copy_if` - Copy elements
 - `std::move` - Move elements
@@ -34,7 +34,7 @@ Algorithms that modify the container.
 ### 3. Sorting & Searching
 Algorithms for sorting and binary search.
 
-**File:** See `../Code/algorithms/algorithm_examples.cpp`
+**File:** See `../../Code/algorithms/algorithm_examples.cpp`
 
 - `std::sort` - Quick sort (O(n log n))
 - `std::stable_sort` - Stable sort (preserves order)
@@ -48,7 +48,7 @@ Algorithms for sorting and binary search.
 ### 4. Numeric Algorithms
 Mathematical operations.
 
-**File:** See `../Code/algorithms/algorithm_examples.cpp`
+**File:** See `../../Code/algorithms/algorithm_examples.cpp`
 
 - `std::accumulate` - Sum or fold
 - `std::iota` - Fill with incrementing values
@@ -59,7 +59,7 @@ Mathematical operations.
 ### 5. Heap Algorithms
 Binary heap operations.
 
-**File:** See `../Code/algorithms/algorithm_examples.cpp`
+**File:** See `../../Code/algorithms/algorithm_examples.cpp`
 
 - `std::make_heap` - Create heap
 - `std::push_heap` - Add to heap
@@ -103,9 +103,9 @@ Binary heap operations.
 
 ## 📖 See Also
 
-- [Algorithm Examples](../Code/algorithms/algorithm_examples.cpp) - All algorithms with examples
-- [Erase-Remove Idiom](../Code/algorithms/erase_remove_idiom.cpp) - Essential pattern
-- [Quick Reference](07_Quick_Reference.md) - Cheat sheet
+- [Algorithm Examples](../../Code/algorithms/algorithm_examples.cpp) - All algorithms with examples
+- [Erase-Remove Idiom](../../Code/algorithms/erase_remove_idiom.cpp) - Essential pattern
+- [Quick Reference](../1_General/07_Quick_Reference.md) - Cheat sheet
 
 ## 🎓 Key Takeaways
 

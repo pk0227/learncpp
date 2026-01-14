@@ -312,8 +312,8 @@ std::string result = std::accumulate(words.begin(), words.end(), std::string("")
 
 ## 📚 See Also
 
-- [Algorithms Overview](file:///home/prashanth/learncpp_workspace/STL/algorithms/algorithms_overview.md)
-- [Custom Comparators Example](file:///home/prashanth/learncpp_workspace/STL/examples/algorithms/custom_comparators.cpp)
+- [Algorithms Overview](../4_Algorithms/algorithms_overview.md)
+- [Algorithm Examples (covers comparators)](../../Code/algorithms/algorithm_examples.cpp)
 
 ---
 
