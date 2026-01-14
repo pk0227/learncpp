@@ -730,7 +730,7 @@ public:
 
 ## 📚 Practice More
 
-See [examples/interview_problems/](file:///home/prashanth/learncpp_workspace/STL/examples/interview_problems/) for compilable code!
+See [examples/interview_problems/](../../Code/interview_problems/) for compilable code!
 
 ---
 

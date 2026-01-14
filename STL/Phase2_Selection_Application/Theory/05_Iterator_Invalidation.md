@@ -576,9 +576,9 @@ std::cout << ref;
 
 ## 📚 Next Steps
 
-1. [**Interview Problems**](file:///home/prashanth/learncpp_workspace/STL/06_Interview_Problems.md) - Practice with real scenarios
-2. [**Container Examples**](file:///home/prashanth/learncpp_workspace/STL/examples/containers/) - See safe patterns in code
-3. [**Quick Reference**](file:///home/prashanth/learncpp_workspace/STL/07_Quick_Reference.md) - Invalidation rules summary
+1. [**Interview Problems**](06_Interview_Problems.md) - Practice with real scenarios
+2. [**Container Examples**](../../Phase1_Fundamentals/Code/containers/) - See safe patterns in code
+3. [**Quick Reference**](../../Phase1_Fundamentals/Theory/07_Quick_Reference.md) - Invalidation rules summary
 
 ---
 

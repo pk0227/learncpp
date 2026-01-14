@@ -19,13 +19,13 @@ This material is designed for **progressive learning**:
 ## 🎯 Core Concepts
 
 ### Essential Reading (Start Here)
-1. [**STL Overview**](file:///home/prashanth/learncpp_workspace/STL/01_STL_Overview.md)  
+1. [**STL Overview**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/01_STL_Overview.md)  
    High-level architecture, components, and how they work together
 
-2. [**Design Philosophy**](file:///home/prashanth/learncpp_workspace/STL/02_Design_Philosophy.md)  
+2. [**Design Philosophy**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/02_Design_Philosophy.md)  
    Why STL is designed this way - critical for senior interviews
 
-3. [**Iterators Deep Dive**](file:///home/prashanth/learncpp_workspace/STL/03_Iterators_Deep_Dive.md)  
+3. [**Iterators Deep Dive**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/03_Iterators_Deep_Dive.md)  
    Complete guide to iterator categories, traits, and mechanics
 
 ---
@@ -33,7 +33,7 @@ This material is designed for **progressive learning**:
 ## 📦 Containers
 
 ### Sequence Containers
-[**Sequence Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/containers/sequence_containers.md)
+[**Sequence Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/containers/sequence_containers.md)
 - `std::array` - Fixed-size, zero-overhead
 - `std::vector` - Dynamic array, most used
 - `std::deque` - Double-ended queue
@@ -41,17 +41,17 @@ This material is designed for **progressive learning**:
 - `std::forward_list` - Singly linked list
 
 ### Associative Containers (Ordered)
-[**Associative Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/containers/associative_containers.md)
+[**Associative Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/containers/associative_containers.md)
 - `std::set` / `std::multiset` - Red-Black Tree
 - `std::map` / `std::multimap` - Key-value pairs
 
 ### Unordered Containers (Hash-based)
-[**Unordered Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/containers/unordered_containers.md)
+[**Unordered Containers Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/containers/unordered_containers.md)
 - `std::unordered_set` / `std::unordered_multiset`
 - `std::unordered_map` / `std::unordered_multimap`
 
 ### Container Adaptors
-[**Container Adaptors Guide**](file:///home/prashanth/learncpp_workspace/STL/containers/container_adaptors.md)
+[**Container Adaptors Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/containers/container_adaptors.md)
 - `std::stack` - LIFO
 - `std::queue` - FIFO
 - `std::priority_queue` - Heap-based
@@ -60,37 +60,28 @@ This material is designed for **progressive learning**:
 
 ## 🧮 Algorithms
 
-1. [**Algorithms Overview**](file:///home/prashanth/learncpp_workspace/STL/algorithms/algorithms_overview.md)
-2. [**Non-Modifying Algorithms**](file:///home/prashanth/learncpp_workspace/STL/algorithms/non_modifying_algorithms.md)  
-   `find`, `count`, `all_of`, `any_of`, `none_of`
-3. [**Modifying Algorithms**](file:///home/prashanth/learncpp_workspace/STL/algorithms/modifying_algorithms.md)  
-   `copy`, `move`, `transform`, `remove`, **erase-remove idiom**
-4. [**Sorting & Searching**](file:///home/prashanth/learncpp_workspace/STL/algorithms/sorting_searching.md)  
-   `sort`, `binary_search`, `lower_bound`, `upper_bound`
-5. [**Numeric Algorithms**](file:///home/prashanth/learncpp_workspace/STL/algorithms/numeric_algorithms.md)  
-   `accumulate`, `iota`, `inner_product`
-6. [**Heap Algorithms**](file:///home/prashanth/learncpp_workspace/STL/algorithms/heap_algorithms.md)  
-   `make_heap`, `push_heap`, `pop_heap`, `sort_heap`
+1. [**Algorithms Overview**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/algorithms_overview.md)
+2. [**Algorithm Examples Code**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp)
 
 ---
 
 ## 🎓 Advanced Topics (Senior Level)
 
 ### Critical for Interviews
-1. [**Container Selection Guide**](file:///home/prashanth/learncpp_workspace/STL/04_Container_Selection_Guide.md) ⭐  
+1. [**Container Selection Guide**](file:///home/prashanth/learncpp_workspace/STL/Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md) ⭐  
    Decision-making framework - **most asked in senior interviews**
 
-2. [**Iterator Invalidation & Pitfalls**](file:///home/prashanth/learncpp_workspace/STL/05_Iterator_Invalidation.md) ⭐  
+2. [**Iterator Invalidation & Pitfalls**](file:///home/prashanth/learncpp_workspace/STL/Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md) ⭐  
    Common bugs and safe patterns
 
 ### Utilities
-1. [**Functors & Lambdas**](file:///home/prashanth/learncpp_workspace/STL/utilities/functors_lambdas.md)  
+1. [**Functors & Lambdas**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/utilities/functors_lambdas.md)  
    Function objects, predicates, custom comparators
 
-2. [**Utility Types**](file:///home/prashanth/learncpp_workspace/STL/utilities/utility_types.md)  
+2. [**Utility Types**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/utilities/utility_types.md)  
    `pair`, `tuple`, `optional`, `variant`, `any`
 
-3. [**Memory & Allocators**](file:///home/prashanth/learncpp_workspace/STL/utilities/memory_allocators.md)  
+3. [**Memory & Allocators**](file:///home/prashanth/learncpp_workspace/STL/Phase3_Optimization/Memory-Optimization/README.md)  
    Allocator concepts, RAII principles
 
 ---
@@ -98,25 +89,25 @@ This material is designed for **progressive learning**:
 ## 💻 Practical Examples
 
 ### Container Examples (Compilable Code)
-- [array_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/containers/array_examples.cpp)
-- [vector_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/containers/vector_examples.cpp)
-- [deque_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/containers/deque_examples.cpp)
-- [list_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/containers/list_examples.cpp)
-- [forward_list_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/containers/forward_list_examples.cpp)
-- [set_map_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/containers/set_map_examples.cpp)
-- [unordered_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/containers/unordered_examples.cpp)
-- [adaptors_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/containers/adaptors_examples.cpp)
+- [array_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/array_examples.cpp)
+- [vector_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/vector_examples.cpp)
+- [deque_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/deque_examples.cpp)
+- [list_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/list_examples.cpp)
+- [forward_list_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/forward_list_examples.cpp)
+- [set_map_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/set_map_examples.cpp)
+- [unordered_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/unordered_examples.cpp)
+- [adaptors_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/adaptors_examples.cpp)
 
 ### Algorithm Examples
-- [algorithm_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/algorithms/algorithm_examples.cpp)
-- [erase_remove_idiom.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/algorithms/erase_remove_idiom.cpp)
-- [custom_comparators.cpp](file:///home/prashanth/learncpp_workspace/STL/examples/algorithms/custom_comparators.cpp)
+- [algorithm_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp)
+- [erase_remove_idiom.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/algorithms/erase_remove_idiom.cpp)
+- [custom_comparators.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/algorithms/custom_comparators.cpp)
 
 ---
 
 ## 🏆 Interview Problems
 
-[**Real Interview Problems with Solutions**](file:///home/prashanth/learncpp_workspace/STL/06_Interview_Problems.md) ⭐⭐⭐
+[**Real Interview Problems with Solutions**](file:///home/prashanth/learncpp_workspace/STL/Phase2_Selection_Application/Theory/06_Interview_Problems.md) ⭐⭐⭐
 
 ### Problem Categories
 - **LRU Cache** - Classic design problem
@@ -137,7 +128,7 @@ Each problem includes:
 
 ## ⚡ Quick Reference
 
-[**STL Quick Reference Cheat Sheet**](file:///home/prashanth/learncpp_workspace/STL/07_Quick_Reference.md)
+[**STL Quick Reference Cheat Sheet**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/07_Quick_Reference.md)
 
 Perfect for last-minute review:
 - Complexity tables

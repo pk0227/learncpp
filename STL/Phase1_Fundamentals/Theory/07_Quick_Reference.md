@@ -333,10 +333,10 @@ std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap;
 
 ## 📚 See Also
 
-- [STL Overview](file:///home/prashanth/learncpp_workspace/STL/01_STL_Overview.md)
-- [Container Selection Guide](file:///home/prashanth/learncpp_workspace/STL/04_Container_Selection_Guide.md)
-- [Iterator Invalidation](file:///home/prashanth/learncpp_workspace/STL/05_Iterator_Invalidation.md)
-- [Interview Problems](file:///home/prashanth/learncpp_workspace/STL/06_Interview_Problems.md)
+- [STL Overview](01_STL_Overview.md)
+- [Container Selection Guide](../../Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md)
+- [Iterator Invalidation](../../Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md)
+- [Interview Problems](../../Phase2_Selection_Application/Theory/06_Interview_Problems.md)
 
 ---
 

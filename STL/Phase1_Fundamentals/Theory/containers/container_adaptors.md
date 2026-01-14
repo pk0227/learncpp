@@ -531,9 +531,9 @@ while (!temp.empty()) {
 
 ## 📚 Next Steps
 
-- [Algorithms Overview](file:///home/prashanth/learncpp_workspace/STL/algorithms/algorithms_overview.md)
-- [Interview Problems](file:///home/prashanth/learncpp_workspace/STL/06_Interview_Problems.md)
-- [Adaptor Examples](file:///home/prashanth/learncpp_workspace/STL/examples/containers/adaptors_examples.cpp)
+- [Algorithms Examples](../../Code/algorithms/algorithm_examples.cpp)
+- [Interview Problems](../../../Phase2_Selection_Application/Theory/06_Interview_Problems.md)
+- [Adaptor Examples](../../Code/containers/adaptors_examples.cpp)
 
 ---
 

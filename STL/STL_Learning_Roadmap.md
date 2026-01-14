@@ -12,37 +12,37 @@ This roadmap follows a strict **"Crawl, Walk, Run"** progression.
 *Goal: Understand every container type and their basic usage syntax.*
 
 ### Step 1: Theoretical Foundation (Read First)
-*   **[01_STL_Overview.md](01_STL_Overview.md)** -> The Big Picture.
-*   **[02_Design_Philosophy.md](02_Design_Philosophy.md)** -> Why STL exists.
-*   **[07_Quick_Reference.md](07_Quick_Reference.md)** -> Big-O Cheat Sheet (Keep this open).
+*   **[01_STL_Overview.md](Phase1_Fundamentals/Theory/01_STL_Overview.md)** -> The Big Picture.
+*   **[02_Design_Philosophy.md](Phase1_Fundamentals/Theory/02_Design_Philosophy.md)** -> Why STL exists.
+*   **[07_Quick_Reference.md](Phase1_Fundamentals/Theory/07_Quick_Reference.md)** -> Big-O Cheat Sheet (Keep this open).
 
 ### Step 2: Sequence Containers (Arrays & Lists)
-*   **Theory**: `containers/sequence_containers.md` (Vector vs List vs Deque)
+*   **Theory**: `Phase1_Fundamentals/Theory/containers/sequence_containers.md` (Vector vs List vs Deque)
 *   **Practice**:
-    *   `examples/containers/vector_examples.cpp` (**Master this**)
-    *   `examples/containers/list_examples.cpp` (Linked Lists)
-    *   `examples/containers/deque_examples.cpp` (Double-ended queues)
-    *   `examples/containers/array_examples.cpp` (Fixed arrays)
-    *   `examples/containers/forward_list_examples.cpp` (Singly linked logic)
+    *   `Phase1_Fundamentals/Code/containers/vector_examples.cpp` (**Master this**)
+    *   `Phase1_Fundamentals/Code/containers/list_examples.cpp` (Linked Lists)
+    *   `Phase1_Fundamentals/Code/containers/deque_examples.cpp` (Double-ended queues)
+    *   `Phase1_Fundamentals/Code/containers/array_examples.cpp` (Fixed arrays)
+    *   `Phase1_Fundamentals/Code/containers/forward_list_examples.cpp` (Singly linked logic)
 
 ### Step 3: Associative Containers (Trees & Hash Maps)
 *   **Theory**:
-    *   `containers/associative_containers.md` (Sets/Maps - Red-Black Trees)
-    *   `containers/unordered_containers.md` (Unordered Maps - Hash Tables)
+    *   `Phase1_Fundamentals/Theory/containers/associative_containers.md` (Sets/Maps - Red-Black Trees)
+    *   `Phase1_Fundamentals/Theory/containers/unordered_containers.md` (Unordered Maps - Hash Tables)
 *   **Practice**:
-    *   `examples/containers/set_map_examples.cpp` (Ordered)
-    *   `examples/containers/unordered_examples.cpp` (Hash-based)
+    *   `Phase1_Fundamentals/Code/containers/set_map_examples.cpp` (Ordered)
+    *   `Phase1_Fundamentals/Code/containers/unordered_examples.cpp` (Hash-based)
 
 ### Step 4: Adaptors (Restricted Interfaces)
-*   **Theory**: `containers/container_adaptors.md`
-*   **Practice**: `examples/containers/adaptors_examples.cpp` (Stack, Queue, Priority Queue)
+*   **Theory**: `Phase1_Fundamentals/Theory/containers/container_adaptors.md`
+*   **Practice**: `Phase1_Fundamentals/Code/containers/adaptors_examples.cpp` (Stack, Queue, Priority Queue)
 
 ### Step 5: Algorithms & Utilities
-*   **Theory**: `03_Iterators_Deep_Dive.md` (The glue between containers and algorithms)
+*   **Theory**: `Phase1_Fundamentals/Theory/03_Iterators_Deep_Dive.md` (The glue between containers and algorithms)
 *   **Practice**:
-    *   `examples/algorithms/algorithm_examples.cpp` (Sorting, Searching)
-    *   `examples/utilities/functors_lambdas.cpp` (Custom comparators)
-    *   `examples/utilities/utility_types.cpp` (Pairs, Tuples)
+    *   `Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp` (Sorting, Searching)
+    *   `Phase1_Fundamentals/Theory/utilities/functors_lambdas.md` (Custom comparators - Theory)
+    *   `Phase1_Fundamentals/Theory/utilities/utility_types.md` (Pairs, Tuples - Theory)
 
 ---
 
@@ -50,18 +50,18 @@ This roadmap follows a strict **"Crawl, Walk, Run"** progression.
 *Goal: Apply your knowledge to solve problems efficiently.*
 
 ### Step 1: The Decision Framework
-*   **[04_Container_Selection_Guide.md](04_Container_Selection_Guide.md)** -> **Crucial**. The "Flowchart" for interviews.
-*   **[05_Iterator_Invalidation.md](05_Iterator_Invalidation.md)** -> The "Gotchas" (When does code crash?).
-*   **`examples/algorithms/erase_remove_idiom.cpp`** -> A mandatory pattern for senior devs.
+*   **[04_Container_Selection_Guide.md](Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md)** -> **Crucial**. The "Flowchart" for interviews.
+*   **[05_Iterator_Invalidation.md](Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md)** -> The "Gotchas" (When does code crash?).
+*   **`Phase1_Fundamentals/Code/algorithms/erase_remove_idiom.cpp`** -> A mandatory pattern for senior devs (Moved to Phase 1 Code but Phase 2 Concept).
 
 ### Step 2: Interview Patterns (Application)
-*   **[06_Interview_Problems.md](06_Interview_Problems.md)** -> Top 10 patterns.
+*   **[06_Interview_Problems.md](Phase2_Selection_Application/Theory/06_Interview_Problems.md)** -> Top 10 patterns.
 *   **Hands-on Coding**:
-    *   `examples/interview_problems/problem_01_lru_cache.cpp` (Map + List)
-    *   `examples/interview_problems/problem_02_two_sum.cpp` (Hash Map)
-    *   `examples/interview_problems/problem_04_top_k_frequent.cpp` (Priority Queue)
-    *   `examples/interview_problems/problem_05_group_anagrams.cpp` (String Hashing)
-    *   `examples/interview_problems/problem_07_design_twitter.cpp` (System Design)
+    *   `Phase2_Selection_Application/Code/interview_problems/problem_01_lru_cache.cpp` (Map + List)
+    *   `Phase2_Selection_Application/Code/interview_problems/problem_02_two_sum.cpp` (Hash Map)
+    *   `Phase2_Selection_Application/Code/interview_problems/problem_04_top_k_frequent.cpp` (Priority Queue)
+    *   `Phase2_Selection_Application/Code/interview_problems/problem_05_group_anagrams.cpp` (String Hashing)
+    *   `Phase2_Selection_Application/Code/interview_problems/problem_07_design_twitter.cpp` (System Design)
     *   *(See folder for full list)*
 
 ---
@@ -70,19 +70,19 @@ This roadmap follows a strict **"Crawl, Walk, Run"** progression.
 *Goal: Write thread-safe, memory-efficient, and modern code.*
 
 ### Step 1: Concurrency (Thread Safety)
-*   **Theory**: `Thread-Safe/README.md`
+*   **Theory**: `Phase3_Optimization/Thread-Safe/README.md`
 *   **Code**:
-    *   `Thread-Safe/thread_safe_queue.cpp` (Producer-Consumer)
-    *   `Thread-Safe/thread_safe_map_rwlock.cpp` (Read-Heavy workloads)
-    *   `Thread-Safe/thread_safe_vector.cpp` (Handling Reallocations)
+    *   `Phase3_Optimization/Thread-Safe/thread_safe_queue.cpp` (Producer-Consumer)
+    *   `Phase3_Optimization/Thread-Safe/thread_safe_map_rwlock.cpp` (Read-Heavy workloads)
+    *   `Phase3_Optimization/Thread-Safe/thread_safe_vector.cpp` (Handling Reallocations)
 
 ### Step 2: Memory Optimization (Low Latency)
-*   **Theory**: `Memory-Optimization/README.md`
-*   **Code**: `Memory-Optimization/pmr_benchmark.cpp` (Custom Allocators)
+*   **Theory**: `Phase3_Optimization/Memory-Optimization/README.md`
+*   **Code**: `Phase3_Optimization/Memory-Optimization/pmr_benchmark.cpp` (Custom Allocators)
 
 ### Step 3: Modern C++ (C++20)
-*   **Theory**: `Ranges/README.md` (Pipe Syntax)
-*   **Code**: `Ranges/ranges_demo.cpp` (Declarative programming)
+*   **Theory**: `Phase3_Optimization/Ranges/README.md` (Pipe Syntax)
+*   **Code**: `Phase3_Optimization/Ranges/ranges_demo.cpp` (Declarative programming)
 
 ---
 

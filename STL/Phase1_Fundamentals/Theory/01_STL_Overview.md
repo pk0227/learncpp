@@ -322,9 +322,9 @@ Every operation has **documented complexity**:
 
 Now that you understand the big picture:
 
-1. [**Design Philosophy**](file:///home/prashanth/learncpp_workspace/STL/02_Design_Philosophy.md) - Why STL is designed this way
-2. [**Iterators Deep Dive**](file:///home/prashanth/learncpp_workspace/STL/03_Iterators_Deep_Dive.md) - Master the glue layer
-3. [**Container Guides**](file:///home/prashanth/learncpp_workspace/STL/containers/sequence_containers.md) - Deep dive into each container
+1. [**Design Philosophy**](02_Design_Philosophy.md) - Why STL is designed this way
+2. [**Iterators Deep Dive**](03_Iterators_Deep_Dive.md) - Master the glue layer
+3. [**Container Guides**](containers/sequence_containers.md) - Deep dive into each container
 
 ---
 

@@ -516,9 +516,9 @@ fl.remove(42);        // O(n)
 
 ## 📚 Next Steps
 
-- [Associative Containers](file:///home/prashanth/learncpp_workspace/STL/containers/associative_containers.md)
-- [Unordered Containers](file:///home/prashanth/learncpp_workspace/STL/containers/unordered_containers.md)
-- [Container Examples](file:///home/prashanth/learncpp_workspace/STL/examples/containers/)
+- [Associative Containers](associative_containers.md)
+- [Unordered Containers](unordered_containers.md)
+- [Container Examples](../../Code/containers/)
 
 ---
 

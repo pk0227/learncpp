@@ -517,9 +517,9 @@ public:
 
 ## 📚 Next Steps
 
-1. [**Iterator Invalidation**](file:///home/prashanth/learncpp_workspace/STL/05_Iterator_Invalidation.md) - Understand invalidation rules
-2. [**Interview Problems**](file:///home/prashanth/learncpp_workspace/STL/06_Interview_Problems.md) - Practice container selection
-3. [**Container Guides**](file:///home/prashanth/learncpp_workspace/STL/containers/sequence_containers.md) - Deep dive into each container
+1. [**Iterator Invalidation**](05_Iterator_Invalidation.md) - Understand invalidation rules
+2. [**Interview Problems**](06_Interview_Problems.md) - Practice container selection
+3. [**Container Guides**](../../Phase1_Fundamentals/Theory/containers/sequence_containers.md) - Deep dive into each container
 
 ---
 

@@ -414,9 +414,9 @@ for (const auto& [word, count] : freq) {
 
 ## 📚 Next Steps
 
-- [Unordered Containers](file:///home/prashanth/learncpp_workspace/STL/containers/unordered_containers.md)
-- [Container Selection Guide](file:///home/prashanth/learncpp_workspace/STL/04_Container_Selection_Guide.md)
-- [Set/Map Examples](file:///home/prashanth/learncpp_workspace/STL/examples/containers/set_map_examples.cpp)
+- [Unordered Containers](unordered_containers.md)
+- [Container Selection Guide](../../../Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md)
+- [Set/Map Examples](../../Code/containers/set_map_examples.cpp)
 
 ---
 

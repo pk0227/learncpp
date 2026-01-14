@@ -533,9 +533,9 @@ for (const auto& word : words) {
 
 ## 📚 Next Steps
 
-- [Container Adaptors](file:///home/prashanth/learncpp_workspace/STL/containers/container_adaptors.md)
-- [Container Selection Guide](file:///home/prashanth/learncpp_workspace/STL/04_Container_Selection_Guide.md)
-- [Unordered Examples](file:///home/prashanth/learncpp_workspace/STL/examples/containers/unordered_examples.cpp)
+- [Container Adaptors](container_adaptors.md)
+- [Container Selection Guide](../../../Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md)
+- [Unordered Examples](../../Code/containers/unordered_examples.cpp)
 
 ---
 
