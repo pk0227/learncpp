@@ -1,0 +1,214 @@
+=================================================================
+📘 C++ DYNAMIC ARRAYS (STD::VECTOR)
+=================================================================
+
+    🔹 1 — CONTAINERS & ARRAYS
+    -------------------------------------------------------------
+        Container: Data type storing unnamed elements.
+        
+        Array Types in C++:
+            1. C-style arrays (unsafe, legacy)
+            2. std::vector (dynamic, safest, most flexible)
+            3. std::array (fixed-size, safer than C-style)
+
+        Characteristics:
+            • Contiguous memory (no gaps between elements).
+            • Efficient random access via indices.
+            • Homogeneous (all elements same type).
+
+    🔹 2 — STD::VECTOR BASICS
+    -------------------------------------------------------------
+        #include <vector>
+        std::vector<int> primes{2, 3, 5, 7};  // List initialization
+        std::vector vowels{'a', 'e', 'i'};    // CTAD (C++17)
+
+        List Constructor:
+            • Ensures sufficient storage.
+            • Sets length to initializer count.
+            • Initializes elements sequentially.
+
+        Accessing Elements:
+            primes[2]        // Returns reference (no bounds check)
+            primes.at(2)     // Runtime bounds check (throws std::out_of_range)
+
+        ⚠️ operator[] does NOT check bounds → UB if out of range.
+        ✅ Valid indices: 0 to N-1 (for length N).
+
+    🔹 3 — CONSTRUCTING STD::VECTOR
+    -------------------------------------------------------------
+        Specific Length (Direct Init):
+            std::vector<int> data(10);  // 10 elements, value-initialized to 0
+
+        ⚠️ List Init Prefers List Constructor:
+            std::vector<int> v{10};     // 1 element with value 10
+            std::vector<int> v(10);     // 10 elements, value 0
+
+        ✅ When constructing with non-element initializers, use direct init `()`.
+
+        Member Default Initializers:
+            struct Foo {
+                std::vector<int> v{std::vector<int>(8)};  // Workaround
+            };
+            // Direct init `()` disallowed for member defaults.
+
+        Const/Constexpr:
+            const std::vector<int> primes{2, 3, 5};  // Elements also const
+            ❌ std::vector cannot be constexpr (use std::array).
+
+    🔹 4 — LENGTH & INDEXING (SIGN PROBLEM)
+    -------------------------------------------------------------
+        Length Type: std::vector::size_type (alias for std::size_t, unsigned).
+
+        Getting Length:
+            v.size()          // Returns size_type (unsigned)
+            std::size(v)      // C++17, returns size_type
+            std::ssize(v)     // C++20, returns std::ptrdiff_t (signed)
+
+        Signed Conversion:
+            int len = static_cast<int>(v.size());      // Pre-C++20
+            auto len = std::ssize(v);                  // C++20
+
+        Indexing with Signed Types:
+            constexpr int i{3};
+            v[i]  // OK: constexpr int → size_t (not narrowing)
+
+            int i{3};  // Non-constexpr
+            v[i]       // ⚠️ Warning: narrowing conversion
+
+        ✅ Best Solution: Avoid integral indices (use range-based for loops).
+
+        Index Underlying Array (No Conversion Warning):
+            v.data()[i]  // C-style array allows signed indices
+
+    🔹 5 — PASSING STD::VECTOR
+    -------------------------------------------------------------
+        ❌ Pass by value → expensive copy.
+        ✅ Pass by const reference:
+            void func(const std::vector<int>& v);
+
+        Function Templates (Generic Types):
+            template<typename T>
+            void func(const std::vector<T>& v);
+
+            // OR abbreviated (C++20)
+            void func(const auto& v);
+
+    🔹 6 — RETURNING STD::VECTOR & MOVE SEMANTICS
+    -------------------------------------------------------------
+        ✅ Return by value (move semantics optimizes):
+            std::vector<int> createVec() { return {1, 2, 3}; }
+
+        Copy vs Move Semantics:
+            • Copy: Full duplication (expensive).
+            • Move: Transfer ownership (trivial cost).
+
+        Move Triggered When:
+            • Type supports move semantics (std::vector does).
+            • Object initialized/assigned with rvalue (temporary).
+            • Move not elided.
+
+        ✅ Pass by const reference, return by value (for move-capable types).
+
+    🔹 7 — LOOPS & TRAVERSAL
+    -------------------------------------------------------------
+        Range-Based For Loop (Preferred):
+            for (const auto& elem : v) { /* ... */ }
+
+            • `auto`: Copy (modify copies).
+            • `auto&`: Modify originals.
+            • `const auto&`: View originals (most common).
+
+        Index-Based Loop:
+            for (std::size_t i{0}; i < v.size(); ++i)
+            for (auto i{0Z}; i < std::ssize(v); ++i)  // C++23
+
+        Reverse Iteration (C++20):
+            for (const auto& elem : std::views::reverse(v))
+
+        ⚠️ Off-by-One Errors:
+            Use `i < length`, NOT `i <= length`.
+
+        ✅ Prefer range-based for loops (avoids indexing pitfalls).
+
+    🔹 8 — ENUMERATORS AS INDICES
+    -------------------------------------------------------------
+        enum Color { red, green, blue, max_colors };
+        std::vector<int> data(max_colors);
+        data[red] = 255;  // Enumerators implicitly convert to size_t
+
+        Count Enumerator:
+            • Last enumerator value = count of previous enumerators.
+            • Use for array size/assertions.
+
+        Enum Classes:
+            • Don't implicitly convert → requires static_cast.
+            • Less convenient for indexing.
+
+    🔹 9 — RESIZING & CAPACITY
+    -------------------------------------------------------------
+        Length vs Capacity:
+            • Length: Number of elements in use.
+            • Capacity: Allocated storage.
+
+        Resizing:
+            v.resize(10);  // Changes length (value-initializes new elements)
+
+        Reallocation (Expensive):
+            1. Allocate new memory.
+            2. Copy/move old elements.
+            3. Deallocate old memory.
+
+        Reserve (Capacity Only):
+            v.reserve(100);  // Increases capacity without changing length
+
+        Shrink Capacity:
+            v.shrink_to_fit();  // Request to reduce capacity to length (non-binding)
+
+        ✅ Use reserve() for stack operations (avoid reallocations).
+        ✅ Use resize() for index-based access.
+
+    🔹 10 — STACK BEHAVIOR
+    -------------------------------------------------------------
+        LIFO (Last In, First Out):
+            v.push_back(5);     // Add to end
+            v.pop_back();       // Remove from end (returns void)
+            int top = v.back(); // Peek at last element
+
+        push_back vs emplace_back:
+            • push_back: Copy/move existing object.
+            • emplace_back: Construct in-place (perfect forwarding).
+            • ✅ Use push_back for existing objects.
+            • ✅ Use emplace_back for temporaries (more efficient).
+            • ⚠️ emplace_back allows explicit constructors (riskier).
+
+        Extra Capacity from Push:
+            • GCC/Clang: Doubles capacity.
+            • MSVC: Multiplies by 1.5.
+
+    🔹 11 — STD::VECTOR<BOOL> (AVOID)
+    -------------------------------------------------------------
+        - Specialized to pack bits (memory optimization).
+        - NOT a true container (doesn't meet requirements).
+        - operator[] doesn't return bool& (returns proxy object).
+        - Breaks generic code.
+        - Performance varies by implementation.
+
+        ✅ Alternatives:
+            • std::bitset (fixed size, compile-time known).
+            • std::vector<char> (dynamic, behaves like normal container).
+            • boost::dynamic_bitset (3rd party).
+
+        ❌ Avoid std::vector<bool>.
+
+    🔹 12 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Use CTAD for type deduction (C++17).
+        ✅ Pass by const reference, return by value.
+        ✅ Prefer range-based for loops over indexed loops.
+        ✅ Use std::ssize() for signed length (C++20).
+        ✅ Use reserve() to avoid reallocations (stack behavior).
+        ✅ Use at() for bounds-checked access (debugging).
+        ✅ Use emplace_back() for temporary objects.
+        ❌ Avoid operator[] with non-constexpr signed indices (warnings).
+        ❌ Avoid std::vector<bool>.
+        ❌ Don't confuse resize() and reserve().

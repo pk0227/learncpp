@@ -1,0 +1,243 @@
+=================================================================
+📘 C++ CLASSES & OBJECT ORIENTED PROGRAMMING
+=================================================================
+
+    🔹 1 — OOP CONCEPTS & STRUCTS VS CLASSES
+    -------------------------------------------------------------
+        ✅ OOP Pillars:
+            • Encapsulation: Bundling data + logic, hiding implementation
+            • Abstraction: Exposing only necessary high-level details
+            • Inheritance: Deriving new classes from existing ones
+            • Polymorphism: Unified interface for multiple types
+
+        ⚖️ Structs vs Classes:
+            • Structs: Public by default. Best for aggregates (plain data).
+            • Classes: Private by default. Best for invariants/encapsulation.
+            • Inheritance: Structs inherit publicly, classes inherit privately.
+
+        🛡️ Class Invariant:
+            • Condition that must ALWAYS be true for object validity.
+            • Example: `Fraction` denominator != 0.
+            • Structs can't enforce (public access breaks invariants).
+
+        📝 Aggregate Requirements:
+            1. No private/protected members.
+            2. No user-declared constructors.
+            3. No virtual functions or base classes.
+
+    🔹 2 — MEMBER FUNCTIONS & CONST CORRECTNESS
+    -------------------------------------------------------------
+        - Defined inside class → Implicitly `inline`.
+        - Defined outside → Need scope resolution `Class::func()`.
+        - Called on object → `this` pointer passed implicitly.
+        - Can be overloaded like non-member functions.
+
+        🔒 Const Member Functions:
+            void print() const { ... }
+
+            ✅ Guarantees: Won't modify object or call non-const members.
+            ✅ Can be called on: Both `const` and non-const objects.
+            ❌ Const objects: Can ONLY call const member functions.
+            • Constructors CANNOT be const (must initialize).
+
+        🔁 Const/Non-Const Overloading:
+            • Same function name, differ only by `const` qualifier.
+            • Const object → calls const version.
+            • Non-const object → calls non-const version.
+
+    🔹 3 — ACCESS CONTROL & ENCAPSULATION
+    -------------------------------------------------------------
+        🎯 Goal: Separate Interface (public) from Implementation (private).
+
+        Access Levels:
+        +-----------+------------------+------------------------+
+        | Specifier | Member Access    | Derived Class Access   |
+        +-----------+------------------+------------------------+
+        | public    | ✅ Everyone      | ✅ Yes                 |
+        | protected | ✅ Members       | ✅ Yes (not Public)    |
+        | private   | ✅ Members Only  | ❌ No                  |
+        +-----------+------------------+------------------------+
+
+        🔑 Access Functions:
+            Getters (Accessors):
+                • Return by value (cheap types) or `const&` (expensive types).
+                • Should be `const` member functions.
+                • ⚠️ NEVER return non-const ref to private data.
+
+            Setters (Mutators):
+                • Validate input (maintain invariants).
+                • Enable error detection/handling.
+
+        🚨 Returning References to Members:
+            • Const member functions → can only return `const` references.
+            • Non-const functions → can return non-const refs (but risky).
+            • ⚠️ Rvalue implicit objects → dangling refs.
+            • ✅ Use return value immediately if returning ref.
+
+        💡 Benefits of Data Hiding:
+            • Easier to use (simple public interface).
+            • Maintains invariants (validation in setters).
+            • Better error detection (breakpoint single setter).
+            • Implementation changes don't break users.
+
+    🔹 4 — CONSTRUCTORS
+    -------------------------------------------------------------
+        - Special function: Initializes object after memory allocation.
+        - Name matches class. No return type.
+        - Typically public (part of interface).
+        - Can use implicit conversion (unless `explicit`).
+
+        ⚡ Member Initializer List (Preferred):
+            ClassName(int x, int y) : m_x{x}, m_y{y} {}
+
+            ✅ Direct initialization (no default-init + assign).
+            ✅ Required for: const members, references, no-default-ctor types.
+            ⚠️ Initialization order: DECLARATION order (not list order).
+            ⚠️ Avoid using one member to initialize another (UB risk).
+            ⚠️ Must use direct forms: braces `{}` or parens `()` (NOT `=`).
+
+            Precedence:
+                1. Member initializer list (highest)
+                2. Default member initializer
+                3. Default-initialized
+
+        🏗️ Constructor Types:
+            1. Default Constructor:
+                • No arguments.
+                • Implicitly generated if NO user-declared ctors.
+                • Use `= default` to explicitly request generation.
+
+            2. Parameterized Constructor:
+                • Takes arguments.
+                • Can have default args (rightmost params).
+
+            3. Delegating Constructor:
+                • Calls another ctor: `Foo() : Foo(0) {}`.
+                • ⚠️ Cannot also initialize members (delegate OR initialize).
+                • ⚠️ Watch for infinite loops.
+
+            4. Converting Constructor:
+                • Single-argument ctor enables implicit conversion.
+                • Only ONE user-defined conversion allowed.
+
+        🔧 Default Constructor Details:
+            Implicit vs Explicit vs User-Defined:
+                • Implicit: Generated by compiler (if no user ctors).
+                • `= default`: Explicitly request generation.
+                • Empty `{}`: User-defined (different behavior).
+
+            Value Init vs Default Init:
+                • User-defined default ctor → default init.
+                • `= default` or implicit → zero-init THEN default init.
+
+        🛠️ Error Handling:
+            • Body can assert/static_assert for semantic validation.
+            • Runtime errors → throw exception (best practice).
+            • Alternative: Factory function returning `std::optional<T>`.
+
+    🔹 5 — COPY CONSTRUCTOR & COPY ELISION
+    -------------------------------------------------------------
+        - Signature: `ClassName(const ClassName& other)`
+        - Implicit: Compiler generates (memberwise copy).
+        - Access: Can access private members of parameter (same class).
+
+        🔄 When Called:
+            1. Initialization: `Foo a = b;` or `Foo a{b};`
+            2. Pass-by-value: `func(b);`
+            3. Return-by-value: `return b;`
+
+        🚀 Copy Elision (RVO/NRVO):
+            • Compiler optimization: SKIPS copy constructor.
+            • Builds object directly in final location.
+            • C++17: Mandatory for prvalues.
+            • ⚠️ Exempt from "as-if" rule → side effects may not run.
+            • ✅ Best practice: No side effects in copy ctor.
+
+        🛑 Preventing Copies:
+            ClassName(const ClassName&) = delete;
+            • Compiler error if copy attempted.
+
+        📝 Rule of Three (C++98) / Rule of Five (C++11):
+            If you define ONE of: Destructor, Copy Ctor, Copy Assignment
+            → Likely need ALL THREE (plus Move Ctor + Move Assignment in C++11).
+
+    🔹 6 — CLASS INITIALIZATION & EXPLICIT KEYWORD
+    -------------------------------------------------------------
+        � Initialization Forms:
+            • Copy Init: `Foo a = b;`
+            • Direct Init: `Foo a(b);`
+            • List Init: `Foo a{b};`
+
+            Key Differences:
+                1. List init disallows narrowing.
+                2. Copy init only considers non-explicit ctors.
+                3. List init prioritizes list constructors.
+
+        🛑 Explicit Keyword:
+            • Prevents implicit conversions for single-arg ctors.
+            • Also applies to ctors with multiple params if most have defaults.
+
+            class Foo {
+            public:
+                explicit Foo(int x); 
+            };
+            
+            void fn(Foo f);
+            fn(5);         // ❌ Error (no implicit conversion)
+            fn(Foo{5});    // ✅ OK
+            
+            Foo f = 5;     // ❌ Error (copy init uses implicit conversion)
+            Foo f{5};      // ✅ OK
+
+        ✅ Best Practice:
+            • Make single-arg ctors `explicit` by default.
+            • Exception: Semantically equivalent conversions (e.g., `std::string` from `const char*`).
+            • ⚠️ Do NOT make copy/move ctors explicit.
+
+        👻 Temporary Objects:
+            • Unnamed rvalues, destroyed at end of expression.
+            • Created via: Direct init `Foo{args}` or `static_cast<Foo>(x)`.
+            • Return-by-value returns a temporary.
+            • Prefer `static_cast` for fundamentals, list-init for classes.
+
+    🔹 7 — STATIC MEMBERS
+    -------------------------------------------------------------
+        - Shared by ALL objects of the class (not per-instance).
+        - Defined with `static` keyword inside class.
+        - Must be defined outside class (C++17: `inline static` allows in-class).
+
+        static int s_count;  // Declaration
+        int Foo::s_count{0}; // Definition (outside class)
+
+    🔹 8 — CONSTEXPR CLASSES
+    -------------------------------------------------------------
+        - Enables compile-time object creation (for templates, array sizes).
+
+        ✅ Literal Type Requirements:
+            • Trivial destructor.
+            • At least one `constexpr` constructor.
+            • All members must be literal types.
+
+        🔧 Constexpr Constructors:
+            • Implicitly `const` in C++11, can be non-const in C++14+.
+            • Explicitly defaulted ctors: Must explicitly mark `constexpr`.
+            • Can modify members (even in compile-time context).
+
+        constexpr Foo f{5};  // Compile-time construction
+        constexpr int val = f.get(); // Compile-time evaluation
+
+        ⚠️ Part of interface → removing `constexpr` later breaks callers.
+
+    🔹 9 — KEY INSIGHTS & BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Use `struct` for aggregates, `class` for invariants.
+        ✅ Make single-arg ctors `explicit` by default.
+        ✅ Prefer member initializer lists over body assignment.
+        ✅ Getters: `const`, return by value or `const&`.
+        ✅ Never return non-const refs to private data.
+        ✅ Use `= default` for default/copy ctor when appropriate.
+        ✅ Use `= delete` to prevent unwanted operations.
+        ✅ Follow Rule of Three/Five for resource management.
+        ✅ No side effects in copy ctors (copy elision may skip them).
+        ✅ Mark compile-time capable functions `constexpr`.
+        ⚠️ Member init order: Declaration order (avoid inter-dependencies).

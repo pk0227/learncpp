@@ -1,0 +1,142 @@
+=================================================================
+📘 C++ ITERATORS
+=================================================================
+
+    🔹 1 — INTRODUCTION TO ITERATORS
+    -------------------------------------------------------------
+        - Object designed to traverse containers.
+        - Provides access to each element sequentially.
+        - Uniform interface (operator++ movement, operator* access).
+
+        ✅ Allows iteration over many container types uniformly.
+
+    🔹 2 — ITERATOR CATEGORIES (5 TYPES)
+    -------------------------------------------------------------
+        1. Input Iterator:
+            • Read elements sequentially (one pass).
+            • Operations: *, ++, ==, !=
+            • Used in: istream_iterator, single-pass algorithms
+
+        2. Output Iterator:
+            • Write elements sequentially (one pass).
+            • Operations: *, ++
+            • Used in: ostream_iterator, single-pass algorithms
+
+        3. Forward Iterator:
+            • Read/write, multiple passes allowed.
+            • Operations: *, ++, ==, !=
+            • Used in: forward_list, unordered_set, unordered_map
+
+        4. Bidirectional Iterator:
+            • Move forward AND backward.
+            • Operations: *, ++, --, ==, !=
+            • Used in: list, set, map, multiset, multimap
+
+        5. Random Access Iterator:
+            • Move freely to any position (arithmetic operations).
+            • Operations: *, ++, --, +, -, [], <, >, <=, >=
+            • Used in: vector, deque, array
+
+        Hierarchy: Random Access ⊃ Bidirectional ⊃ Forward ⊃ Input/Output
+
+    🔹 3 — POINTERS AS ITERATORS
+    -------------------------------------------------------------
+        - Simplest iterator type.
+        - Works for sequentially stored data (pointer arithmetic).
+        - C-style arrays use pointers as iterators.
+
+    🔹 4 — STANDARD LIBRARY ITERATOR FUNCTIONS
+    -------------------------------------------------------------
+        Member Functions (containers):
+            begin()    // First element
+            end()      // One-past-last element
+            cbegin()   // Const iterator to first
+            cend()     // Const iterator to one-past-last
+            rbegin()   // Reverse iterator to last
+            rend()     // Reverse iterator to one-before-first
+            crbegin()  // Const reverse iterator to last
+            crend()    // Const reverse iterator to one-before-first
+
+        Non-Member Functions (#include <iterator>):
+            std::begin(container)  // Generic begin
+            std::end(container)    // Generic end
+
+        ✅ std::begin/std::end work with C-style arrays (non-decayed).
+        ⚠️ Doesn't work with decayed C-style arrays (no length info).
+
+    🔹 5 — ITERATOR COMPARISON
+    -------------------------------------------------------------
+        operator!= vs operator<:
+            ✅ Always use operator!= for end comparison.
+            ❌ Don't use operator< (not all iterators support it).
+
+        for (auto it = v.begin(); it != v.end(); ++it)  // Correct
+        for (auto it = v.begin(); it < v.end(); ++it)   // May not compile
+
+        Reason: Some iterator types (e.g., forward iterators) 
+                don't support relational comparison.
+
+    🔹 6 — RANGE-BASED FOR LOOPS (BEHIND THE SCENES)
+    -------------------------------------------------------------
+        - Calls begin() and end() internally.
+
+        for (auto elem : container)  // Equivalent to:
+
+        auto it_begin = std::begin(container);
+        auto it_end = std::end(container);
+        for (; it_begin != it_end; ++it_begin) {
+            auto elem = *it_begin;
+        }
+
+        Works with:
+            ✅ std::array (has begin/end members)
+            ✅ C-style fixed arrays (uses std::begin/std::end)
+            ❌ Decayed C-style arrays (no length info)
+
+    🔹 7 — ITERATOR INVALIDATION (DANGLING ITERATORS)
+    -------------------------------------------------------------
+        - Iterators can become invalid if:
+            • Elements change address (reallocation).
+            • Elements are destroyed (erase).
+
+        ⚠️ Accessing invalidated iterator → UB.
+
+        Common Causes:
+            • std::vector::push_back() (may reallocate).
+            • std::vector::erase() (shifts elements).
+            • Modifying container during range-based for loop.
+
+        Examples of Invalidation:
+            // ❌ Invalidates iterator
+            for (auto& num : v) {
+                v.push_back(num + 1);  // Reallocation invalidates iterators
+            }
+
+            // ❌ Invalidates iterator
+            for (auto it = v.begin(); it != v.end(); ++it) {
+                v.erase(it);  // Iterator now invalid
+            }
+
+        Fixing erase() Invalidation:
+            ✅ erase() returns iterator to next element:
+            for (auto it = v.begin(); it != v.end(); ) {
+                if (condition)
+                    it = v.erase(it);  // Revalidate iterator
+                else
+                    ++it;
+            }
+
+        Revalidation:
+            • Assign valid iterator (begin(), end()).
+            • Use return value from operations (erase(), insert()).
+
+    🔹 8 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Use auto for iterator types.
+        ✅ Prefer operator!= over operator< for end comparison.
+        ✅ Prefer range-based for loops when possible.
+        ✅ Use const iterators (cbegin/cend) for read-only access.
+        ✅ Be aware of iterator invalidation rules for each container.
+        ✅ Use return value from modifying operations (erase, insert).
+        ❌ Don't modify containers while iterating (invalidates iterators).
+        ❌ Don't use push_back/erase in range-based for loops.

@@ -1,0 +1,188 @@
+=================================================================
+📘 C++ ENUMS & STRUCTS
+=================================================================
+
+    🔹 1 — PROGRAM-DEFINED TYPES
+    -------------------------------------------------------------
+        Two Categories:
+            1. Enumerated types (unscoped, scoped enums)
+            2. Class types (structs, classes, unions)
+
+        Best Practices:
+            ✅ Define in header file with same name as type.
+            ✅ End type definitions with semicolon.
+            ✅ Partially exempt from ODR (can be in multiple files).
+
+    🔹 2 — UNSCOPED ENUMERATIONS
+    -------------------------------------------------------------
+        - Symbolic constants (enumerators) restricted to named set.
+
+        enum Color { red, green, blue };
+
+        Properties:
+            • Enumerators are implicitly constexpr.
+            • Distinct types (not interchangeable).
+            • Cheap to copy → pass/return by value.
+            • Full definition required (forward declaration insufficient).
+
+        Scope:
+            ⚠️ Enumerators placed in SAME scope as enum (pollution risk).
+            ✅ Prefer wrapping in namespace or class.
+
+            namespace Colors {
+                enum Color { red, green, blue };
+            }
+            Colors::red // Qualified access
+
+        Implicit Conversion:
+            • Unscoped enums → integral types (constexpr conversion).
+            • int → enum: Requires static_cast.
+
+        Value Initialization:
+            • Zero-initialized → value 0 (even if no enumerator exists).
+
+        Underlying Type:
+            • Usually `int` (compiler-dependent).
+            • Can specify: `enum Color : char { ... };`
+
+    🔹 3 — I/O WITH ENUMS
+    -------------------------------------------------------------
+        ❌ std::cin/cout don't know how to handle enums.
+
+        Workaround:
+            int input;
+            std::cin >> input;
+            Color c = static_cast<Color>(input);
+
+        Better: Overload operator<< and operator>>
+
+    🔹 4 — SCOPED ENUMERATIONS (ENUM CLASS)
+    -------------------------------------------------------------
+        - Type-safe enums (no implicit conversion to int).
+
+        enum class Color { red, green, blue };
+
+        Advantages:
+            ✅ No implicit int conversion (red + 5 → error).
+            ✅ Enumerators scoped to enum (Color::red, not just red).
+            ✅ No global namespace pollution.
+
+        Differences from Unscoped:
+            • Must qualify enumerators: Color::red.
+            • No comparison with int without explicit cast.
+            • enum struct also works (non-idiomatic, avoid).
+
+        Using Enum (C++20):
+            using enum Color;
+            auto c = red; // Now unqualified access works
+
+        ✅ Prefer scoped enums unless compelling reason for unscoped.
+
+    🔹 5 — STRUCTS & AGGREGATES
+    -------------------------------------------------------------
+        - Aggregate: Type containing multiple data members.
+
+        struct Point { int x; int y; };
+
+        Aggregate Initialization:
+            Point p1{1, 2};        // List initialization (preferred)
+            Point p2 = {1, 2};     // Copy-list initialization
+
+        Missing Initializers:
+            Point p{1};  // x=1, y=0 (value-initialized)
+
+            Priority:
+                1. Explicit initializer
+                2. Default member initializer
+                3. Value-initialization
+
+        Const/Constexpr Structs:
+            const Point origin{0, 0}; // Must initialize
+
+    🔹 6 — DESIGNATED INITIALIZERS (C++20)
+    -------------------------------------------------------------
+        - Explicitly map initializers to members.
+
+        Point p{.x = 10, .y = 20};
+
+        Rules:
+            • Must be in declaration order (or warning/error).
+            • Missing members → value-initialized.
+            • Prevents breaking code when adding new members.
+
+        ✅ Safer than positional initialization.
+
+    🔹 7 — DEFAULT MEMBER INITIALIZATION
+    -------------------------------------------------------------
+        struct Point {
+            int x{};  // Default to 0
+            int y{};
+        };
+
+        Initialization Priority:
+            1. Initializer list value
+            2. Default member initializer
+            3. Uninitialized (if no default)
+
+        ✅ Provide defaults for all members (ensures initialization).
+        ✅ Prefer value-init `{}` over default-init (no braces).
+
+    🔹 8 — PASSING & RETURNING STRUCTS
+    -------------------------------------------------------------
+        - Pass by value (small structs) or const reference (large).
+        - Return by value (RVO optimizes away copy).
+
+        Temporary Structs:
+            func(Point{1, 2}); // Rvalue, destroyed after expression
+
+            • Bind to: pass-by-value, const reference.
+            • Cannot bind to: non-const reference, address.
+
+        Return Type Deduction:
+            auto getPoint() { return Point{1, 2}; } // Deduced Point
+
+    🔹 9 — MEMBER SELECTION
+    -------------------------------------------------------------
+        Dot Operator (.):
+            point.x = 10;
+
+        Arrow Operator (->):
+            Point* ptr = &point;
+            ptr->x = 10; // Equivalent to (*ptr).x
+
+    🔹 10 — CLASS TEMPLATES
+    -------------------------------------------------------------
+        - Generic structs/classes with type parameters.
+
+        template<typename T>
+        struct Pair {
+            T first;
+            T second;
+        };
+
+        Pair<int> p{1, 2};
+
+        Multiple Template Types:
+            template<typename T, typename U>
+            struct Pair { T first; U second; };
+
+        CTAD (C++17):
+            Pair p{1, 2.5}; // Deduces Pair<int, double>
+
+            • Requires deduction guides for aggregates in C++17.
+            • C++20: Works automatically for aggregates.
+
+        ⚠️ CTAD doesn't work:
+            • With function parameters (use explicit template).
+            • With non-static member initialization.
+
+    🔹 11 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Prefer scoped enums (enum class) over unscoped.
+        ✅ Wrap unscoped enums in namespaces/classes.
+        ✅ Use designated initializers (C++20) for clarity.
+        ✅ Provide default member initializers for all members.
+        ✅ Pass structs by const reference if expensive to copy.
+        ✅ Return structs by value (RVO optimizes).
+        ✅ Use class templates for generic struct types.
+        ❌ Avoid assigning explicit enumerator values unless necessary.

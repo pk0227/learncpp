@@ -1,0 +1,210 @@
+=================================================================
+📘 C++ OBJECT RELATIONSHIPS
+=================================================================
+
+    🔹 1 — OBJECT COMPOSITION OVERVIEW
+    -------------------------------------------------------------
+        - Building complex objects from simpler ones.
+        - Models "has-a" relationship.
+
+        Terminology:
+            • Whole/Parent: Complex object.
+            • Part/Child/Component: Simpler object.
+
+        Two Subtypes:
+            1. Composition (strong ownership)
+            2. Aggregation (weak ownership)
+
+        Note: "Object composition" refers to both subtypes.
+
+    🔹 2 — COMPOSITION (PART-OF)
+    -------------------------------------------------------------
+        Requirements:
+            • Part belongs to one object at a time.
+            • Part's existence managed by whole.
+            • Part created when whole created, destroyed when whole destroyed.
+            • Unidirectional (part doesn't know about whole).
+
+        Implementation:
+            • Normal member variables.
+            • Pointer members (if class handles allocation/deallocation).
+
+        Variants:
+            • May defer part creation until needed (string with dynamic array).
+            • May accept existing part as input.
+            • May delegate destruction (garbage collection).
+
+        Key: Whole manages parts automatically (user doesn't manage anything).
+
+    🔹 3 — AGGREGATION (HAS-A)
+    -------------------------------------------------------------
+        Requirements:
+            • Part can belong to multiple objects simultaneously.
+            • Part's existence NOT managed by whole.
+            • Unidirectional (part doesn't know about whole).
+
+        Implementation:
+            • Pointer/reference members pointing to external objects.
+            • NOT responsible for creation/destruction.
+
+        Difference from Composition:
+            • Aggregation doesn't create/destroy parts.
+            • Parts exist independently.
+
+    🔹 4 — COMPOSITION VS AGGREGATION SUMMARY
+    -------------------------------------------------------------
+        +------------------------------+-------------+-------------+
+        | Property                     | Composition | Aggregation |
+        +------------------------------+-------------+-------------+
+        | Relationship                 | Whole/part  | Whole/part  |
+        | Part belongs to multiple?    | No          | Yes         |
+        | Existence managed by class?  | Yes         | No          |
+        | Directionality               | Uni         | Uni         |
+        | Verb                         | Part-of     | Has-a       |
+        +------------------------------+-------------+-------------+
+
+        ✅ Favor composition over aggregation.
+
+        Warning:
+            ❌ "Aggregate" (POD struct) ≠ "Aggregation" (relationship).
+
+    🔹 5 — STD::REFERENCE_WRAPPER
+    -------------------------------------------------------------
+        Problem:
+            std::vector<const Teacher&> v;  // ❌ Illegal (refs not assignable)
+
+        Solution:
+            #include <functional>
+            std::vector<std::reference_wrapper<const Teacher>> v;
+
+        Properties:
+            • Acts like reference but allows assignment/copying.
+            • Compatible with containers.
+            • get() retrieves object.
+
+        Usage:
+            Teacher t1, t2;
+            std::vector<std::reference_wrapper<Teacher>> v{t1, t2};
+            v[0].get().func();  // Access via get()
+
+        ⚠️ Don't use anonymous objects (dangling ref).
+
+    🔹 6 — ASSOCIATION (USES-A)
+    -------------------------------------------------------------
+        Requirements:
+            • Objects otherwise unrelated.
+            • Part can belong to multiple objects.
+            • Part's existence NOT managed.
+            • May or may not know about whole (uni/bidirectional).
+
+        Models: "uses-a" relationship.
+
+        Implementation:
+            • Typically pointers.
+
+        Reflexive Association:
+            • Objects related to same type (Course has prerequisites: Courses).
+
+        Indirect Association:
+            • Any linking data (IDs, keys, not just pointers/refs).
+
+    🔹 7 — RELATIONSHIP SUMMARY
+    -------------------------------------------------------------
+        +---------------------------+------------+------------+-------------+
+        | Property                  | Composition| Aggregation| Association |
+        +---------------------------+------------+------------+-------------+
+        | Relationship type         | Whole/part | Whole/part | Unrelated   |
+        | Multiple classes?         | No         | Yes        | Yes         |
+        | Existence managed?        | Yes        | No         | No          |
+        | Directionality            | Uni        | Uni        | Uni/Bi      |
+        | Verb                      | Part-of    | Has-a      | Uses-a      |
+        +---------------------------+------------+------------+-------------+
+
+    🔹 8 — CONTAINER CLASSES
+    -------------------------------------------------------------
+        - Class designed to hold multiple instances of a type.
+
+        Benefits over C-style arrays:
+            • Dynamic resizing.
+            • Remember size when passed to functions.
+            • Bounds-checking.
+
+        Standard Functionality:
+            • Create empty container (constructor).
+            • Insert object.
+            • Remove object.
+            • Report count.
+            • Empty all objects.
+            • Access stored objects.
+            • Sort (optional).
+
+        Types:
+            Value Containers (Composition):
+                • Store copies.
+                • Responsible for creation/destruction.
+
+            Reference Containers (Aggregation):
+                • Store pointers/references.
+                • NOT responsible for creation/destruction.
+
+        ⚠️ C++ containers typically hold one type only.
+
+        Exception Handling (Advanced):
+            • Move elements only if move ctor is noexcept.
+            • Provide strong exception safety for resize/insert.
+
+        ✅ Use standard library containers (std::vector, std::array) over custom.
+
+    🔹 9 — STD::INITIALIZER_LIST
+    -------------------------------------------------------------
+        - Compiler converts initializer list {} to std::initializer_list.
+        - #include <initializer_list>
+
+        Constructor:
+            class IntArray {
+            public:
+                IntArray(std::initializer_list<int> list);
+            };
+
+            IntArray arr{1, 2, 3};  // Calls initializer_list ctor
+
+        Properties:
+            • size() returns element count.
+            • Pass by value (view, like std::string_view).
+            • Copying doesn't copy elements.
+
+        Access Elements:
+            • Range-based for loop.
+            • begin() returns iterator (supports indexing).
+
+        List vs Direct Initialization:
+            IntArray a1(5);    // Direct → calls IntArray(int)
+            IntArray a2{5};    // List → calls IntArray(initializer_list)
+
+        ✅ List initialization favors list constructors.
+
+        Container Initialization:
+            std::vector<int> v(5);   // 5 elements (0, 0, 0, 0, 0)
+            std::vector<int> v{5};   // 1 element (5)
+
+        Guidelines:
+            • Brace init {} → list constructor (element values).
+            • Direct init () → non-list constructor (size, etc.).
+
+        ⚠️ Adding list ctors to existing class is dangerous (breaks behavior).
+
+        Assignment Operator:
+            If providing list constructor, provide one of:
+                • List assignment operator.
+                • Deep-copy assignment operator.
+                • Delete copy assignment.
+
+    🔹 10 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Favor composition over aggregation.
+        ✅ Use std::reference_wrapper for container compatibility.
+        ✅ Use standard library containers over custom.
+        ✅ Provide list assignment if providing list constructor.
+        ✅ Use direct init () for size, list init {} for elements.
+        ❌ Don't confuse aggregate (POD) with aggregation (relationship).
+        ❌ Don't omit list assignment if providing list constructor.

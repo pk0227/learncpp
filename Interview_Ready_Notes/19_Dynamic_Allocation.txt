@@ -1,0 +1,204 @@
+=================================================================
+📘 C++ DYNAMIC MEMORY ALLOCATION
+=================================================================
+
+    🔹 1 — MEMORY ALLOCATION TYPES
+    -------------------------------------------------------------
+        Static Memory Allocation:
+            • For static and global variables.
+            • Allocated once at program start.
+            • Persists entire program lifetime.
+
+        Automatic Memory Allocation:
+            • For function parameters and local variables.
+            • Allocated when block entered, freed when exited.
+            • Limited stack memory.
+
+        Dynamic Memory Allocation:
+            • Requested from OS at runtime.
+            • Allocated from heap (gigabytes in size).
+            • Size unknown at compile time.
+            • Manual allocation/deallocation required.
+
+    🔹 2 — NEW & DELETE (SINGLE VARIABLES)
+    -------------------------------------------------------------
+        Allocation (Scalar Form):
+            int* ptr{new int};        // Allocate int on heap
+            int* ptr{new int{5}};     // Allocate + initialize
+
+        Deallocation:
+            delete ptr;               // Return memory to OS
+            ptr = nullptr;            // Prevent dangling pointer
+
+        ⚠️ Access Speed:
+            • Heap access slower than stack (two steps: get address, then value).
+            • Stack: Direct address access (compiler knows location).
+
+    🔹 3 — DANGLING POINTERS
+    -------------------------------------------------------------
+        - Pointer pointing to deallocated memory.
+        - Dereferencing → UB.
+        - Deleting again → UB.
+
+        ✅ Set deleted pointers to nullptr (unless going out of scope immediately).
+
+    🔹 4 — OPERATOR NEW FAILURE
+    -------------------------------------------------------------
+        Default Behavior:
+            • Throws bad_alloc exception.
+            • Terminates if not handled.
+
+        Alternate Form (nothrow):
+            int* ptr{new (std::nothrow) int};
+            if (!ptr) { /* handle allocation failure */ }
+
+        ✅ Deleting nullptr is safe (does nothing).
+
+    🔹 5 — MEMORY LEAKS
+    -------------------------------------------------------------
+        - Happens when allocated memory never released.
+        - Program can't access memory, but OS still reserves it.
+
+        Causes:
+            • Forgetting delete/delete[].
+            • Pointer reassignment before delete.
+            • Exception thrown before delete.
+
+    🔹 6 — DYNAMICALLY ALLOCATING ARRAYS
+    -------------------------------------------------------------
+        Allocation (Array Form):
+            int* arr{new int[10]};           // Uninitialized
+            int* arr{new int[10]{}};         // Value-initialized (zeros)
+            auto* arr{new int[5]{9,7,5,3,1}}; // List initialization
+
+        Length Type: std::size_t
+            • Non-constexpr int → static_cast to std::size_t (narrowing).
+
+        Deallocation (Array Delete):
+            delete[] arr;                     // Array form
+            arr = nullptr;
+
+        ⚠️ Using delete (scalar) on array → UB (data corruption, leaks).
+
+        Length Not Accessible:
+            • new[] tracks size internally for delete[].
+            • Programmer cannot access this size.
+            • sizeof() doesn't work after decay.
+
+    🔹 7 — DYNAMIC ARRAYS VS FIXED ARRAYS
+    -------------------------------------------------------------
+        Similarities:
+            • Dynamic array behaves like decayed fixed array.
+            • No direct length access.
+            • Subscript operator works same way.
+
+        Differences:
+            • Programmer must manually deallocate (delete[]).
+            • Allocated on heap (not stack).
+
+    🔹 8 — RESIZING ARRAYS
+    -------------------------------------------------------------
+        ❌ C++ has NO built-in array resize.
+
+        Workaround (Manual Resize):
+            1. Allocate new array (new size).
+            2. Copy elements from old to new.
+            3. Delete old array.
+            4. Point to new array.
+
+        ⚠️ Error-prone, especially with class types.
+
+        ✅ Use std::vector instead (handles resizing automatically).
+
+    🔹 9 — RAII (RESOURCE ACQUISITION IS INITIALIZATION)
+    -------------------------------------------------------------
+        - Programming technique tying resource lifetime to object lifetime.
+        - Implemented via constructors/destructors.
+
+        Pattern:
+            • Acquire resource in constructor (memory, file handle, etc.).
+            • Use resource while object alive.
+            • Release resource in destructor (automatic cleanup).
+
+        ✅ Prevents resource leaks (automatic cleanup).
+
+        ⚠️ std::exit() Warning:
+            • Program terminates immediately.
+            • No destructors called.
+            • Resources not cleaned up.
+
+    🔹 10 — POINTERS TO POINTERS & MULTIDIMENSIONAL ARRAYS
+    -------------------------------------------------------------
+        Array of Pointers:
+            int** arr{new int*[10]};  // 10 int pointers
+
+        2D Dynamic Array (Rightmost Dimension Constexpr):
+            int x{7};  // Non-constexpr
+            int (*arr)[5]{new int[x][5]};  // Rightmost must be constexpr
+            auto arr{new int[x][5]};       // Simpler with auto
+
+        2D Dynamic Array (Fully Dynamic):
+            int** arr{new int*[10]};       // Allocate rows
+            for (int i{0}; i < 10; ++i)
+                arr[i] = new int[5];       // Allocate columns
+
+        ✅ Allows non-rectangular arrays (triangles):
+            for (int i{0}; i < 10; ++i)
+                arr[i] = new int[i+1];     // Each row different size
+
+        Deallocation (Reverse Order):
+            for (int i{0}; i < 10; ++i)
+                delete[] arr[i];           // Delete columns first
+            delete[] arr;                  // Delete rows last
+
+        ⚠️ Must delete in reverse order (columns before rows).
+
+    🔹 11 — FLATTENING 2D ARRAYS (RECOMMENDED)
+    -------------------------------------------------------------
+        Instead of:
+            int** arr{new int*[10]};
+            for (int i{0}; i < 10; ++i)
+                arr[i] = new int[5];
+
+        Use Flattened Array:
+            int* arr{new int[50]};  // 10x5 flattened
+
+        Convert 2D Index to 1D:
+            int getIndex(int row, int col, int numCols) {
+                return row * numCols + col;
+            }
+
+            arr[getIndex(9, 4, 5)] = 3;  // Set arr[9][4]
+
+        ✅ Simpler allocation/deallocation.
+        ✅ Better cache locality (contiguous memory).
+
+    🔹 12 — VOID POINTERS
+    -------------------------------------------------------------
+        - Pointer without type information.
+
+        void* ptr{nullptr};
+
+        Limitations:
+            ❌ Cannot dereference directly (no type).
+            ❌ Cannot delete (UB without cast).
+            ❌ Cannot do pointer arithmetic (no size info).
+
+        Deleting Void Pointer:
+            auto value{static_cast<int*>(ptr)};
+            delete value;  // Cast back to original type first
+
+        ⚠️ Void references don't exist (would be useless).
+
+    🔹 13 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Prefer std::vector over raw dynamic arrays.
+        ✅ Prefer std::unique_ptr/std::shared_ptr over raw new/delete.
+        ✅ Set deleted pointers to nullptr.
+        ✅ Use RAII pattern (constructors/destructors for resources).
+        ✅ Flatten multidimensional arrays when possible.
+        ✅ Use new (std::nothrow) if exception handling unavailable.
+        ❌ Avoid mixing new/delete[] or new[]/delete (UB).
+        ❌ Don't delete non-dynamically allocated memory.
+        ❌ Don't use std::exit() if relying on destructors.
+        ❌ Avoid void pointers (type-unsafe).

@@ -1,0 +1,146 @@
+=================================================================
+📘 C++23 KEY FEATURES (INTERVIEW FOCUS)
+=================================================================
+
+    🔹 1 — DEDUCING 'THIS' (EXPLICIT OBJECT PARAMETERS)
+    -------------------------------------------------------------
+        Problem: Need multiple overloads for const/non-const/rvalue.
+
+        Before C++23:
+            class Widget {
+                std::string data;
+            public:
+                std::string& getData() & { return data; }
+                const std::string& getData() const& { return data; }
+                std::string&& getData() && { return std::move(data); }
+            };
+
+        C++23 Solution:
+            class Widget {
+                std::string data;
+            public:
+                auto&& getData(this auto&& self) {
+                    return std::forward<decltype(self)>(self).data;
+                }
+            };
+
+        Benefits:
+            • One function handles all cases.
+            • Eliminates code duplication.
+            • Simplifies CRTP.
+            • Recursive lambdas easier.
+
+    🔹 2 — STD::PRINT & STD::PRINTLN
+    -------------------------------------------------------------
+        #include <print>
+
+        std::println("Hello, {}!", name);
+        std::print("Value: {:.2f}\n", 3.14159);
+
+        Advantages over std::cout:
+            • Shorter syntax.
+            • Better performance (no C sync).
+            • Type-safe.
+            • Consistent formatting.
+
+        Advantages over printf:
+            • Type-safe (compile-time checking).
+            • Works with user-defined types.
+            • Modern syntax.
+
+    🔹 3 — MULTIDIMENSIONAL OPERATOR[]
+    -------------------------------------------------------------
+        Before C++23:
+            matrix[i][j] = value;  // Chained calls
+            matrix(i, j) = value;   // operator()
+
+        C++23:
+            class Matrix {
+                int& operator[](size_t row, size_t col) {
+                    return data[row * cols + col];
+                }
+            };
+
+            matrix[2, 3] = 42;  // Clean syntax!
+
+    🔹 4 — STD::EXPECTED<T, E>
+    -------------------------------------------------------------
+        #include <expected>
+
+        std::expected<int, std::string> divide(int a, int b) {
+            if (b == 0)
+                return std::unexpected("Division by zero");
+            return a / b;
+        }
+
+        auto result = divide(10, 2);
+        if (result) {
+            std::println("Result: {}", *result);
+        } else {
+            std::println("Error: {}", result.error());
+        }
+
+        When to Use:
+            ✅ Common, recoverable errors.
+            ✅ Performance-critical (no exception overhead).
+            ✅ noexcept code.
+            ❌ Exceptional, unrecoverable errors (use exceptions).
+
+    🔹 5 — IF CONSTEVAL
+    -------------------------------------------------------------
+        Cleaner than std::is_constant_evaluated().
+
+        constexpr int getValue() {
+            if consteval {
+                return 42;  // Compile-time
+            } else {
+                return readFromFile();  // Runtime
+            }
+        }
+
+    🔹 6 — STD::MDSPAN
+    -------------------------------------------------------------
+        #include <mdspan>
+
+        Multi-dimensional non-owning view.
+
+        int data[12];
+        std::mdspan matrix(data, 3, 4);  // 3x4 view
+        matrix[1, 2] = 42;
+
+        Benefits:
+            • Zero-overhead.
+            • Natural indexing.
+            • Non-owning (works with existing data).
+
+    🔹 7 — SIZE_T LITERAL SUFFIX (uz)
+    -------------------------------------------------------------
+        auto size = 10uz;  // std::size_t
+        std::vector<int> v(10uz);
+
+        ✅ Avoids signed/unsigned warnings.
+
+    🔹 8 — CONSTEXPR ENHANCEMENTS
+    -------------------------------------------------------------
+        Static variables allowed in constexpr:
+
+        constexpr int counter() {
+            static int count = 0;  // OK in C++23
+            return ++count;
+        }
+
+    🔹 9 — OTHER NOTABLE FEATURES
+    -------------------------------------------------------------
+        • std::move_only_function (function wrapper for move-only types).
+        • auto(x) decay-copy idiom.
+        • std::string::contains() (substring check).
+        • Template argument deduction improvements.
+        • Reference lifetime extension improvements.
+
+    🔹 10 — INTERVIEW TIPS
+    -------------------------------------------------------------
+        ✅ Mention deducing 'this' for CRTP questions.
+        ✅ Use std::expected as exception alternative.
+        ✅ Know multidimensional operator[] for matrix questions.
+        ✅ Highlight std::print performance benefits.
+        ✅ Understand if consteval for metaprogramming.

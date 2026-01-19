@@ -1,0 +1,252 @@
+=================================================================
+📘 C++ INPUT & OUTPUT (I/O)
+=================================================================
+
+    🔹 1 — IOSTREAM LIBRARY & STREAMS
+    -------------------------------------------------------------
+        #include <iostream>
+
+        Hierarchy:
+            • Uses multiple inheritance (tested, safe to use).
+
+        Stream: Sequence of bytes (potentially unlimited).
+
+        Input Streams:
+            • Data from producer (keyboard, file, network).
+            • Buffers input until program ready.
+
+        Output Streams:
+            • Data to consumer (monitor, file, printer).
+            • Buffers output until device ready.
+
+        Classes:
+            • ios: Base (common to input/output).
+            • istream: Input (extraction >>).
+            • ostream: Output (insertion <<).
+            • iostream: Bidirectional (both << and >>).
+
+        Standard Streams:
+            cin:   istream for keyboard (stdin)
+            cout:  ostream for monitor (stdout)
+            cerr:  ostream for errors (stderr, unbuffered)
+            clog:  ostream for errors (stderr, buffered)
+
+    🔹 2 — INPUT WITH ISTREAM
+    -------------------------------------------------------------
+        Manipulators (#include <iomanip>):
+            • std::setw(n): Limit characters read.
+            • std::endl: Newline + flush.
+
+        Extraction (>>) Skips Whitespace:
+            • Blanks, tabs, newlines skipped automatically.
+
+        get():
+            char ch = std::cin.get();  // Single char (includes whitespace)
+            std::cin.get(buf, 11);     // Up to 10 chars (+null terminator)
+
+        ⚠️ get() doesn't read newline (stops at it).
+
+       getline():
+            std::cin.getline(buf, 11);  // Reads + discards newline
+
+        std::getline (for std::string):
+            #include <string>
+            std::string str;
+            std::getline(std::cin, str);
+
+        Other Functions:
+            ignore(n):    Discard n characters
+            peek():       Read without removing
+            unget():      Return last char to stream
+            putback(ch):  Put specific char back
+            gcount():     Characters extracted by last getline()
+
+    🔹 3 — OUTPUT WITH OSTREAM & IOS
+    -------------------------------------------------------------
+        Formatting Options:
+            1. Flags (setf/unsetf)
+            2. Manipulators (preferred)
+
+        Flags (std::ios):
+            std::cout.setf(std::ios::showpos);        // Turn on
+            std::cout.unsetf(std::ios::showpos);      // Turn off
+            std::cout.setf(std::ios::hex, std::ios::basefield);  // Groups
+
+        ⚠️ setf() only turns ON (doesn't turn mutually exclusive OFF).
+
+        Manipulators (std::):
+            boolalpha/noboolalpha:  true/false vs 1/0
+            showpos/noshowpos:      + prefix for positive
+            uppercase/nouppercase:  UPPER vs lower
+            dec/hex/oct:            Number base
+
+        Precision:
+            setprecision(n):  Decimal places (fixed/scientific) or significant digits (default)
+
+            Fixed/Scientific:
+                • Precision = decimal places.
+                std::fixed + setprecision(3) → 123.456
+
+            Default (no fixed/scientific):
+                • Precision = significant digits.
+
+            showpoint:  Always show decimal + trailing zeros
+
+        Width & Fill:
+            setw(n):        Field width (resets after each use)
+            setfill(ch):    Fill character
+            left/right/internal:  Justification
+
+    🔹 4 — STRING STREAMS
+    -------------------------------------------------------------
+        #include <sstream>
+
+        Classes:
+            istringstream, ostringstream, stringstream
+            (wide: wistringstream, wostringstream, wstringstream)
+
+        Input:
+            ss << "data";         // Insertion
+            ss.str("data");       // Set buffer directly
+
+        Output:
+            std::string data = ss.str();  // Get entire buffer
+            ss >> var;                     // Extract
+
+        ✅ >> iterates (sequential extraction).
+        ✅ str() returns entire buffer.
+
+        Conversion (Number ↔ String):
+            std::stringstream ss;
+            ss << 123;           // int → string
+            std::string str = ss.str();
+
+            ss << "456";
+            int num;
+            ss >> num;           // string → int
+
+        Clearing for Reuse:
+            ss.str("");          // Clear buffer
+            ss.clear();          // Reset error flags
+
+    🔹 5 — STREAM STATES & INPUT VALIDATION
+    -------------------------------------------------------------
+        Flags:
+            goodbit:  Everything okay
+            badbit:   Fatal error
+            eofbit:   End of file
+            failbit:  Non-fatal error (wrong input type)
+
+        Member Functions:
+            good():       True if goodbit
+            bad():        True if badbit
+            eof():        True if eofbit
+            fail():       True if failbit
+            clear():      Reset to goodbit
+            rdstate():    Get current flags
+            setstate(f):  Set flag
+
+        ⚠️ Stream with error → further operations ignored.
+
+        Character Testing (#include <cctype>):
+            isalnum, isalpha, isdigit, isspace, ispunct, etc.
+
+        String Validation:
+            std::all_of(str.begin(), str.end(), ::isdigit);
+
+        Numeric Validation:
+            • Extract to numeric type.
+            • Check failbit.
+
+    🔹 6 — FILE I/O
+    -------------------------------------------------------------
+        #include <fstream>
+
+        Classes:
+            ifstream:  Input (from file)
+            ofstream:  Output (to file)
+            fstream:   Both
+
+        Opening:
+            std::ofstream out{"file.txt"};
+            std::ifstream in{"file.txt"};
+
+        Closing:
+            out.close();  // Explicit
+            // Or let destructor close automatically
+
+        Buffered Output:
+            • Data stored in buffer (efficiency).
+            • Flushed on: close(), explicit flush(), std::endl.
+            ⚠️ exit() may not flush → data loss.
+
+        ✅ Always close files before exit().
+
+        Flush:
+            out.flush();
+            std::flush;
+            std::endl;  // Newline + flush (slower than '\n')
+
+        File Modes (std::ios):
+            app:     Append to end
+            ate:     Seek to end after open
+            binary:  Binary mode
+            in:      Read (default ifstream)
+            out:     Write (default ofstream)
+            trunc:   Clear contents
+
+        Combine with |:
+            std::fstream f{"file.txt", std::ios::in | std::ios::out};
+
+    🔹 7 — RANDOM FILE I/O
+    -------------------------------------------------------------
+        File Pointer:
+            • Tracks read/write position.
+            • Starts at beginning (or end if app mode).
+
+        Seeking:
+            seekg(offset, origin):  Move read position
+            seekp(offset, origin):  Move write position
+
+        Origin Flags:
+            beg:  Beginning
+            cur:  Current position
+            end:  End of file
+
+        Examples:
+            in.seekg(0, std::ios::beg);       // Start
+            in.seekg(0, std::ios::end);       // End
+            in.seekg(-10, std::ios::end);     // 10 bytes before end
+
+        Tell Position:
+            tellg():  Get read position
+            tellp():  Get write position
+
+        File Size:
+            in.seekg(0, std::ios::end);
+            size_t size = in.tellg();
+
+        ⚠️ Text file seeking unpredictable (newline encoding varies).
+        ✅ Use random access with binary files only.
+
+        fstream Read/Write Switching:
+            • Must seek after switching between read/write.
+            iofile.seekg(iofile.tellg(), std::ios::beg);  // Stay at current
+
+        Other Functions:
+            is_open():  Check if open
+            remove():   Delete file (OS function)
+
+        ⚠️ Don't write pointers to disk (addresses invalid after reload).
+
+    🔹 8 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Prefer manipulators over flags.
+        ✅ Use std::getline for strings (not cin >>).
+        ✅ Check failbit after numeric input.
+        ✅ Close files explicitly before exit().
+        ✅ Use '\n' instead of std::endl (no flush overhead).
+        ✅ Clear stream errors with clear().
+        ✅ Use binary mode for random file access.
+        ❌ Don't mix text mode with random seeking.
+        ❌ Don't write pointers/addresses to files.

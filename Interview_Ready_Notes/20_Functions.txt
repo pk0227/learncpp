@@ -1,0 +1,185 @@
+=================================================================
+📘 C++ FUNCTIONS (POINTERS, STACK, RECURSION)
+=================================================================
+
+    🔹 1 — FUNCTION POINTERS
+    -------------------------------------------------------------
+        - Pointer to a function, enabling dynamic function selection.
+
+        Syntax:
+            int (*fcnPtr)();        // Pointer to func returning int, no args
+            int (*const fcnPtr)();  // Const function pointer
+
+        Assignment:
+            fcnPtr = &foo;  // Explicit address-of
+            fcnPtr = foo;   // Implicit conversion (compiler converts func to pointer)
+
+        ⚠️ Type must match exactly (params + return type).
+        ⚠️ Function pointers ≠ void* (no conversion allowed).
+
+        Calling:
+            (*fcnPtr)(5);   // Explicit dereference
+            fcnPtr(5);      // Implicit dereference (preferred)
+
+        ❌ Default arguments don't work:
+            • Function pointer calls resolved at runtime.
+            • Default args rewritten at compile-time only.
+
+    🔹 2 — CALLBACK FUNCTIONS
+    -------------------------------------------------------------
+        - Passing functions as arguments to other functions.
+
+        void sort(int* arr, int size, bool (*cmp)(int, int));
+
+        Function Parameter Conversion:
+            bool (*cmp)(int, int)  ≡  bool cmp(int, int)
+            • Function type param auto-converts to pointer.
+
+        Default Functions:
+            void sort(int* arr, int size, bool (*cmp)(int, int) = ascending);
+
+        Type Aliases for Clarity:
+            using CompareFunc = bool(*)(int, int);
+            void sort(int* arr, int size, CompareFunc cmp);
+
+    🔹 3 — STD::FUNCTION
+    -------------------------------------------------------------
+        #include <functional>
+        std::function<bool(int, int)> fcn;
+
+        - More flexible than raw function pointers.
+        - Can store: functions, lambdas, functors.
+        - ❌ Only implicit dereference: `fcn()` (NOT `(*fcn)()`).
+
+        Type Alias:
+            using ValidateFunc = std::function<bool(int, int)>;
+
+    🔹 4 — TYPE INFERENCE FOR FUNCTION POINTERS
+    -------------------------------------------------------------
+        auto fcnPtr{&foo};  // Deduces function pointer type
+
+        ✅ Concise
+        ❌ Hides parameter/return types (harder to debug).
+
+    🔹 5 — MEMORY SEGMENTS
+    -------------------------------------------------------------
+        Code Segment (Text):
+            • Compiled program code (read-only).
+
+        BSS Segment:
+            • Zero-initialized global/static variables.
+
+        Data Segment:
+            • Initialized global/static variables.
+
+        Heap:
+            • Dynamically allocated memory.
+            • Slow allocation, manual management required.
+            • Large objects allowed.
+
+        Call Stack:
+            • Function params, local variables, return addresses.
+            • Fast allocation, auto-managed (LIFO).
+            • Limited size (~8MB on Unix).
+
+    🔹 6 — THE CALL STACK
+    -------------------------------------------------------------
+        LIFO (Last In, First Out):
+            • push(): Add item to top.
+            • pop(): Remove item from top.
+            • top() / peek(): View top item.
+
+        CPU Registers:
+            Stack Pointer (SP):
+                • Points to top of stack.
+                • Updated on every push/pop.
+
+            Program Counter (PC) / Instruction Pointer (IP):
+                • Holds address of next instruction.
+                • Updated by jumps/calls/returns.
+
+    🔹 7 — FUNCTION CALL SEQUENCE
+    -------------------------------------------------------------
+        When calling a function:
+            1. Create stack frame (pushed to call stack):
+                • Return address (where to resume after function)
+                • Function arguments
+                • Local variables
+                • Saved registers
+
+            2. CPU jumps to function start.
+            3. Function executes.
+
+        When function returns:
+            1. Restore registers from stack.
+            2. Pop stack frame (free local vars/args).
+            3. Handle return value (CPU register or stack).
+            4. CPU resumes at return address.
+
+    🔹 8 — STACK OVERFLOW
+    -------------------------------------------------------------
+        - Occurs when stack memory exhausted.
+        - Causes: Deep recursion, large local arrays.
+        - Result: Access violation, program termination.
+
+        Stack Characteristics:
+            ✅ Fast allocation
+            ✅ Auto scope management
+            ✅ Direct variable access
+            ❌ Limited size
+            ❌ Not suitable for large data structures
+
+    🔹 9 — RECURSION
+    -------------------------------------------------------------
+        - Function calling itself.
+        - Must have termination condition (base case).
+
+        Tail Call:
+            • Recursive call as last statement.
+            • Compiler can optimize to iterative (no stack overflow).
+
+        Memoization:
+            • Cache expensive function call results.
+            • Avoid redundant recalculation (e.g., Fibonacci).
+
+        Recursive vs Iterative:
+            • Iterative: Faster (no function call overhead).
+            • Recursive: Simpler code (when appropriate).
+
+        ✅ Use recursion when:
+            • Recursive code much simpler.
+            • Limited recursion depth.
+            • Iterative version requires explicit stack management.
+            • Non-performance-critical.
+
+        ✅ Generally favor iteration unless recursion makes sense.
+
+    🔹 10 — COMMAND LINE ARGUMENTS
+    -------------------------------------------------------------
+        int main(int argc, char* argv[]) { ... }
+
+        argc:
+            • Argument count (always ≥ 1, argv[0] = program name).
+
+        argv:
+            • Array of C-style string pointers (argument values).
+            • Length = argc.
+
+        ⚠️ Cannot use range-based for-loop (decayed C-style array).
+
+        Numeric Arguments:
+            • Always passed as strings.
+            • Convert using std::stringstream or std::stoi().
+
+            std::stringstream ss{argv[1]};
+            int value;
+            ss >> value;
+
+    🔹 11 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Use type aliases for function pointer clarity.
+        ✅ Prefer std::function for flexibility.
+        ✅ Favor iteration over recursion (unless simplicity/logic demands it).
+        ✅ Avoid large local variables/arrays (stack overflow risk).
+        ✅ Use memoization for expensive recursive calls.
+        ❌ Avoid deeply nested recursion without tail call optimization.

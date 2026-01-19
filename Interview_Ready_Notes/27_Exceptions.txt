@@ -1,0 +1,276 @@
+=================================================================
+📘 C++ EXCEPTIONS
+=================================================================
+
+    🔹 1 — WHY EXCEPTIONS?
+    -------------------------------------------------------------
+        Return Code Problems:
+            • Cryptic (-1 = error or valid value?).
+            • Can't return both result and error code.
+            • Requires constant checking.
+            • Doesn't work with constructors (no return type).
+            • Caller may not be equipped to handle error.
+
+        ✅ Exceptions decouple error handling from control flow.
+
+    🔹 2 — BASIC EXCEPTION HANDLING
+    -------------------------------------------------------------
+        throw:
+            throw -1;                  // Int
+            throw "Error";             // C-string
+            throw MyException{};       // Custom class
+
+        try:
+            try { /* code */ }
+
+        catch:
+            catch (int x) { /* handle int */ }
+            catch (const std::exception& e) { /* handle exception */ }
+
+        • Try block observes for exceptions.
+        • Catch block handles specific type.
+        • At least one catch per try.
+        • Multiple catches allowed.
+
+        ❌ No implicit conversions (int won't match double).
+        ✅ Derived-to-base casts allowed.
+
+        After Catch:
+            • Exception considered handled.
+            • Execution resumes after last catch.
+
+        Common Catch Actions:
+            1. Log error, continue.
+            2. Return error code.
+            3. Throw another exception.
+            4. Terminate program cleanly (in main).
+
+    🔹 3 — STACK UNWINDING
+    -------------------------------------------------------------
+        - Exception propagates up call stack until handled.
+
+        Process:
+            1. Check current function.
+            2. If not handled, check caller.
+            3. Continue up stack.
+            4. Remove functions from stack (unwinding).
+
+        ✅ Local variables destroyed during unwinding (destructors execute).
+
+        ⚠️ If no handler found → terminate (stack may/may not unwind).
+
+    🔹 4 — CATCH-ALL HANDLERS
+    -------------------------------------------------------------
+        catch (...) { /* any exception */ }
+
+        ✅ Must be placed last in catch chain.
+
+        Use:
+            • Catch unanticipated exceptions.
+            • Ensure stack unwinding.
+            • Prevent termination.
+
+        ⚠️ Assume indeterminate state → clean up, terminate.
+
+        Debugging:
+            • Disable catch-all in debug builds (#ifdef).
+
+    🔹 5 — EXCEPTIONS & CLASSES
+    -------------------------------------------------------------
+        Constructor Failure:
+            • Throw exception.
+            • Members destructed (already created).
+            ❌ Class destructor NOT called (object never completed).
+
+        Cleanup Options:
+            1. Try/catch in ctor, cleanup, rethrow.
+            2. ✅ Use RAII members (std::unique_ptr, std::fstream).
+
+        Exception Classes:
+            • Custom classes for exceptions.
+            • More descriptive than int.
+
+        ✅ Catch fundamental types by value.
+        ✅ Catch class types by const reference (avoid copying/slicing).
+
+        Inheritance:
+            • Handlers match derived types via base handler.
+            ✅ List derived handlers before base.
+
+        std::exception (#include <exception>):
+            • Base for all standard exceptions.
+            • virtual what() returns description.
+
+        ❌ Don't throw std::exception directly.
+        ✅ Throw std::runtime_error or custom derived classes.
+
+        Custom Exception:
+            class MyEx : public std::exception {
+                const char* what() const noexcept override { return "msg"; }
+            };
+
+        Lifetime:
+            • Compiler copies exception to special memory (outside stack).
+            • Persists during unwinding.
+            ⚠️ Must be copyable.
+            ⚠️ Don't keep pointers/refs to stack objects (dangling after unwind).
+
+    🔹 6 — RETHROWING EXCEPTIONS
+    -------------------------------------------------------------
+        Throw New:
+            catch (Base& e) {
+                throw DerivedEx{};  // Throw new exception
+            }
+
+        Rethrow (Wrong):
+            catch (Base& e) {
+                throw e;  // Slicing if derived!
+            }
+
+        Rethrow (Right):
+            catch (Base& e) {
+                throw;  // Rethrows exact same exception (no copy)
+            }
+
+        ✅ Use throw; (no argument) to rethrow.
+
+    🔹 7 — FUNCTION TRY BLOCKS
+    -------------------------------------------------------------
+        - For handling exceptions in member initializer lists.
+
+        Constructor:
+            Derived::Derived(int x)
+            try : Base{x}
+            {
+                // ctor body
+            }
+            catch (const std::exception& e)
+            {
+                // Must throw or rethrow (can't resolve)
+            }
+
+        Limitations:
+            +------------------+-------------+--------------------+
+            | Function Type    | Can Resolve | End Behavior       |
+            +------------------+-------------+--------------------+
+            | Constructor      | No          | Implicit rethrow   |
+            | Destructor       | Yes         | Implicit rethrow   |
+            | Non-value return | Yes         | Resolve exception  |
+            | Value-return     | Yes         | UB                 |
+            +------------------+-------------+--------------------+
+
+        ✅ Explicitly throw/rethrow/return (don't let control reach end).
+
+        ❌ Don't use for cleanup (members already destroyed → UB).
+        ✅ Use for logging or converting exception type.
+
+    🔹 8 — DANGERS & DOWNSIDES
+    -------------------------------------------------------------
+        Clean Up Resources:
+            ✅ Use RAII (stack-allocated objects manage resources).
+
+        Exceptions in Destructors:
+            ❌ NEVER throw from destructor.
+
+        Why?
+            • Destructor called during unwinding.
+            • New exception → compiler confused → terminate immediately.
+
+        ✅ Log errors instead.
+
+        Performance:
+            • Slightly larger executable.
+            • May run slower (checking overhead).
+            • Main penalty when exception thrown (unwinding expensive).
+
+        Zero-Cost Exceptions:
+            • No runtime cost in non-error case.
+            • Larger penalty when exception occurs.
+
+        When to Use:
+            ✅ Error infrequent.
+            ✅ Error serious (can't continue).
+            ✅ Can't handle at occurrence.
+            ✅ No good alternative error code.
+
+    🔹 9 — NOEXCEPT
+    -------------------------------------------------------------
+        - Specifies function won't throw exceptions (visible to caller).
+
+        void func() noexcept;
+
+        • Doesn't prevent throwing (must catch internally).
+        • Unhandled exception → std::terminate (stack may/may not unwind).
+
+        noexcept(bool):
+            noexcept(true)   // Non-throwing
+            noexcept(false)  // Potentially throwing
+
+        Implicitly noexcept:
+            • Destructors (if all member dtors noexcept).
+
+        Implicitly non-throwing (defaulted):
+            • Constructors (default, copy, move).
+            • Assignments (copy, move).
+            • Comparisons (C++20+).
+
+        ⚠️ If call potentially-throwing function → becomes potentially-throwing.
+
+        noexcept Operator:
+            constexpr bool b = noexcept(func());  // true/false at compile-time
+
+        Exception Safety Guarantees:
+            No guarantee: Anything can happen.
+            Basic: No leaks, object usable (may be modified).
+            Strong: No leaks, no state change (all or nothing).
+            No-throw/No-fail: Always succeeds or doesn't throw.
+
+        No-Throw vs No-Fail:
+            No-throw: Returns error code, doesn't throw.
+            No-fail: Always succeeds (stronger).
+
+        Always Mark noexcept:
+            • Move constructors
+            • Move assignment
+            • Swap functions
+
+        Consider Marking noexcept:
+            • Functions with no-throw/no-fail guarantee.
+            • Copy ctors/assignments (if no-throw).
+            • Destructors (implicit).
+
+        Benefits:
+            • Callable from non-exception-safe functions.
+            • Compiler optimizations (no stack unwinding state).
+            • Containers use move (fast) instead of copy (slow).
+
+        ✅ Err on side of caution (don't mark if uncertain).
+
+    🔹 10 — STD::MOVE_IF_NOEXCEPT
+    -------------------------------------------------------------
+        Problem:
+            • Move transfers ownership.
+            • Exception after transfer → source invalid.
+            • Strong guarantee broken.
+
+        Solution:
+            std::move_if_noexcept(obj);
+
+        • Returns rvalue if move ctor is noexcept.
+        • Otherwise returns lvalue (uses copy).
+
+        ✅ Strong guarantee when possible.
+
+        ⚠️ If move throwing + copy deleted → uses move anyway (gives up strong guarantee).
+
+    🔹 11 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Use RAII for resource management.
+        ✅ Catch class types by const reference.
+        ✅ List derived handlers before base.
+        ✅ Use throw; to rethrow (not throw e;).
+        ✅ Mark move ctors/assignments/swap noexcept.
+        ✅ Use exceptions for rare, serious errors.
+        ❌ Never throw from destructors.
+        ❌ Don't let function-try-block control reach end.
+        ❌ Don't use exceptions for normal control flow.

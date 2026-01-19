@@ -1,0 +1,204 @@
+=================================================================
+📘 C++ INHERITANCE
+=================================================================
+
+    🔹 1 — INTRODUCTION
+    -------------------------------------------------------------
+        - Creating new objects by acquiring attributes/behaviors from other objects.
+        - Models "is-a" relationship.
+
+        Terminology:
+            • Parent/Base/Superclass: Being inherited from.
+            • Child/Derived/Subclass: Doing the inheriting.
+
+        Syntax:
+            class Derived : public Base {};
+
+    🔹 2 — INHERITANCE CHAINS
+    -------------------------------------------------------------
+        - Classes can inherit from classes that themselves inherit.
+        - Creates hierarchy: general (top) → specific (bottom).
+
+        Benefits:
+            • Reusability (don't redefine base class members).
+            • Automatic updates (changes in base propagate).
+            • Saves work.
+
+    🔹 3 — ORDER OF CONSTRUCTION
+    -------------------------------------------------------------
+        Phases (Top-Down):
+            1. Most-base class constructed first.
+            2. Each child class constructed in order.
+            3. Most-derived class constructed last.
+
+        Derived = Two Parts: Base part + Derived part.
+
+        Reason:
+            • Child uses base members → base must exist first.
+
+        Destruction (Reverse Order):
+            • Most-derived destructor first.
+            • Then each parent in reverse.
+            • Most-base destructor last.
+
+    🔹 4 — CONSTRUCTORS & INITIALIZATION
+    -------------------------------------------------------------
+        ❌ Cannot initialize inherited members in member initializer list.
+
+        Why?
+            • Const/reference members must be initialized once.
+            • Base ctor runs first (initializes base members).
+            • Derived ctor can't re-initialize.
+
+        ✅ Can assign values in constructor body (unless const/ref).
+
+        Calling Base Constructor:
+            Derived::Derived(int x) : Base{x} { }  // Explicit call
+
+        • Base ctor always executes first (regardless of position in list).
+
+        Private Members:
+            ❌ Derived can't access base private members directly.
+            ✅ Use access functions.
+
+        Inheritance Chains:
+            • Constructors only call immediate parent ctor.
+            • C can only call B ctor (B calls A ctor).
+
+        Virtual Destructors:
+            ⚠️ If base has virtual functions → destructor must be virtual (prevents UB).
+
+    🔹 5 — ACCESS SPECIFIERS & PROTECTED
+    -------------------------------------------------------------
+        Private:
+            • Accessible by class members/friends only.
+            ❌ Derived can't access.
+
+        Protected:
+            • Accessible by class members, friends, AND derived classes.
+            ❌ Not accessible outside class.
+
+        ✅ Favor private over protected (use protected only when interface cost too high).
+
+    🔹 6 — TYPES OF INHERITANCE
+    -------------------------------------------------------------
+        Default: Private inheritance (if not specified).
+
+        +------------------+-----------+-----------+-----------+
+        | Base Specifier   | Public    | Protected | Private   |
+        +------------------+-----------+-----------+-----------+
+        | Public           | Public    | Protected | Private   |
+        | Protected        | Protected | Protected | Private   |
+        | Private          | Inaccess. | Inaccess. | Inaccess. |
+        +------------------+-----------+-----------+-----------+
+
+        Public Inheritance:
+            • Public stays public, protected stays protected.
+            • Private stays inaccessible.
+            ✅ Use this unless specific reason otherwise.
+
+        Protected Inheritance:
+            • Public/protected become protected.
+            • Rarely used.
+
+        Private Inheritance:
+            • All members become private.
+            • Use when no "is-a" relationship (implementation detail).
+
+    🔹 7 — ADDING NEW FUNCTIONALITY
+    -------------------------------------------------------------
+        - Derived can define new members.
+        - Base ❌ cannot access derived members.
+        - Derived inherits from Base (not vice versa).
+
+    🔹 8 — CALLING INHERITED FUNCTIONS
+    -------------------------------------------------------------
+        Function Lookup:
+            1. Check derived class for function name.
+            2. If not found, walk up inheritance chain.
+            3. Use overload resolution on best match.
+
+        • Compiler selects from most-derived class with matching name.
+
+        Redefining Functions:
+            • Derived function doesn't inherit base access specifier.
+            • Uses its own access specifier.
+            • Private in base can be public in derived (and vice versa).
+
+        Calling Base Version:
+            Derived::func() {
+                Base::func();  // Scope resolution
+            }
+
+        ⚠️ Without scope resolution → infinite recursion (calls itself).
+
+        Friend Functions:
+            • Can't use scope resolution (not class members).
+            • Cast to Base& to call base version.
+
+    🔹 9 — HIDING INHERITED FUNCTIONALITY
+    -------------------------------------------------------------
+        Changing Access:
+            class Derived : public Base {
+            private:
+                using Base::func;  // Make base func private
+            };
+
+        ⚠️ Can only change access for members derived class can access.
+        ❌ Can't change private to public (no access to private).
+
+        Encapsulation Subversion:
+            • Member may be private in derived, but still public in base.
+            • Can cast to Base& and access directly.
+
+        ❌ Can't change access for single overload (all or nothing).
+
+        Deleting Functions:
+            class Derived : public Base {
+                void func() = delete;  // Can't call via Derived
+            };
+
+        • Base version still accessible (Base:: or casting).
+
+    🔹 10 — MULTIPLE INHERITANCE
+    -------------------------------------------------------------
+        Syntax:
+            class Derived : public Base1, public Base2 {};
+
+        Mixins:
+            • Small classes adding properties (not interfaces).
+            • Typically templated.
+            • Don't use virtual functions.
+
+        CRTP (Curiously Recurring Template Pattern):
+            template<class T>
+            class Mixin {
+                // Access Derived via static_cast<T*>(this)
+            };
+
+            class Derived : public Mixin<Derived> {};
+
+        Problems:
+            • Increased complexity.
+            • Ambiguity (same function name in multiple bases).
+            • Diamond problem (multiply inherit from common base).
+
+        Resolution:
+            Base1::func();  // Explicitly specify which base
+
+        ⚠️ Naming conflicts increase exponentially with bases.
+
+        ✅ Avoid multiple inheritance unless alternatives more complex.
+        ✅ Most problems solvable with single inheritance.
+        • Standard library uses (std::cin, std::cout).
+
+    🔹 11 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Use public inheritance (models "is-a").
+        ✅ Make base destructors virtual if polymorphic.
+        ✅ Favor private members over protected.
+        ✅ Call base constructor explicitly if needed.
+        ✅ Use scope resolution to call base functions.
+        ✅ Avoid multiple inheritance unless necessary.
+        ❌ Don't initialize inherited members in derived initializer list.
+        ❌ Don't access base private members directly.

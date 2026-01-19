@@ -1,0 +1,153 @@
+=================================================================
+📘 C++ FUNCTION OVERLOADING & FUNCTION TEMPLATES
+=================================================================
+
+    🔹 1 — FUNCTION OVERLOADING
+    -------------------------------------------------------------
+        - Multiple functions with SAME name, DIFFERENT parameters.
+
+        Differentiating Factors:
+            ✅ Number of parameters
+            ✅ Type of parameters (excludes typedefs/type aliases/const, includes ellipsis)
+            ✅ Function-level qualifiers (const/volatile, ref-qualifiers for member functions)
+
+            ❌ Return type is NOT a differentiating factor.
+
+    🔹 2 — OVERLOAD RESOLUTION
+    -------------------------------------------------------------
+        Step 1: Exact Match + Trivial Conversions
+            • Lvalue to rvalue, non-const to const, non-ref to ref.
+
+        Step 2: Numeric Promotions
+            • char, short → int
+            • float → double
+
+        Step 3: Numeric Conversions
+            • int → double, double → int, etc.
+
+        Step 4: User-Defined Conversions
+            • Constructors, conversion operators.
+
+        Step 5: Ellipsis Match
+            • Last resort: func(...)
+
+        Step 6: No Match → Compile Error
+
+        Precedence: Exact match > Promotion > Conversion
+
+        ⚠️ Ambiguous Match: Multiple equally good matches → Compile error.
+
+    🔹 3 — DEFAULT ARGUMENTS
+    -------------------------------------------------------------
+        - Inserted by compiler at call site.
+        - Useful for backward compatibility (adding new params).
+
+        Rules:
+            • All params after first default must also have defaults.
+            • Cannot be redeclared (declare in forward declaration OR definition, not both).
+            • Best practice: Declare in forward declaration (header file).
+
+        ⚠️ Pitfalls:
+            • Can cause ambiguous matches with overloads.
+            • Don't work with function pointers.
+
+    🔹 4 — FUNCTION TEMPLATES
+    -------------------------------------------------------------
+        - Function-like definition generating overloaded functions.
+        - Uses placeholder types (type template parameters).
+
+        template<typename T>
+        T max(T x, T y) { return (x > y) ? x : y; }
+
+        Terminology:
+            • Primary template: Original template definition.
+            • Instantiated function / Specialization: Generated function.
+
+        Template Parameter Types (C++):
+            1. Type template parameters: `typename T` or `class T`
+            2. Non-type template parameters: `int N` (constexpr value)
+            3. Template template parameters: Templates as params.
+
+        Naming:
+            • Single capital letter (T, U, V) for general types.
+            • Descriptive names (Allocator) for specific requirements.
+
+    🔹 5 — FUNCTION TEMPLATE INSTANTIATION
+    -------------------------------------------------------------
+        - Creating concrete functions from templates.
+
+        Implicit Instantiation:
+            • Triggered by function call.
+            • Instantiated once per translation unit.
+
+        Template Argument Deduction:
+            • Compiler deduces template types from arguments.
+            • Normal function preferred over template if both match.
+            • ✅ Use normal call syntax (avoid explicit <T>).
+
+        ⚠️ Limitations:
+            • No type conversion during deduction.
+            • Use static_cast or explicit template args if needed.
+
+    🔹 6 — MULTIPLE TEMPLATE TYPES
+    -------------------------------------------------------------
+        template<typename T, typename U>
+        auto add(T x, U y) { return x + y; }
+
+        - Each template param can be different type.
+        - Return type can use `auto` (deduced from return statement).
+        - All return statements must have same type.
+
+        Abbreviated Function Templates (C++20):
+            auto max(auto x, auto y) { return (x > y) ? x : y; }
+            • Each `auto` is independent template parameter.
+
+    🔹 7 — NON-TYPE TEMPLATE PARAMETERS
+    -------------------------------------------------------------
+        - Template parameter with fixed type (constexpr value).
+
+        template<int N>
+        void printN() { std::cout << N; }
+
+        Allowed Types:
+            • Integral types, enumerations
+            • std::nullptr_t
+            • Floating point (C++20+)
+            • Pointer/reference to object/function/member function
+            • Literal class type (C++20+)
+
+        Use Case:
+            • Pass constexpr values for contexts requiring constant expressions.
+            • Example: std::bitset<8> (size must be compile-time constant).
+
+    🔹 8 — TEMPLATE SPECIALIZATION & DELETION
+    -------------------------------------------------------------
+        Function Template Specialization:
+            • Override template for specific type(s).
+            • Can use `= delete` to disallow specific instantiations.
+
+        Deleted Functions:
+            template<> void func<char>(char) = delete;
+            • Participate in overload resolution.
+            • Selected → Compile error.
+
+    🔹 9 — TEMPLATES IN MULTIPLE FILES
+    -------------------------------------------------------------
+        ✅ Template definitions exempt from ODR (One Definition Rule).
+        ✅ Can #include template definitions in multiple source files.
+        ✅ Instantiated functions are implicitly inline.
+
+        Best Practice:
+            • Define templates in header files.
+            • Forward declaration sufficient for runtime-only calls.
+
+    🔹 10 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Use function templates for generic code.
+        ✅ Prefer normal call syntax over explicit template args.
+        ✅ Declare default arguments in forward declarations.
+        ✅ Use abbreviated templates (C++20) for simple cases.
+        ✅ Define templates in headers for multi-file use.
+        ⚠️ Test instantiated functions with various types.
+        ⚠️ Avoid static local variables in templates (per-type instance).
+        ❌ Avoid ambiguous overloads (default args + overloading).

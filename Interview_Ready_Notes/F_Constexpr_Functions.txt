@@ -1,0 +1,113 @@
+=================================================================
+📘 C++ CONSTEXPR FUNCTIONS
+=================================================================
+
+    🔹 1 — CONSTEXPR FUNCTIONS BASICS
+    -------------------------------------------------------------
+        ✅ Purpose: Enable functions in constant expressions (compile-time evaluation).
+        
+        - Normal functions → NOT allowed in constant expressions.
+        - `constexpr` functions → CAN be used in constant expressions.
+        
+        Evaluation Timing:
+            • Compile-time: When required by constant expression context.
+            • Runtime: When called in non-constant context (just like normal functions).
+
+        🔧 Requirements for Compile-Time Evaluation:
+            • Arguments must be known at compile-time (constant expressions).
+            • All statements/expressions within function must be compile-time evaluatable.
+            • Any functions called must also evaluate at compile-time.
+
+    🔹 2 — FUNCTION PARAMETERS & CONSTEXPR
+    -------------------------------------------------------------
+        ⚠️ Parameters of constexpr functions are NOT constexpr:
+            • Can't be used in constant expressions within the function.
+            • Allows calling with non-constexpr arguments (runtime evaluation).
+            • Can be declared `const` (treated as runtime constants).
+
+        ✅ Exception: When constexpr function evaluates at compile-time:
+            • Parameter values ARE known to compiler.
+            • Can be used as arguments to other constexpr function calls.
+
+    🔹 3 — CONSTEXPR FUNCTIONS ARE IMPLICITLY INLINE
+    -------------------------------------------------------------
+        - Compiler needs full definition (not just forward declaration).
+        - ✅ Define in header files for multi-file usage.
+        - Forward declaration works for runtime-only calls.
+
+    🔹 4 — EVALUATION TIMING CATEGORIES
+    -------------------------------------------------------------
+        Always (required):
+            • Constexpr function called where constant expression required.
+            • Called from another function evaluating at compile-time.
+
+        Probably (compiler likely will):
+            • Called where constant not required, but all args are constant expressions.
+
+        Possibly (as-if rule optimization):
+            • Constexpr function with some args known at compile-time (not constant expressions).
+            • Non-constexpr function with all constant expression args.
+
+        Never:
+            • Some arguments have runtime-only values.
+
+    🔹 5 — CONSTEVAL (C++20) - IMMEDIATE FUNCTIONS
+    -------------------------------------------------------------
+        - Forces compile-time evaluation (or compile error).
+        - More restrictive than `constexpr` (can't evaluate at runtime).
+
+        consteval int square(int x) { return x * x; }
+        
+        constexpr int a = square(5);  // ✅ OK
+        int x = 5;
+        int b = square(x);            // ❌ Error (x not compile-time constant)
+
+        🔍 std::is_constant_evaluated() / if consteval (C++23):
+            • Returns true when compiler forced to evaluate at compile-time.
+            • C++23 `if consteval` preferred over `if (std::is_constant_evaluated())`.
+
+    🔹 6 — CONSTEXPR/CONSTEVAL FUNCTIONS CAN...
+    -------------------------------------------------------------
+        ✅ Use non-const local variables.
+        ✅ Use function params/local vars as args to constexpr function calls.
+        ✅ Call non-constexpr functions (only in non-constant contexts).
+        ✅ Modify static locals (C++23).
+
+        ⚠️ Calling non-constexpr functions:
+            • OK in runtime evaluation.
+            • ❌ Error in compile-time evaluation (breaks constant expression).
+
+    🔹 7 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Pure Functions → Always constexpr:
+            Pure function criteria:
+                • Same inputs → same output (deterministic).
+                • No side effects (no I/O, no global/static modifications in C++20).
+
+        ✅ When to use constexpr:
+            • Function CAN be used in constant expressions.
+            • Function is pure or mostly pure.
+
+        ❌ When NOT to use constexpr:
+            • Function cannot evaluate at compile-time.
+            • Part of interface: Removing later breaks callers.
+            • Harder to debug (can't breakpoint compile-time evaluation).
+
+        🔧 Testing:
+            • Always test in constant context (e.g., `constexpr int result = func();`).
+            • May work at runtime but fail at compile-time.
+
+        🔀 Different behavior for constant/non-constant contexts:
+            if consteval {  // C++23
+                // Compile-time path
+            } else {
+                // Runtime path
+            }
+
+    🔹 8 — KEY INSIGHTS
+    -------------------------------------------------------------
+        ⚠️ `constexpr` ≠ "will evaluate at compile-time".
+        ✅ `constexpr` = "CAN be used in constant expressions".
+        ⚠️ Constexpr is part of interface (breaking change if removed).
+        ✅ Consteval enforces compile-time evaluation (stricter).
+        🎯 Pure functions should be constexpr by default.

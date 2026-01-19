@@ -1,0 +1,192 @@
+=================================================================
+📘 C++ OPERATOR OVERLOADING
+=================================================================
+
+    🔹 1 — OPERATOR OVERLOADING BASICS
+    -------------------------------------------------------------
+        - Operators are functions in C++.
+        - Can overload for user-defined types.
+
+        Limitations:
+            ❌ Cannot overload: ?:, sizeof, ::, ., .*, typeid, casts
+            ❌ Cannot create new operators (no operator**)
+            ❌ At least one operand must be user-defined type
+            ❌ Cannot change number of operands
+            ❌ Cannot change precedence/associativity
+
+        ✅ Keep operator behavior intuitive (close to original intent).
+        ✅ Use named functions if meaning unclear.
+
+    🔹 2 — RETURN TYPES
+    -------------------------------------------------------------
+        Non-modifying (arithmetic): Return by value
+            Cents operator+(const Cents& c1, const Cents& c2);
+
+        Modifying left operand: Return by reference
+            Date& operator++();  // prefix
+            Date& operator+=(int days);
+
+    🔹 3 — THREE OVERLOADING METHODS
+    -------------------------------------------------------------
+        1. Friend Function (access private members)
+        2. Normal Function (uses public interface)
+        3. Member Function (left operand = implicit *this)
+
+        ✅ Prefer normal over friend (less coupling).
+
+    🔹 4 — I/O OPERATORS
+    -------------------------------------------------------------
+        Operator<< (Must return std::ostream&):
+            friend std::ostream& operator<<(std::ostream& out, const T& obj);
+
+        ⚠️ std::ostream cannot be copied (must return by reference).
+
+        Operator>> (Transactional Input):
+            • Clear failure mode before retry.
+            • Use transactional approach (alter on success / restore on failure).
+            • Set failbit for semantically invalid input:
+                std::cin.setstate(std::ios_base::failbit);
+
+    🔹 5 — MEMBER VS FRIEND VS NORMAL
+    -------------------------------------------------------------
+        MUST be Member:
+            • operator=, operator[], operator(), operator->
+
+        MUST be Friend/Normal:
+            • operator<<, operator>> (left operand is std::ostream/istream)
+
+        Rules of Thumb:
+            ✅ Assignment, subscript, call, arrow → Member
+            ✅ Unary operators → Member
+            ✅ Binary (non-modifying) → Normal/Friend
+            ✅ Binary (modifying left, can't add to class) → Normal/Friend
+            ✅ Binary (modifying left, can add to class) → Member
+
+    🔹 6 — UNARY OPERATORS (+, -, !)
+    -------------------------------------------------------------
+        - Implemented as member functions (operate on *this).
+        - No parameters.
+
+        Cents operator-() const { return Cents{-m_cents}; }
+
+    🔹 7 — COMPARISON OPERATORS
+    -------------------------------------------------------------
+        - Typically friend/normal functions (binary, non-modifying).
+        - Common: ==, !=, <, >, <=, >=
+
+        bool operator==(const T& lhs, const T& rhs);
+
+    🔹 8 — INCREMENT/DECREMENT
+    -------------------------------------------------------------
+        Prefix (++x):
+            Date& operator++() { /* modify */; return *this; }
+            ✅ Returns reference (chainable, efficient).
+
+        Postfix (x++):
+            Date operator++(int) {  // Dummy int param
+                Date temp{*this};
+                ++(*this);
+                return temp;
+            }
+            ⚠️ Returns by value (less efficient, creates temp).
+
+        ✅ Prefer prefix over postfix (more efficient).
+
+    🔹 9 — SUBSCRIPT OPERATOR[]
+    -------------------------------------------------------------
+        - Takes one parameter (index).
+        - Returns reference (for assignment).
+        - C++23: Supports multiple subscripts.
+
+        Const Overload:
+            int& operator[](int index);              // Non-const
+            const int& operator[](int index) const;  // Const
+
+        Parameter Type:
+            • Can be any type (int, std::string, etc.).
+
+    🔹 10 — PARENTHESIS OPERATOR()
+    -------------------------------------------------------------
+        - Variable number/type of parameters.
+        - Must be member function.
+
+        Functors (Function Objects):
+            • Classes that behave like functions.
+            • Store state in member variables.
+
+        class Accumulator {
+            int m_sum{};
+        public:
+            int operator()(int x) { return m_sum += x; }
+        };
+
+    🔹 11 — TYPECAST OPERATORS
+    -------------------------------------------------------------
+        - Convert user-defined type to another type.
+
+        operator int() const { return m_value; }  // Cents → int
+
+        Rules:
+            • Must be non-static member.
+            • Should be const.
+            • No parameters (uses *this).
+            • No return type declaration (implied by operator name).
+
+        Explicit Typecasts:
+            explicit operator bool() const;  // Prevents implicit conversion
+
+        ✅ Prefer converting constructors over typecasts.
+
+        Use Typecasts When:
+            • Converting to fundamental type (can't add constructor).
+            • Returning reference.
+            • Converting to type you can't modify (std::vector).
+            • Avoiding circular dependencies.
+
+        ⚠️ Don't define both typecast and converting constructor (ambiguous).
+
+    🔹 12 — ASSIGNMENT OPERATOR=
+    -------------------------------------------------------------
+        - Copy existing object to another existing object.
+        - Must be member function.
+
+        Copy Constructor vs Copy Assignment:
+            • Copy ctor: Initialize new object.
+            • Copy assignment: Replace existing object content.
+
+        Self-Assignment Check:
+            T& operator=(const T& rhs) {
+                if (this == &rhs) return *this;  // Check for self-assignment
+                // ... copy logic
+                return *this;
+            }
+
+        Implicit Copy Assignment:
+            • Compiler provides memberwise copy.
+            • Deleted if class has const members.
+
+    🔹 13 — SHALLOW VS DEEP COPY
+    -------------------------------------------------------------
+        Shallow Copy (Default):
+            • Copies pointer addresses (NOT pointed-to values).
+            • ⚠️ Dangerous with dynamic memory (double-delete).
+
+        Deep Copy:
+            • Allocates new memory.
+            • Copies actual values.
+            • Requires custom copy ctor and operator=.
+
+        ✅ Use std::vector, std::string (manage memory automatically).
+        ✅ Follow Rule of Three/Five if managing resources.
+
+    🔹 14 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Keep operator behavior intuitive.
+        ✅ Return by value (non-modifying), by reference (modifying).
+        ✅ Use normal functions over friends (when possible).
+        ✅ Make unary operators members.
+        ✅ Check self-assignment in operator=.
+        ✅ Use deep copy for dynamic memory.
+        ✅ Prefer standard library containers over manual memory mgmt.
+        ✅ Make typecasts explicit (prevent implicit conversion).
+        ❌ Don't define ambiguous conversions (overlapping typecast + ctor).

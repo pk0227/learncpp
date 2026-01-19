@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prashanth Koorapati - Resume</title>
+    <style>
+        :root {
+            /* REFINED PALETTE: "NAVY HIERARCHY" Adjusted */
+
+            /* 1. Name: Deep Navy (Rich, Dark, Commanding) */
+            --header-name: #0d47a1;
+
+            /* 2. Role/Icons AND SECTION HEADERS: Tech Navy (Vibrant Blue 800) */
+            /* This ensures Headers allow the 'Navy' level of Blue the user expects */
+            --header-role: #1565c0;
+            --header-icon: #1565c0;
+            --section-header: #1565c0;
+
+            /* 3. Body Text: Slate Navy (Professional, Muted, Readable) */
+            --primary-color: #2c3e50;
+
+            --text-color: #222;
+            --light-text: #444;
+            --bg-color: #fff;
+            --section-gap: 2.5rem;
+            --font-size-base: 16px;
+        }
+
+        @page {
+            size: A4;
+            margin: 0.55in;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.5;
+            font-size: var(--font-size-base);
+            color: var(--text-color);
+            margin: 0 auto;
+            max-width: 850px;
+            padding: 2rem;
+            background-color: var(--bg-color);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: 2.6rem;
+            color: var(--header-name);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin: 0 0 0.5rem 0;
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            /* Updated to use the Vibrant Tech Navy */
+            color: var(--section-header);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 0.4rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin: 0 0 0.25rem 0;
+            font-weight: 700;
+        }
+
+        p,
+        li {
+            font-size: 1rem;
+            text-align: justify;
+        }
+
+        strong {
+            font-weight: 700;
+            color: #000;
+            font-size: inherit;
+        }
+
+        /* Header Section */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .header-role {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--header-role);
+            margin-bottom: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 1rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .contact-icon {
+            width: 20px;
+            height: 20px;
+            fill: var(--header-icon);
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Unified Section Spacing */
+        section {
+            margin-bottom: var(--section-gap);
+        }
+
+        /* Skills Section */
+        .skills-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+
+        .skill-row {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            align-items: baseline;
+            gap: 1rem;
+        }
+
+        .skill-category-label {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1rem;
+        }
+
+        .skill-items {
+            color: var(--text-color);
+            line-height: 1.45;
+        }
+
+        /* Experience Section */
+        article.job {
+            margin-bottom: 1.5rem;
+        }
+
+        .company-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .job-role {
+            font-size: 1.2rem;
+            font-weight: 500;
+            /* Update job role to slate to not compete with header, or keep light text? Keeping light text as per design */
+            color: var(--light-text);
+        }
+
+        .job-meta {
+            margin-bottom: 0.6rem;
+        }
+
+        .date-range {
+            font-size: 0.95rem;
+            color: #666;
+            font-weight: 500;
+            margin-top: 0.2rem;
+            display: block;
+        }
+
+        .project-name {
+            font-weight: 700;
+            color: var(--text-color);
+            margin-top: 0.4rem;
+            margin-bottom: 0.2rem;
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin: 0.4rem 0;
+            padding-left: 1.2rem;
+        }
+
+        li {
+            margin-bottom: 0.3rem;
+        }
+
+        /* Vertical Languages List */
+        .language-list {
+            list-style-type: none;
+            padding-left: 1.2rem;
+            margin: 0;
+        }
+
+        .language-list li {
+            list-style-type: disc;
+            margin-bottom: 0.3rem;
+        }
+
+        /* Print optimization */
+        @media print {
+            body {
+                padding: 0;
+                max-width: 100%;
+                margin: 0;
+            }
+
+            @page {
+                margin: 0.5in;
+            }
+
+            section:last-child {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Prashanth Koorapati</h1>
+        <div class="header-role">Software Engineer | C / C++ | Linux</div>
+
+        <div class="contact-info">
+            <span class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
+                </svg>
+                &nbsp;k.prashanth0227@gmail.com
+            </span>
+            <span class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z" />
+                </svg>
+                &nbsp;9966306242
+            </span>
+            <span class="contact-item">
+                <svg class="contact-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                </svg>
+                &nbsp;Sircilla District, Telangana, India
+            </span>
+        </div>
+    </header>
+
+    <main>
+        <section class="summary">
+            <h2>Professional Summary</h2>
+            <ul>
+                <li>Result-oriented and quick-learning <strong>System Software Engineer</strong> with <strong>7+ years
+                        of experience</strong> in designing, developing, and maintaining Linux-based system software.
+                </li>
+                <li>Strong expertise in <strong>C/C++ system programming</strong>, including
+                    <strong>multithreading</strong> and <strong>inter-process communication (IPC)</strong>.
+                </li>
+                <li>Hands-on experience integrating and customizing <strong>open-source libraries</strong> such as
+                    <strong>Xerces-C++, Xalan-C++, XQilla</strong> to meet project-specific requirements.
+                </li>
+                <li>Proven exposure to <strong>VDI solutions</strong> and display protocols including <strong>Citrix,
+                        VMware, and Microsoft RDP</strong>.</li>
+                <li>Experienced with <strong>Git-based version control</strong> and collaborative development best
+                    practices.</li>
+            </ul>
+        </section>
+
+        <section class="skills">
+            <h2>Technical Skills</h2>
+            <div class="skills-container">
+                <div class="skill-row">
+                    <span class="skill-category-label">Programming Languages</span>
+                    <span class="skill-items">C, C++</span>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-category-label">System Programming</span>
+                    <span class="skill-items">Linux System Programming, Linux Internals, Multithreading, Inter-Process
+                        Communication (IPC)</span>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-category-label">Communication/Network Protocols</span>
+                    <span class="skill-items">TCP/IP, I2C, SPI, UART</span>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-category-label">Scripting</span>
+                    <span class="skill-items">Bash, Python</span>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-category-label">UI & Tools</span>
+                    <span class="skill-items">GDB, GCC, G++, GTK+, Glade Tool</span>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-category-label">Code Quality & Security</span>
+                    <span class="skill-items">Snyk, Coverity</span>
+                </div>
+                <div class="skill-row">
+                    <span class="skill-category-label">Version Control</span>
+                    <span class="skill-items">Git</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="experience">
+            <h2>Professional Experience</h2>
+
+            <article class="job">
+                <div class="job-meta">
+                    <div><span class="company-name">Teradata</span> | <span class="job-role">Software Engineer</span>
+                    </div>
+                    <span class="date-range">Jan 2022 – Dec 2025</span>
+                </div>
+                <div class="project-name">Project: DBS Core</div>
+                <ul>
+                    <li>Analyzed, debugged, and resolved complex defects identified during <strong>Performance
+                            Integration Testing (PIT)</strong> and <strong>System Integration Testing (SIT)</strong>,
+                        ensuring system stability and performance.</li>
+                    <li>Owned and handled <strong>frontline production and integration issues</strong>, prioritizing
+                        based on severity and business impact, and delivering <strong>quick fixes, mitigations, or
+                            workarounds</strong> to minimize downtime.</li>
+                    <li>Integrated and customized <strong>open-source libraries</strong>, including modifying source
+                        code to meet <strong>functional, performance, and compatibility requirements</strong>.</li>
+                    <li>Led <strong>performance optimization initiatives</strong> by refactoring and porting legacy code
+                        to <strong>modern C++ standards (C++11/14/17)</strong> while maintaining backward compatibility.
+                    </li>
+                    <li>Identified and mitigated <strong>security vulnerabilities</strong> reported by
+                        <strong>Snyk</strong> and <strong>Coverity</strong>, improving code quality and security
+                        compliance.
+                    </li>
+                </ul>
+            </article>
+
+            <article class="job">
+                <div class="job-meta">
+                    <div><span class="company-name">AmZetta Technologies Private Limited</span> | <span
+                            class="job-role">System Software Engineer</span></div>
+                    <span class="date-range">Aug 2018 – Jan 2022</span>
+                </div>
+                <div class="project-name">Projects: SnapVDI, SnapOS</div>
+                <ul>
+                    <li>Enhanced and maintained <strong>proprietary C-based system applications</strong> for
+                        <strong>Thin Client firmware</strong>, owning modules end-to-end.
+                    </li>
+                    <li>Improved <strong>system performance and stability</strong> by identifying and fixing critical
+                        defects.</li>
+                    <li>Developed and configured <strong>Linux systemd services</strong> and performed system-level
+                        configurations.</li>
+                    <li>Automated development and testing workflows using <strong>Shell and Python scripts</strong>.
+                    </li>
+                    <li>Designed <strong>GTK+ based UI applications</strong> and handled <strong>sanity testing, unit
+                            testing, and technical documentation</strong>.</li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="education">
+            <h2>Education</h2>
+            <div class="job-meta">
+                <div class="company-name">Aurora’s Technological and Research Institute</div>
+                <div class="job-role">B.Tech – Electronics and Communication Engineering</div>
+                <span class="date-range">2015 | Percentage: 62%</span>
+            </div>
+        </section>
+
+        <section class="languages">
+            <h2>Languages</h2>
+            <ul class="language-list">
+                <li>English</li>
+                <li>Telugu</li>
+            </ul>
+        </section>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,126 @@
+=================================================================
+📘 C++ TEMPLATE CLASSES
+=================================================================
+
+    🔹 1 — TEMPLATE CLASSES
+    -------------------------------------------------------------
+        - Template = stencil for creating classes/functions (not class/function itself).
+
+        Problem with Separate Files:
+            ❌ Typical approach (header .h, implementation .cpp) doesn't work.
+
+        Why?
+            • Compiler instantiates template only when used.
+            • Must see full definition + specific types.
+
+        Solution 1 (Recommended):
+            ✅ Put entire template code in header.
+
+            Upside: Simple.
+            Downside: Many local instances increase compile/link time.
+
+        Solution 2 (Three-File Approach):
+            • Array.h: Template declaration
+            • Array.cpp: Template implementation
+            • templates.cpp: Explicit instantiations:
+
+            template class Array<int>;
+            template class Array<double>;
+
+    🔹 2 — NON-TYPE TEMPLATE PARAMETERS
+    -------------------------------------------------------------
+        - Template parameter can be constexpr value (not just type).
+
+        template<typename T, int size>
+        class Array {};
+
+        Array<int, 10> arr;
+
+        Valid Types:
+            • Integral types
+            • Enumerations
+            • Pointer/reference to class object
+            • Pointer/reference to function
+            • Pointer/reference to member function
+            • std::nullptr_t
+            • Floating point (C++20+)
+
+        ⚠️ Must be constexpr.
+
+    🔹 3 — FUNCTION TEMPLATE SPECIALIZATION
+    -------------------------------------------------------------
+        Full Specialization:
+            template<>  // Empty brackets
+            void func<int>() { }  // Specialized for int
+
+        • All template parameters specialized.
+
+        Partial Specialization:
+            • Some parameters specialized.
+            ❌ NOT allowed for functions (only full specialization).
+
+        Requirements:
+            • Primary template must be declared first.
+            • Signature must match (except TYPE substitution).
+
+        Precedence:
+            Non-template > Full specialization > Primary template
+
+        ⚠️ Full specializations NOT implicitly inline (use inline in header).
+
+        Deleted Specializations:
+            template<>
+            void func<int>() = delete;  // Compile error if called
+
+        ✅ Favor non-template functions over specializations.
+
+    🔹 4 — CLASS TEMPLATE SPECIALIZATION
+    -------------------------------------------------------------
+        Allows customization for specific types.
+
+        template<>
+        class Storage<bool> { };  // Specialized for bool
+
+        • Treated as independent class (can change everything).
+        • Primary template must be defined first.
+
+        Specializing Member Functions:
+            template<>
+            void Storage<bool>::func() { }
+
+        ✅ Mark inline if defined in header.
+
+        Where to Define:
+            ✅ In same header as primary template (ensures visibility).
+            ✅ In source file if single translation unit only.
+
+        ⚠️ Avoid separate headers (unpredictable behavior).
+
+    🔹 5 — PARTIAL TEMPLATE SPECIALIZATION
+    -------------------------------------------------------------
+        - Specialize some (not all) template parameters.
+        ✅ Classes only (NOT standalone functions).
+
+        template<typename T>
+        class Array<T*> { };  // Partial specialization for pointers
+
+        Member Functions:
+            • Requires partially specialized class definition.
+            ❌ Can't partially specialize member without class specialization.
+
+    🔹 6 — POINTER SPECIALIZATION
+    -------------------------------------------------------------
+        - Ownership/lifetime issues with pointers.
+        - Requires special handling.
+
+        (See examples in 26_6 folder)
+
+    🔹 7 — BEST PRACTICES
+    -------------------------------------------------------------
+        ✅ Put template code in headers.
+        ✅ Use non-type parameters for compile-time constants.
+        ✅ Prefer non-template functions over function specializations.
+        ✅ Define specializations in same header as primary.
+        ✅ Mark explicit specializations inline if in header.
+        ❌ Don't use function partial specialization (not allowed).
+        ❌ Don't put specializations in separate headers.
