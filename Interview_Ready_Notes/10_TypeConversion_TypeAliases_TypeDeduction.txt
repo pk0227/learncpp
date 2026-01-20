@@ -54,6 +54,9 @@
             • Avoid narrowing conversions.
             • If needed, use `static_cast` for explicit conversion.
 
+        🔍 Type Inspection:
+            • Use `typeid(expr).name()` to show deduced type (requires <typeinfo>).
+
     🔹 5 — C++ CASTS
     -------------------------------------------------------------
         +------------------+----------------------------------------------+-------------+
@@ -138,8 +141,9 @@
                 • Full definition required (forward declaration insufficient).
 
         Function Parameters:
-            ❌ Type deduction NOT allowed for parameters:
-                void func(auto x) {}  // ❌ Error (before C++20 concepts)
+            ⚠️ Type deduction for parameters:
+                void func(auto x) {}  // ❌ Error in C++11/14/17
+                                      // ✅ Valid in C++20+ (abbreviated function template)
 
     🔹 10 — BEST PRACTICES
     -------------------------------------------------------------
