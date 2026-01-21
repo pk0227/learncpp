@@ -1,0 +1,120 @@
+================================================================================
+📘 C++ LAMBDA FUNCTIONS
+================================================================================
+
+    🔹 1 — INTRODUCTION
+    ----------------------------------------------------------------------------
+        🔥 Definition:
+            - Anonymous function defined inline.
+            - Allows defining functions inside other functions.
+            - Used for short code snippets passed to algorithms.
+
+        🧱 Syntax:
+            [ capture_clause ] ( parameters ) mutable -> return_type { body }
+
+            • Capture Clause []: Defines access to outer scope variables.
+            • Parameters (): (Optional) Input arguments.
+            • Mutable: (Optional) Allows modifying captured-by-value copies.
+            • Return Type ->: (Optional) Explicit return type.
+
+        💡 Basic Example:
+            auto printHello = []() { std::cout << "Hello!\n"; };
+            printHello();
+
+            std::vector<int> nums{1, 2, 3};
+            std::for_each(nums.begin(), nums.end(), [](int n) {
+                std::cout << n * 2 << " ";
+            });
+
+    🔹 2 — CAPTURE CLAUSE
+    ----------------------------------------------------------------------------
+        Controls how lambda accesses outer variables.
+
+        +-----------+-------------------------------------------------------+
+        | Capture   | Description                                           |
+        +-----------+-------------------------------------------------------+
+        | []        | No captures (only global/static access)               |
+        | [=]       | Capture ALL by VALUE (copy)                           |
+        | [&]       | Capture ALL by REFERENCE                              |
+        | [x]       | Capture 'x' by VALUE                                  |
+        | [&x]      | Capture 'x' by REFERENCE                              |
+        | [=, &y]   | Capture all by value, except 'y' by reference         |
+        | [&, x]    | Capture all by reference, except 'x' by value         |
+        +-----------+-------------------------------------------------------+
+
+        ⚠️ Warning (Dangling References):
+            - Returning a lambda that captures local variables by reference [&]
+              causes Undefined Behavior if the variable dies before lambda execution.
+            - Best Practice: Use [=] or explicit value capture for returned lambdas.
+
+    🔹 3 — MUTABLE KEYWORD
+    ----------------------------------------------------------------------------
+        - Default: Variables captured by value are const inside lambda.
+        - mutable: Removes constness, allowing modification of the internal copy.
+
+        ❌ Without mutable:
+            int x = 10;
+            auto f = [x]() {
+                // x++; // ERROR: x is read-only
+            };
+
+        ✅ With mutable:
+            int x = 10;
+            auto f = [x]() mutable {
+                x++; // OK: Modifies LOCAL COPY
+                std::cout << x; // Prints 11
+            };
+            std::cout << x; // Prints 10 (Original unchanged)
+
+    🔹 4 — GENERIC LAMBDAS (C++14)
+    ----------------------------------------------------------------------------
+        - Use `auto` in parameter list to accept any type.
+        - Equivalent to a function template.
+
+        Example:
+            auto print = [](const auto& val) {
+                std::cout << val << '\n';
+            };
+
+            print(10);      // Works with int
+            print("Hello"); // Works with const char*
+
+    🔹 5 — MODERN C++ FEATURES
+    ----------------------------------------------------------------------------
+        🚀 Init-Capture (C++14):
+            - Declare/initialize variables inside capture.
+            - Essential for move-only types (std::unique_ptr).
+            
+            auto ptr = std::make_unique<int>(10);
+            auto lambda = [p = std::move(ptr)]() { std::cout << *p; };
+
+        🚀 Constexpr Lambdas (C++17):
+            - Implicitly constexpr if requirements met.
+            - Can be used in compile-time contexts (static_assert).
+
+        🚀 Template Syntax (C++20):
+            - Explicit template parameters for better type control.
+            
+            auto f = []<typename T>(std::vector<T>& v) {
+                T val = v[0]; // Access type T easily
+            };
+
+        🚀 Recursive Lambdas (C++23):
+            - Use "Deducing This" for self-recursion.
+
+            auto fib = [](this auto&& self, int n) -> int {
+                if (n <= 1) return n;
+                return self(n-1) + self(n-2);
+            };
+
+    🔹 6 — BEST PRACTICES
+    ----------------------------------------------------------------------------
+        ✅ Avoid Default Captures [=] and [&]:
+            Explicit [x, &y] prevents accidental copies or dangling refs.
+
+        ✅ Use auto for Storage:
+            Lambda types are unnameable. Always use `auto`.
+            Avoid `std::function` unless necessary (has overhead).
+
+        ✅ Keep it Short:
+            Lambdas are for short logic. Use named functions for complex code.
