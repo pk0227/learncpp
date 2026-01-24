@@ -1,0 +1,22 @@
+The "Technically Exhaustive" Prompt
+"I need you to process this video/transcript into a Lecture Script or Textbook Chapter format.
+
+Core Requirement: Do NOT summarize, trim, or compress the content. I am a beginner and need every detail to understand 
+the context.
+
+Specific Instructions:
+
+Exhaustiveness: Include every single example, side-note, specific number, file path, and book title mentioned by 
+                the instructor. If he repeats a concept for emphasis, ensure the explanation in the notes is equally 
+                detailed.
+
+Narrative Style: Do not just use bullet points. Use full sentences and paragraphs to explain the 'Why' and 'How' 
+                 (e.g., tell the story of why we need Subnetting, don't just list the steps).
+
+Technical Validation: If the instructor makes a mistake (like writing the wrong number on the whiteboard but explaining 
+                      the correct logic), capture his explanation but add a correction note so I learn the technically 
+                      correct info.
+                      
+Zero Loss: Treat this as a legal transcription where every piece of information is vital.
+
+The final output should look like a thorough University Lecture Note."

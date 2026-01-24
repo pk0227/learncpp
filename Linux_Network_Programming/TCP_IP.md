@@ -1,5 +1,6 @@
 
 🧠 HOW PAGE CACHE INTERACTS WITH fork() AND COPY-ON-WRITE (COW)
+================================================================================
 
 -------------------------------------------------------------------------------
 ✨ 1. CORE IDEA (ONE-LINER)
@@ -259,6 +260,7 @@ anonymous or private file-backed mappings.
 
 
 🧪 PROVING COPY-ON-WRITE (COW) USING A C++ PROGRAM
+================================================================================
 
 ### Goal of this demo
 - Prove fork() does NOT copy memory immediately
@@ -333,6 +335,7 @@ int main()
 
 
 🔍 PROVING COW USING /proc/<pid>/smaps
+================================================================================
 
 ### Why smaps matters
 - Shows private vs shared memory
@@ -361,7 +364,7 @@ This confirms **Copy-On-Write**
 
 
 📐 VISUAL DIAGRAMS (MENTAL MODELS)
-
+================================================================================
 
 ### Classic fork() COW (anonymous memory)
 
@@ -405,7 +408,7 @@ Child  VA --> Anonymous Page P2
 
 
 🎓 INTERVIEW NOTES (CRISP & SENIOR-LEVEL)
-
+================================================================================
 
 Q1: Why does fork() not copy memory immediately?
 - fork() uses Copy-On-Write to avoid unnecessary memory duplication.
