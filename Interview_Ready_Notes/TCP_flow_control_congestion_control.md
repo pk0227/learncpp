@@ -1,4 +1,4 @@
-================================================================================
+
 🌐 TCP STREAM SOCKETS: SLIDING WINDOW & CONGESTION WINDOW (COMPLETE GUIDE)
 ================================================================================
 
@@ -14,7 +14,7 @@ Two critical safety mechanisms make this possible:
 
 This document explains BOTH in depth.
 
-================================================================================
+
 1️⃣ FLOW CONTROL — SLIDING WINDOW MECHANISM
 ================================================================================
 
@@ -114,7 +114,7 @@ Sliding window is TCP’s flow control mechanism that allows a sender to transmi
 multiple bytes without waiting for acknowledgments, limited by the receiver’s
 advertised window size.
 
-================================================================================
+
 2️⃣ CONGESTION CONTROL — CONGESTION WINDOW (cwnd)
 ================================================================================
 
@@ -229,7 +229,7 @@ Congestion control is TCP’s mechanism to dynamically adjust the sender’s rat
 using the congestion window and algorithms like slow start and congestion
 avoidance based on network feedback.
 
-================================================================================
+
 3️⃣ SLIDING WINDOW vs CONGESTION WINDOW (CRITICAL DIFFERENCE)
 ================================================================================
 
