@@ -47,8 +47,10 @@ int main()
     for (int count { 0 }; count < 4; ++count)
         std::cout << doubleArray[count] << ' ';
 
-    int size{6};
-    StaticArray<double, size> doubleArray12;        // error: the value of 'size' is not usable in a constant expression
+    // int size{6};
+    // StaticArray<double, size> doubleArray12;     // COMPILE ERROR: non-type template argument must be a constant expression
+    constexpr int size{6};                          // Correct: constexpr value allows compiler to determine array size at compile time
+    StaticArray<double, size> doubleArray12;
 
     return 0;
 }

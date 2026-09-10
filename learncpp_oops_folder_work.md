@@ -290,7 +290,11 @@ rather than *preserve and enhance*. The fix is to treat every sentence in Readme
 | **20_Functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 12+ added | ✅ 11 files linked (1 new) |
 | **21_Operator_Overloading** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 21 files verified / linked |
 | **22_Move_Semantics_n_Smart_Pointers** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 19 files verified / linked |
-| **23_Object_Relationships** | ⏳ Up Next | Pending review | Not created yet | Pending | Pending | Under construction |
+| **23_Object_Relationships** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 11 files verified / linked (1 new) |
+| **24_Inheritance** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 21 files verified / linked |
+| **25_Virtual_Functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 31 files linked (2 new) |
+| **26_Templates_and_Classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 16 files verified / linked |
+| **27_Exceptions** | ⏳ Up Next | Pending review | Not created yet | Pending | Pending | Under construction |
 
 ---
 

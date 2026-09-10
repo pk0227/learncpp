@@ -12,11 +12,11 @@ public:
 	std::string_view getName() const override { return "B"; }
 };
 
-class C : public B // compile error: cannot inherit from final class
-{
-public:
-	std::string_view getName() const override { return "C"; }
-};
+// class C : public B // compile error: cannot inherit from final class
+// {
+// public:
+// 	std::string_view getName() const override { return "C"; }
+// };
 
 int main()
 {

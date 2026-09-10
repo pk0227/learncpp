@@ -428,4 +428,38 @@
            differ (the Base version would take a Base parameter and the Derived version would take a Derived parameter). 
            Consequently, the Derived version wouldn’t be considered an override of the Base version, and thus be ineligible for virtual function resolution.
         
+    The solution: Delegating to a virtual member function
+        -- The solution to this challenge is surprisingly simple and elegant: we have friend operator<< delegate to a virtual member function!
         
+        How it works:
+        1. In the Base class:
+           -- Declare friend operator<<(std::ostream& out, const Base& b) taking a const Base&.
+           -- Inside this operator<<, instead of directly streaming data members, delegate the work by calling a virtual member function:
+              return b.print(out);
+           -- Declare and define the virtual member function:
+              virtual std::ostream& print(std::ostream& out) const
+              {
+                  out << "Base";
+                  return out;
+              }
+        2. In the Derived class:
+           -- Override print(std::ostream& out) const override:
+              std::ostream& print(std::ostream& out) const override
+              {
+                  out << "Derived";
+                  // Output derived specific members here
+                  return out;
+              }
+        
+        Why this works:
+        -- When operator<< is invoked on a Base& that actually refers to a Derived object:
+           - Overload resolution binds the call to Base's friend operator<< at compile time (since the reference type is Base&).
+           - Inside operator<<, calling b.print(out) performs dynamic dispatch via the vtable because print() is virtual.
+           - C++ resolves the call to the most-derived override (Derived::print()) at runtime!
+           - Derived::print() can also invoke Base::print(out) to print base-class fields first, ensuring clean composition.
+        
+        Alternative lightweight approach:
+        -- If classes only need to identify their type name, Base can define:
+           virtual std::string_view getType() const { return "Base"; }
+           and friend operator<< streams ref.getType().
+        -- However, delegating to virtual std::ostream& print(std::ostream& out) const is far more flexible because it allows each derived class to stream complex formatted data members directly into the stream.

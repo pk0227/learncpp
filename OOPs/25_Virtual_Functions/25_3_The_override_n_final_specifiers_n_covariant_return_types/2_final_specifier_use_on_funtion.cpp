@@ -16,7 +16,7 @@ public:
 class C : public B
 {
 public:
-	std::string_view getName() const override { return "C"; } // compile error: overrides B::getName(), which is final
+	// std::string_view getName() const override { return "C"; } // compile error: overrides B::getName(), which is final
 };
 
 int main()

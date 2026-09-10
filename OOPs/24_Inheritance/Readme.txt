@@ -139,6 +139,7 @@
         There’s one bit of trickiness that we can run into when trying to call friend functions in base classes, such as operator<<. 
         Because friend functions of the base class aren’t actually part of the base class, using the scope resolution qualifier won’t work. 
         Instead, we need a way to make our Derived class temporarily look like the Base class so that the right version of the function can be called.
+        Solution: Use static_cast<const Base&>(derived_object) to upcast the Derived object to a Base reference, which enables argument-dependent lookup and overload resolution to invoke the Base friend function.
 
     Overload resolution in derived classes
         -- As noted at the top of the lesson, the compiler will select the best matching function from the most-derived class with at least one function with that name.
@@ -196,7 +197,8 @@
            The potential for naming conflicts increases exponentially as you inherit more classes, and each of these naming conflicts needs to be resolved explicitly.
         -- More serious is the diamond problem.
             -- This occurs when a class multiply inherits from two classes which each inherit from a single base class. 
-               This leads to a diamond shaped inheritance pattern.
+               This leads to a diamond shaped inheritance pattern where the most-derived class receives two duplicate copies of the topmost base class, causing ambiguity and wasted memory.
+            -- C++ provides virtual base classes (virtual inheritance: class B : virtual public A) to solve this by ensuring only one shared instance of the base class exists in the inheritance hierarchy.
     
     Is multiple inheritance more trouble than it’s worth?
         -- Most of the problems that can be solved using multiple inheritance can be solved using single inheritance as well. 

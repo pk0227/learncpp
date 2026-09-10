@@ -127,7 +127,8 @@
     
     -- In C++, containers typically only hold one type of data. For example, if you have an array of integers, it will only hold integers. 
     -- Unlike some other languages, many C++ containers do not allow you to arbitrarily mix types. 
-    -- If you need containers to hold integers and doubles, you will generally have to write two separate containers to do this (or use templates, which is an advanced C++ feature). 
+    -- If you need containers to hold integers and doubles, you will generally have to write two separate containers to do this (or use templates, which is an advanced C++ feature).
+       Note: In modern C++ (C++17), heterogeneous containers holding multiple specified types can be created using std::vector<std::variant<int, double>> (or std::any for arbitrary types).
 
     Some advanced improvements related to exception handling:
         -- When performing resize or insertion operations, move elements only if their move constructor is noexcept.
@@ -171,7 +172,9 @@
                 -- Use brace initialization when intending to call the list constructor (e.g. because your initializers are element values)
                 -- Use direct initialization when intending to call a non-list constructor (e.g. because your initializers are not element values).
             
-            -- Adding list constructors to an existing class is dangerous
+            -- Adding list constructors to an existing class is dangerous:
+               If an existing class does not have a list constructor, callers may have initialized objects using brace syntax (e.g. MyClass obj{ 5 };) to call a non-list constructor (like MyClass(int)).
+               If you later add a constructor that accepts std::initializer_list, all existing brace initializations will silently switch to calling the new list constructor instead, potentially altering runtime behavior or breaking compilation.
 
             Class assignment using std::initializer_list
             -- Note that if you implement a constructor that takes a std::initializer_list, you should ensure you do at least one of the following:

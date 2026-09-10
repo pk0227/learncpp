@@ -21,9 +21,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const Point2D& ref)
     {
-        std::string s_str{};
-        s_str = std::format("Point2D( {}, {} )", ref.m_x, ref.m_y);
-        out << s_str;
+        out << "Point2D( " << ref.m_x << ", " << ref.m_y << " )";
         return out;
     }
 };

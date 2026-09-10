@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <string_view>
-#include <format>
 #include <utility>
 
 class Base
@@ -25,8 +24,7 @@ struct Employee
     int m_id{};
     friend std::ostream& operator<<(std::ostream& out, const Employee& ref)
     {
-        std::string s_out{std::move(std::format("( {}, {} )", ref.m_name, ref.m_id))};
-        out << s_out;
+        out << "( " << ref.m_name << ", " << ref.m_id << " )";
         return out;
     }
 };

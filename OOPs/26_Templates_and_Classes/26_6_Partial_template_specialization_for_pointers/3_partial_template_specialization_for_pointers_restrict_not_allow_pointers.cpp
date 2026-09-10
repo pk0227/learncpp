@@ -28,13 +28,13 @@ int main()
     double d1{123.456};
     double *dptr{&d1};
 
-    //Storage s{dptr};
-    //Storage s{&d1};
-    Storage s{nullptr};
+    // Storage s{dptr};    // COMPILE ERROR: static_assert triggers: pointers disallowed
+    // Storage s{&d1};     // COMPILE ERROR: static_assert triggers: pointers disallowed
+    // Storage s{nullptr}; // COMPILE ERROR: static_assert triggers: nullptr disallowed
 
     i.print();
     d.print();
-    s.print();
+    // s.print();
 
     return 0;
 }

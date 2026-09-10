@@ -1,4 +1,5 @@
 #include <iostream>
+#include <array>
 #include "animal.hpp"
 
 int main()

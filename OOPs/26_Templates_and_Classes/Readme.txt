@@ -138,6 +138,57 @@
                     Partial template specialization for member function doesn't work without partially specialized class definition.
                 
 6 — Partial template specialization for pointers
-   -- Ownership and lifetime issues
-   -- Go through the examples in 26_6_Partial_template_specialization_for_pointers folder. 
-   
+    -- When using class templates with pointer types, subtle and dangerous issues frequently arise regarding ownership, lifetimes, and copying semantics.
+    
+    The problem with pointers in generic templates:
+        -- In a generic class template Storage<T>, the class stores and copies objects of type T by value.
+        -- If T is a pointer type (e.g. double*), Storage<double*> simply stores the memory address.
+        -- This leads to several serious issues:
+           1. Shallow copy vs Deep copy:
+              Copying Storage<double*> only copies the pointer address, not the underlying value. Both Storage instances point to the same memory.
+           2. Lifetime & Dangling Pointers:
+              If the object pointed to is destroyed or falls out of scope, Storage holds a dangling pointer.
+           3. Resource Leaks:
+              If Storage does not free the pointer in its destructor, dynamically allocated memory is leaked.
+              However, if Storage does free the pointer in its destructor (delete m_value), copying Storage causes a double-free crash!
+           4. Dereferencing & Printing:
+              A generic print() function (std::cout << m_value) prints the raw memory address (e.g. 0x7ffe...) rather than the actual dereferenced value (*m_value).
+    
+    Partial template specialization for pointer types:
+        -- To solve these issues, we can partially specialize the class template specifically for pointer types:
+           template <typename T>
+           class Storage<T*>
+           {
+               // Custom implementation specifically designed for pointers
+           };
+        -- Note that this is a partial specialization because T is still a template parameter, but it is restricted to pointer types (T*).
+    
+    Managing ownership with smart pointers:
+        -- Rather than managing raw pointers manually with new and delete, the best practice is to have Storage<T*> manage ownership safely using std::unique_ptr<T>:
+           template <typename T>
+           class Storage<T*>
+           {
+               std::unique_ptr<T> m_value{};
+           public:
+               Storage(T* val) : m_value{ std::make_unique<T>(val ? *val : 0) } {}
+               
+               void print() const
+               {
+                   if (m_value)
+                       std::cout << *m_value << '\n';
+               }
+           };
+        -- This creates a deep copy on the heap and guarantees that the allocated memory is automatically freed when Storage<T*> is destroyed, with no risk of memory leaks or double-free crashes.
+    
+    Restricting pointers completely:
+        -- In some designs, storing pointers in a container is fundamentally unsafe or meaningless.
+        -- We can explicitly forbid instantiating the template with pointer types or nullptr using a compile-time static_assert:
+           template <typename T>
+           class Storage
+           {
+               static_assert(!std::is_pointer_v<T> && !std::is_null_pointer_v<T>, 
+                             "Storage<T*> and Storage<nullptr> are disallowed");
+               T m_value{};
+               // ...
+           };
+        -- Any attempt to instantiate Storage<int*> or Storage<nullptr_t> will immediately fail compilation with a clear, readable error message.
