@@ -1,5 +1,4 @@
 #include <iostream>
-#include <print>
 
 class Point
 {
@@ -39,7 +38,7 @@ std::ostream& operator<<(std::ostream& out, const Point& point)
 int main()
 {
     Point p1{};
-    std::print("Enter Point values : ");
+    std::cout << "Enter Point values : ";
     std::cin >> p1;
 
     std::cout << p1 << "\n";

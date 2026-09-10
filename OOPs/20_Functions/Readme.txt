@@ -107,7 +107,7 @@
         -- The downside is, of course, that all of the details about the function’s parameters types and return type are hidden, 
            so it’s easier to make a mistake when making a call with the function, or using its return value.
 
-20.2 — The stack and the heap
+2 — The stack and the heap
     The memory segments:
     The code segment (also called a text segment) : 
         -- where the compiled program sits in memory. The code segment is typically read-only.

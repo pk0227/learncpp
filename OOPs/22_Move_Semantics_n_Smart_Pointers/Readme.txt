@@ -96,6 +96,8 @@
     -- Instead of deep copying the source object into the destination object (the implicit object), we simply move (steal) the source object’s resources. 
        This involves shallow copying the source pointer into the implicit object, then setting the source pointer to null.
     -- Move constructors and move assignment should be marked as noexcept. This tells the compiler that these functions will not throw exceptions.
+       Why noexcept is critical: Standard library containers like std::vector provide the strong exception guarantee during reallocations. 
+       When resizing, std::vector uses std::move_if_noexcept(). If your class's move constructor is not marked noexcept, std::vector will silently fall back to making expensive deep copies during reallocations to avoid leaving elements in an invalid state if an exception is thrown.
     
     When are the move constructor and move assignment called?
         -- When the argument for construction or assignment is an rvalue. Most typically, this rvalue will be a literal or temporary value.
@@ -163,6 +165,7 @@
     std::move
         --  std::move is a standard library function that casts (using static_cast) its argument into an r-value reference, so that move semantics can be invoked. 
             Thus, we can use std::move to cast an l-value into a type that will prefer being moved over being copied. 
+        -- Importantly, std::move does NOT move anything itself at runtime and generates zero machine code instructions! It is purely a compile-time cast that converts an lvalue expression into an rvalue (an xvalue), enabling overload resolution to select move constructors or move assignment operators instead of copy operations.
         -- std::move is defined in the utility header.
         -- We can also use std::move when filling elements of a container, such as std::vector, with l-values.
 
@@ -189,7 +192,7 @@
        ensuring the object the smart pointer owns is properly deallocated.
     
     std::unique_ptr
-    -- std::unique_ptr is the C++11 replacement for std::auto_ptr.
+    -- std::unique_ptr is the C++11 replacement for std::auto_ptr (std::auto_ptr was deprecated in C++11 and completely removed in C++17 because its copy operations silently moved ownership, causing surprising bugs).
     -- It should be used to manage any dynamically allocated object that is not shared by multiple objects.
     -- So, std::unique_ptr should completely own the object it manages, not share that ownership with other classes.
     -- Unlike std::auto_ptr, std::unique_ptr properly implements move semantics.

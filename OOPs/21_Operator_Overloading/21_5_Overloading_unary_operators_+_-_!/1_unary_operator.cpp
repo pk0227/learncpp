@@ -1,6 +1,4 @@
 #include <iostream>
-#include <format>
-#include <print>
 
 class Point
 {
@@ -22,7 +20,7 @@ public:
 
 Point Point::operator-() const
 {
-    return Point{-m_x, -m_y, -m_x};
+    return Point{-m_x, -m_y, -m_z};
 }
 
 bool Point::operator!() const
@@ -32,11 +30,7 @@ bool Point::operator!() const
 
 std::ostream& operator<<(std::ostream& out, const Point& point)
 {
-    std::string s_out{std::format("Point : ({}, {}, {})", point.getX(), point.getY(), point.getZ())};
-    out << s_out;
-
-//      std::print("Point :: ({}, {}, {})", point.getX(), point.getY(), point.getZ());
-
+    out << "Point : (" << point.getX() << ", " << point.getY() << ", " << point.getZ() << ")";
     return out;
 }
 
@@ -46,9 +40,9 @@ int main()
     Point p2{};
 
     if(!p1)
-        std::print("p1 is set to Zeros\n");
+        std::cout << "p1 is set to Zeros\n";
     else
-        std::print("p1 is NOT set to zeros\n");
+        std::cout << "p1 is NOT set to zeros\n";
 
     std::cout << p1 << "\n";
     std::cout << p2 << "\n";

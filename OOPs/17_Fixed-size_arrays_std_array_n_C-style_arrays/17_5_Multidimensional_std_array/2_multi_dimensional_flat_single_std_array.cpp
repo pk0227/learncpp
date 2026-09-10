@@ -123,8 +123,9 @@ public:
     }
 
     // Method 2: C++23 multidimensional subscript - arr[row, col]
-    // New in C++23: operator[] can take multiple parameters
+    // New in C++23 (P2128R6): operator[] can take multiple parameters
     // Uses same indexing formula as operator()
+#if defined(__cpp_multidimensional_subscript) && __cpp_multidimensional_subscript >= 202110L
     T& operator[](int r, int c)
     {
         return m_arr_ref.get()[static_cast<std::size_t>((r * cols())+c)];
@@ -134,6 +135,7 @@ public:
     {
         return m_arr_ref.get()[static_cast<std::size_t>((r * cols())+c)];
     }
+#endif
 
     // Method 3: Proxy pattern for chained subscript - arr[row][col]
     // Returns ProxyRow which can be indexed again
@@ -208,13 +210,17 @@ int main()
     std::cout << "\n==============================================\n";
 
     // Access Method 2: C++23 multidimensional subscript - arrView[row, col]
-    // Requires C++23 or later
+    // Requires C++23 or later with multidimensional subscript support
+#if defined(__cpp_multidimensional_subscript) && __cpp_multidimensional_subscript >= 202110L
     for (int row=0; row < arrView.rows(); ++row)
     {
         for (int col=0; col < arrView.cols(); ++col)
             std::cout << arrView[row, col] << ' ';  // Multiple parameters in []
         std::cout << '\n';
     }
+#else
+    std::cout << "(Note: C++23 multidimensional arrView[row, col] requires C++23 multidimensional subscript support)\n";
+#endif
 
     std::cout << "\n==============================================\n";
 

@@ -23,8 +23,7 @@ public:
 
 std::ostream& operator<<(std::ostream& out, const Points& obj)
 {
-    std::string s_out{std::format("Points(x, y, z) : ({}, {}, {}) : ", obj.m_x, obj.m_y, obj.m_z)};
-    out << s_out;
+    out << "Points(x, y, z) : (" << obj.m_x << ", " << obj.m_y << ", " << obj.m_z << ") : ";
     return out;
 }
 
@@ -35,9 +34,9 @@ int main()
     //Points p2{p1};
 
     std::cout << p2 << "\n";
-    p2=p1;                      // error: non-static const member ‘const int Points::m_y’, cannot use default assignment operator
-                                // because const members can’t be assigned
-                                // It is a deleted function.  Points& operator=(const Points&) = delete;
+    // p2=p1;                      // compile error: non-static const member ‘const int Points::m_y’, cannot use default assignment operator
+                                   // because const members can’t be assigned
+                                   // It is an implicitly deleted function: Points& operator=(const Points&) = delete;
     std::cout << p2 << "\n";
 
     return 0;

@@ -3,7 +3,7 @@
 
     The hidden this pointer
         -- Inside every member function, the keyword this is a const pointer that holds the address of the current implicit object.
-        -- All non-static member functions have a this const pointer that holds the address of the implicit object.
+        -- All non-static member functions have a this pointer that holds the address of the implicit object (the constness of this depends on whether the member function itself is const or not).
         
         'this' always points to the object being operated on
             -- Each member function has a single this pointer parameter that points to the implicit object.
@@ -175,7 +175,8 @@
             -- Non-static members may not use auto or CTAD. 
 
 7.  Static member functions
-        -- static member variables are member variables that belong to the class rather than objects of the class. If a static member variable is public, it can be accessed directly using the class name and the scope resolution operator.
+        -- Just as static member variables belong to the class rather than to objects of the class, static member functions also belong to the class rather than to any object.
+        -- If a static member variable is public, it can be accessed directly using the class name and the scope resolution operator.
         -- what if a static member variable is private?
 
         Static member functions
@@ -227,6 +228,7 @@
     -- friendship is not reciprocal.
     -- Class friendship is also not transitive. If class A is a friend of B, and B is a friend of C, that does not mean A is a friend of C.
     -- Nor is friendship inherited. If class A makes B a friend, classes derived from B are not friends of A.
+    -- The friend declaration is placed inside the class that is GRANTING friendship (not inside the friend class/function). The class grants access to its own private members.
 
 10. Ref qualifiers
         -- we know how calling access functions that return references to data members can be dangerous when the implicit object is an rvalue.
@@ -238,6 +240,9 @@
             -- First, for a given function, non-ref-qualified overloads and ref-qualified overloads cannot coexist. Use one or the other.
             -- Second, similar to how a const lvalue reference can bind to an rvalue, if only a const lvalue-qualified function exists, it will accept either lvalue or rvalue implicit objects.
             -- Third, either qualified overload can be explicitly deleted (using = delete), which prevents calls to that function. For example, deleting the rvalue-qualified version prevents use of the function with rvalue implicit objects.
+            -- Ref-qualifier syntax: use & for lvalue-qualified and && for rvalue-qualified overloads.
+               e.g. std::string& getName() &  { return m_name; }          // lvalue objects
+                    std::string  getName() && { return std::move(m_name); } // rvalue objects
         
         So why don’t we recommend using ref-qualifiers?
             -- While ref-qualifiers are neat, there are some downsides to using them in this way.

@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string_view> // C++17
-#include <print>
 
 class Stupid
 {
@@ -14,7 +13,7 @@ public:
 // but it is the easiest way to show that the function parameter can be a non-integer
 void Stupid::operator[] (std::string_view index)
 {
-	std::cout << index;
+	std::cout << index << '\n';
 }
 
 int main()
@@ -22,6 +21,5 @@ int main()
 	Stupid stupid{};
 	stupid["Hello, world!"];
 
-    std::println();
 	return 0;
 }

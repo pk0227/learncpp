@@ -25,6 +25,10 @@
             -- One to get the address of the object (from the pointer).
             -- Another to get the value.
     
+    Best practice:
+        -- In modern C++, favor smart pointers (std::unique_ptr, std::shared_ptr) and standard containers (std::vector, std::string) 
+           over manual dynamic memory management using raw new and delete. Smart pointers manage lifetime automatically via RAII.
+    
     Deleting a single variable
         -- Scalar (non-array) form of the delete operator to delete a single variable.
             delete ptr; // return the memory pointed to by ptr to the operating system

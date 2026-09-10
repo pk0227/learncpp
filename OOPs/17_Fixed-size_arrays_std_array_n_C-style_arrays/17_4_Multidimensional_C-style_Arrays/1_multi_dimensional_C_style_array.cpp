@@ -14,18 +14,17 @@
  */
 
 #include <iostream>
-#include <format>
 
 // Function template to load 2D array from user input
 // Reference parameter (T (&ref)[R][C]) preserves array dimensions
 template <typename T, std::size_t R, std::size_t C>
 void loadArray(T (&ref)[R][C])
 {
-    for(auto r{0Z}; r < R; r++)  // 0Z literal creates signed size (std::ptrdiff_t)
+    for(std::size_t r{0}; r < R; ++r)
     {
-        for(auto c{0Z}; c < C; c++)
+        for(std::size_t c{0}; c < C; ++c)
         {
-            std::cout << std::format("Enter element for arr[{}][{}]: ", r, c);
+            std::cout << "Enter element for arr[" << r << "][" << c << "]: ";
             std::cin >> ref[r][c];
         }
     }
@@ -53,7 +52,7 @@ void printArray(T (&ref)[R][C])
     {
         // Inner loop: c is each element in the row
         for(const auto& c : r)
-            std::cout << std::format("{:<5}", c);  // Left-aligned, width 5
+            std::cout << c << '\t';
         std::cout << "\n";
     }
 }

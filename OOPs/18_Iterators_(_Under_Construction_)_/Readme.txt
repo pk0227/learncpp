@@ -18,6 +18,10 @@
     5. Random Access Iterator
         -- Can move freely to any position using arithmetic operations.
         -- Supported in vector, deque, array; supports *, ++, --, +, -, [], <, >, <=, >=.
+    6. Contiguous Iterator (C++20)
+        -- A specialized random access iterator where elements are logically and physically contiguous in memory.
+        -- Supported in vector, array, string, span, and raw pointers; satisfies std::contiguous_iterator.
+        -- Guaranteed that &(*(it + n)) == (&(*it) + n).
 
     -- Once the appropriate type of iterator is created, we can then use the interface provided by the iterator to traverse and 
        access elements without worrying about traversal type used how the data is stored in the container.

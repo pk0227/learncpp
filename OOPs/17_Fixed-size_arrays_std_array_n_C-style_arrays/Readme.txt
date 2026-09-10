@@ -1,9 +1,9 @@
 1 — Introduction to std::array
     -- Containers provide storage for a collection of unnamed objects (called elements).
     -- Arrays allocate their elements contiguously in memory, and allow fast, direct access to any element via subscripting.
-    -- C++ has three different array types that are commonly used: std::vector, std::array, and C-style arrays.
+    -- C++ has three different array types that are commonly used: std::vector, std::array (introduced in C++11), and C-style arrays.
         Fixed-size arrays
-            -- The length of the array be known at the point of instantiation, and that length cannot be changed afterward. 
+            -- The length of the array must be known at the point of instantiation, and that length cannot be changed afterward. 
             -- C-style arrays and std::array are both fixed-size arrays.
             -- Dynamic arrays can be resized at runtime. std::vector is a dynamic array.
     
@@ -423,7 +423,53 @@
             -- 📌 This applies to all array types, not just std::array
 
 6 — std::array and enumerations
-    -- See examples under relative path : OOPs\17_Fixed-size_arrays_std_array_n_C-style_arrays\17_3_std_array_n_enumerations
+    Using enumerators to index a std::array
+        -- Both unscoped and scoped enumerations can be used to index a std::array.
+        -- Unscoped enumerators implicitly convert to std::size_t, providing meaningful names for indices.
+        -- Scoped enumerators require static_cast<std::size_t>(e) or std::to_underlying (C++23) to convert to an index.
+        -- Using enumerators gives semantic meaning to array indices rather than relying on obscure numeric constants.
+
+    Catching missing initializers with static_assert
+        -- When using CTAD with a std::array, the compiler deduces the array size from the number of initializers provided.
+        -- If an enumerator is added to an enum but an entry is forgotten in the array initializer, the array becomes shorter than expected.
+        -- Accessing that element later causes undefined behavior.
+        -- Solution: Add a sentinel enumerator (e.g. max_students, max_colors) representing the count of valid enumerators.
+        -- Use static_assert to verify array length at compile time:
+            static_assert(std::size(myArray) == max_items, "Array size must match enum count");
+        -- This guarantees compile-time detection if an initializer is omitted.
+
+    Better enum I/O using constexpr std::array
+        -- Standard C++ streams print and read enums as integral values by default.
+        -- A constexpr std::array mapping enum values to string names provides clean, maintainable bidirectional conversion:
+            1. Enum to String:
+               constexpr std::string_view getColorName(Color c)
+               {
+                   return colorNames[static_cast<std::size_t>(c)];
+               }
+            2. String to Enum:
+               constexpr std::optional<Color> getColorFromName(std::string_view name)
+               {
+                   for (std::size_t i{ 0 }; i < std::size(colorNames); ++i)
+                   {
+                       if (colorNames[i] == name)
+                           return static_cast<Color>(i);
+                   }
+                   return std::nullopt;
+               }
+        -- Overloading operator<< and operator>> using these helper functions enables seamless, type-safe enum I/O.
+
+    Why range-based for loops don't work directly with enumerations
+        -- Enumerations are fundamental types, not iterable containers.
+        -- An enum has no begin() or end() functions, so "for (auto c : Color)" is a compile-time error.
+        -- Two solutions to iterate over enumerators:
+            1. Traditional for loop with integer casting:
+               for (int i{ 0 }; i < max_colors; ++i)
+                   doSomething(static_cast<Color>(i));
+            2. Helper constexpr std::array containing all enum values:
+               constexpr std::array allColors{ red, green, blue, orange, yellow };
+               for (auto c : allColors)
+                   doSomething(c);
+            This enables idiomatic range-based for loop syntax over enum values.
 
 7 — Introduction to C-style arrays
     -- Because C-style arrays are the only array type built directly into the language, standard library containers like std::array and 

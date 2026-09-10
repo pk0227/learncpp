@@ -114,6 +114,11 @@
     -- Because the comparison operators are all binary operators that do not modify their left operands, we can make our overloaded comparison operators either normal functions or friend functions.
     -- The most common comparison operators are ==, !=, <, >, <=, and >=.
 
+    Modern C++20 comparison: the three-way comparison operator (<=>)
+        -- In C++20, the three-way comparison operator (<=>), also known as the spaceship operator, was introduced.
+        -- When operator<=> is implemented (or defaulted via = default), the compiler can automatically synthesize relational comparisons (<, <=, >, >=).
+        -- Defining or defaulting operator== (= default) also automatically generates operator!= in C++20.
+
 8 — Overloading the increment and decrement operators
     -- Overloading the increment (++) and decrement (--) operators is pretty straightforward, with one small exception. There are actually two versions of the increment and decrement operators: 
         a prefix increment and decrement (e.g. ++x; --y;)
@@ -237,5 +242,17 @@
     -- Classes with dynamically allocated variables need to have a copy constructor and assignment operator that do a deep copy.
     -- Favor using classes in the standard library over doing your own memory management.
 
+    Rule of Three
+        -- If a class requires a user-defined destructor, copy constructor, or copy assignment operator, it almost certainly requires all three (the "Rule of Three").
+        -- In modern C++ (with move semantics covered in Chapter 22), this expands to the "Rule of Five" (adding move constructor and move assignment operator), or the "Rule of Zero" (favoring classes that manage resources automatically via RAII wrappers so that no custom copy/move/destruct operations need to be written).
+
 14 — Overloading operators and function templates
-    -- 
+    -- Function templates can be instantiated with user-defined types (classes/structs) in addition to fundamental types.
+    -- When a function template uses operators (such as +, +=, <, <<, /=) on template type parameters, the instantiated type must provide overloads for those operators.
+    -- If an argument type is supplied that does not support all the operators used within the template function body, the compiler will generate a compile-time error at template instantiation time.
+
+    Initializing accumulators in templates
+        -- In non-template code, accumulators are often initialized with literal 0 (e.g. int sum = 0;).
+        -- However, in a function template (e.g. template <typename T> T average(...)), writing T sum{ 0 }; can cause compilation failure because the type T may not have a constructor that accepts an int.
+        -- Best Practice: Value-initialize the accumulator variable instead: T sum{};
+           This invokes the default constructor of user-defined type T (or zero-initializes fundamental types), ensuring generic compatibility with any default-constructible type.

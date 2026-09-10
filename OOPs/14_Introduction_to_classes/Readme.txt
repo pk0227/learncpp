@@ -158,7 +158,7 @@ OOP brings a number of other useful concepts to the table:
     
 7. Introduction to constructors
     Constructors
-        -- A constructor is a special member function that is automatically called after a non-aggregate class type object is created.
+        -- A constructor is a special member function that is automatically called after a class type object is created.
         -- Many new programmers are confused about whether constructors create the objects or not. They do not -- the compiler sets up the memory allocation for the object prior to the constructor call. 
            The constructor is then called on the uninitialized object.
         -- However, if a matching constructor cannot be found for a set of initializers, the compiler will error. So while constructors don’t create objects, the lack of a matching constructor will prevent creation of an object.
@@ -245,6 +245,7 @@ OOP brings a number of other useful concepts to the table:
     Explicitly defaulted default constructor vs empty user-defined constructor
         -- When value initializing a class, if the class has a user-defined default constructor, the object will be default initialized.
         -- if the class has a default constructor that is not user-provided (that is, a default constructor that is either implicitly defined, or defined using = default), the object will be zero-initialized before being default initialized.
+        -- Practical implication: with = default or implicit constructor + value-init (MyClass obj{}), members without initializers will be zero-initialized (e.g., int members = 0). With a user-provided default constructor + value-init, members without explicit initialization in the constructor body or member initializer list are left uninitialized.
     
     -- Only create a default constructor when it makes sense
 
@@ -255,7 +256,7 @@ OOP brings a number of other useful concepts to the table:
 
     Delegating constructors
         -- Constructors are allowed to delegate (transfer responsibility for) initialization to another constructor from the same class type. This process is sometimes called constructor chaining and such constructors are called delegating constructors.
-        -- First, a constructor that delegates to another constructor is not allowed to do any member initialization itself. So your constructors can delegate or initialize, but not both.
+        -- First, a constructor that delegates to another constructor cannot have any member initializers in its member initializer list -- delegation and member initialization are mutually exclusive in the MIL. However, the constructor body can still contain statements. So your constructors can delegate or initialize (via MIL), but not both.
         -- Second, it’s possible for one constructor to delegate to another constructor, which delegates back to the first constructor. This forms an infinite loop, and will cause your program to run out of stack space and crash. You can avoid this by ensuring all of your constructors resolve to a non-delegating constructor.
         -- If you have multiple constructors, consider whether you can use delegating constructors to reduce duplicate code.
         
@@ -263,7 +264,6 @@ OOP brings a number of other useful concepts to the table:
             -- Members for which the user must provide initialization values should be defined first (and as the leftmost parameters of the constructor). 
                Members for which the user can optionally provide initialization values (because the default values are acceptable) should be defined second (and as the rightmost parameters of the constructor). 
 
-            -- Use of the static keyword in class allows us to have a special member that is shared by all Employee objects. Without the static, each Employee object would have its own independent member (which would work, but be a waste of memory).
 
 11. Temporary class objects
         -- A temporary object (sometimes called an anonymous object or an unnamed object) is an object that has no name and exists only for the duration of a single expression.
@@ -278,8 +278,8 @@ OOP brings a number of other useful concepts to the table:
         
         -- Prefer static_cast when converting to a fundamental type, and a list-initialized temporary when converting to a class type.
         
-        -- Prefer static_cast when to create a temporary object when any of the following are true:
-            -- We need to performing a narrowing conversion.
+        -- Prefer static_cast to create a temporary object when any of the following are true:
+            -- We need to perform a narrowing conversion.
             -- We want to make it really obvious that we’re converting to a type that will result in some different behavior (e.g. a char to an int).
             -- We want to use direct-initialization for some reason (e.g. to avoid list constructors taking precedence).
 
@@ -320,20 +320,21 @@ OOP brings a number of other useful concepts to the table:
         -- Copy initialization only considers non-explicit constructors/conversion functions. 
         -- List initialization prioritizes matching list constructors over other matching constructors.
 
-    -- constructor member initializer list, we can only use direct forms of initialization(direct initialization , direct list initialization), not copy initialization.
+    -- In constructor member initializer lists, we can only use direct forms of initialization (direct initialization, direct list initialization), not copy initialization.
 
     Copy elision
         -- is a compiler optimization technique that allows the compiler to remove unnecessary copying of objects. In other words, in cases where the compiler would normally call a copy constructor, the compiler is free to rewrite the code to avoid the call to the copy constructor altogether. 
            When the compiler optimizes away a call to the copy constructor, we say the constructor has been elided.
         -- Unlike other types of optimization, copy elision is exempt from the “as-if” rule. 
-        -- Copy constructors should not have side effects other than copying -- if the compiler elides the call to the copy constructor, the side effects won’t execute, and the observable behavior of the program will change.
+        -- Copy constructors should not have side effects other than copying -- if the compiler elides the call to the copy constructor, the side effects won't execute, and the observable behavior of the program will change.
+        -- Copy elision has two common forms: RVO (Return Value Optimization) -- when a temporary object is returned directly, and NRVO (Named Return Value Optimization) -- when a named local variable is returned.
         
 14. Converting constructors and the explicit keyword
     Converting constructors
         -- A constructor that can be used to perform an implicit conversion is called a converting constructor. 
         -- By default, all constructors are converting constructors.
         -- Only one user-defined conversion may be applied.
-        -- An implicit conversion can be trivially converted into an explicit definition by using direct list initialization (or direct initialization).
+        -- An implicit conversion (that would otherwise use a converting constructor) can be made explicit at the call site by using direct initialization or direct list initialization instead of copy initialization.
     
     The explicit keyword
         -- we can use the explicit keyword to tell the compiler that a constructor should not be used as a converting constructor.
