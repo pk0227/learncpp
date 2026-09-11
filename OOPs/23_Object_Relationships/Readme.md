@@ -222,18 +222,48 @@ public:
 - **Reflexive Association**: An object has an association with other objects of its **same type** (e.g., an `Employee` who reports to another `Employee` acting as a manager).
 - **Indirect Association**: Objects do not need to hold direct pointers or references to each other. They can be linked indirectly via unique identifiers (e.g., IDs, lookup keys, database primary keys, or lookup tables).
 
-### Comparison: Composition vs. Aggregation vs. Association
+### Dependencies
 
-| Property | Composition | Aggregation | Association |
-|---|---|---|---|
-| **Relationship Type** | Whole / Part | Whole / Part | Unrelated peers |
-| **Members Belong to Multiple Classes?** | **No** (exclusive) | **Yes** (shared) | **Yes** (shared) |
-| **Lifetime Managed by Class?** | **Yes** (strict) | **No** | **No** |
-| **Directionality** | Unidirectional | Unidirectional | Unidirectional or Bidirectional |
-| **Relationship Verb** | **Part-of** | **Has-a** | **Uses-a** |
+A **dependency** occurs when an object relies on another object temporarily in order to perform a specific task, but does **not** maintain a persistent pointer or reference to that object as a member variable.
+
+- Models a transient **"depends-on"** or client-supplier relationship.
+- Dependencies typically manifest when:
+  1. An object is passed to a member function by reference or value (e.g. `std::ostream&` passed to `operator<<`).
+  2. An object is instantiated as a local variable inside a member function.
+  3. An object is returned from a member function.
+
+```cpp
+class Printer
+{
+public:
+    void print(std::string_view msg) const { std::cout << msg << '\n'; }
+};
+
+class Document
+{
+    std::string m_text;
+public:
+    // Document DEPENDS on Printer during printJob(), but does not store Printer as a member!
+    void printJob(const Printer& p) const { p.print(m_text); }
+};
+```
+
+> [!TIP]
+> Prefer **dependencies** over associations where persistent member state is not strictly required. Fewer member associations reduce coupling, making classes easier to isolate, unit test, and maintain.
+
+### Comparison: Composition vs. Aggregation vs. Association vs. Dependency
+
+| Property | Composition | Aggregation | Association | Dependency |
+|---|---|---|---|---|
+| **Relationship Type** | Whole / Part | Whole / Part | Unrelated peers | Transient service |
+| **Members Belong to Multiple Classes?** | **No** (exclusive) | **Yes** (shared) | **Yes** (shared) | **N/A** (not a member) |
+| **Lifetime Managed by Class?** | **Yes** (strict) | **No** | **No** | **No** |
+| **Directionality** | Unidirectional | Unidirectional | Uni/Bidirectional | Unidirectional |
+| **Relationship Verb** | **Part-of** | **Has-a** | **Uses-a** | **Depends-on** |
 
 ### 📁 Code Examples for Section 4
-- [`23_3_Association/1_association.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/23_Object_Relationships/23_3_Association/1_association.cpp): Implements a bidirectional association between `Doctor` and `Patient`, demonstrating reciprocal pointer tracking without lifetime ownership.
+- [`23_3_Association/1_association.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/23_Object_Relationships/23_3_Association/1_association.cpp): Implements a bidirectional association between `Driver` and `Car`, demonstrating reciprocal pointer tracking without lifetime ownership.
+- [`23_3_Association/2_dependencies.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/23_Object_Relationships/23_3_Association/2_dependencies.cpp): Demonstrates transient dependencies (parameters and streaming operators) versus persistent associations (member pointers).
 
 ---
 
@@ -367,5 +397,20 @@ IntArray<int> arr;
 arr = {1, 2, 3, 4, 5}; // Convenient list assignment!
 ```
 
+### Elements of `std::initializer_list` Are Always `const`
+
+The underlying elements contained in a `std::initializer_list<T>` are **strictly `const T`**:
+
+```cpp
+// Even when using std::move, elements are 'const T' and will be COPIED!
+std::vector<Widget> vec{ std::move(w1), std::move(w2) }; // Invokes COPY constructor!
+```
+
+> [!CAUTION]
+> Because elements of `std::initializer_list<T>` are `const`:
+> 1. Elements **cannot be moved out** of an initializer list; attempting to move them silently falls back to copy construction.
+> 2. Containers of **move-only types** (such as `std::vector<std::unique_ptr<T>>`) **cannot** be initialized using initializer list braces (`{}`). Attempting to do so triggers a compilation error because `std::unique_ptr` copy operations are deleted. Use `.push_back(std::move(ptr))` or `.emplace_back(...)` instead.
+
 ### 📁 Code Examples for Section 6
 - [`23_5_std_initializer_list/1_initializer_list_gotchas.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/23_Object_Relationships/23_5_std_initializer_list/1_initializer_list_gotchas.cpp): Demonstrates list constructor resolution vs direct constructor initialization (`SimpleArray(5)` vs `SimpleArray{5}`), vector comparison, element iteration, and the list assignment operator.
+- [`23_5_std_initializer_list/2_initializer_list_const_trap.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/23_Object_Relationships/23_5_std_initializer_list/2_initializer_list_const_trap.cpp): Demonstrates that `std::initializer_list` elements are `const T`, why moving silently copies, and why move-only types (`std::unique_ptr`) fail with list initialization.

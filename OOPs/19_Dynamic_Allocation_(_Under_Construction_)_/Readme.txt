@@ -50,6 +50,14 @@
             int* value { new (std::nothrow) int };
         -- Deleting a null pointer is okay, and does nothing. There is no need to conditionalize your delete statements.
 
+    Placement new
+        -- Normal operator new allocates memory from the heap and then constructs an object in that memory.
+        -- C++ also provides placement new: new (address) Type(args); (defined in header <new>).
+        -- Placement new constructs an object in pre-existing, already allocated memory (without allocating any new memory).
+        -- Because placement new does not allocate heap memory, you MUST NOT use delete on a placement-new object!
+        -- Instead, you must explicitly call the destructor: objPtr->~Type();
+        -- This is how standard library containers like std::vector allocate uninitialized raw storage and construct elements on-demand.
+
     Memory leaks
         -- It happens when you allocate memory using new, new[], malloc, etc., but never release it using 
            delete, delete[], or free.

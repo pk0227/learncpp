@@ -29,15 +29,14 @@ int main()
         // - In C++17+, mandatory copy elision means no copy/move is needed
         // - The temporary is constructed directly in exception storage
         // This compiles successfully!
-        //throw Derived{};
+        throw Derived{};
         
         // Option 2: throw d{};
         // This does NOT compile because:
         // - 'd' is an lvalue (named object)
         // - throw must copy 'd' to create the exception object
         // - But Derived's copy constructor is deleted!
-        // This line will cause compilation error
-        throw d{};
+        // throw d{}; // COMPILE ERROR: cannot throw lvalue when copy constructor is deleted
     }
     catch(const Derived& d)  // Catch by const reference (no copy needed here)
     {

@@ -332,6 +332,9 @@ int main(int argc, char* argv[]) {
     // Approach 2: std::stoi (C++11)
     int intVal{ std::stoi(argv[1]) };
 
+    // Approach 3: std::from_chars (C++17 - fastest, non-allocating, non-throwing)
+    // std::from_chars(argv[1], argv[1] + std::strlen(argv[1]), value);
+
     return 0;
 }
 ```

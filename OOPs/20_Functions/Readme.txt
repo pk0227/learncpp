@@ -248,7 +248,9 @@
         Command line arguments are always passed as strings, even if the value provided is numeric in nature. To use a 
         command line argument as a number, we must convert it from a string to a number. 
     
-        std::stringstream works much like std::cin. In this case, we’re initializing it with the value of argv[1], 
-        so that we can use operator>> to extract the value to an integer variable (the same as we would with std::cin).
+        Common conversion methods:
+        -- std::stringstream: works much like std::cin to extract values using operator>>.
+        -- std::stoi / std::stod (from <string>): simple conversion functions that throw std::invalid_argument or std::out_of_range if conversion fails.
+        -- std::from_chars (since C++17, in <charconv>): modern, non-allocating, non-throwing, locale-independent, high-performance conversion.
     
         

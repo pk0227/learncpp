@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <string>
-#include <format>
 #include <stdexcept>
 #include <exception>
 #include <utility>
@@ -41,7 +40,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& out, const MoveClass& ref)
     {
-        out << std::format("MoveClass({})", (ref.m_resource ? std::to_string(*ref.m_resource) : "empty"));
+        out << "MoveClass(" << (ref.m_resource ? std::to_string(*ref.m_resource) : "empty") << ")";
         return out;
     }
 };

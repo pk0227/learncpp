@@ -61,6 +61,11 @@
        This can help prevent compiler warnings about unused variables.
     -- No type conversion is done for exceptions (An int exception won't be converted to match a catch block with a double parameter).
 
+    Try and catch block scope
+    -- Variables declared inside a try block are in local scope to that try block.
+    -- They are destroyed when the try block exits (either normally or when an exception is thrown), and are NOT accessible inside subsequent catch blocks or after the try/catch sequence.
+    -- If a variable needs to be accessed both inside the try block and in or after the catch block, it must be declared before the try block.
+
     Recapping exception handling
     -- When an exception is thrown, the running program finds the nearest enclosing try block to see if any of the catch handlers
        attached to the try block can handle that type of exception. If so, execution jumps to the top of the catch block, the 
@@ -69,8 +74,12 @@
        enclosing try blocks for a catch handler. If no appropriate catch handlers can be found before the end of the program, 
        the program will fail with a runtime exception error.
     NOTE : The program will not perform implicit conversions or promotions when matching exceptions with catch blocks! 
-           For example, a char exception will not match with an int catch block. An int exception will not match a float catch block. 
-           However, casts from a derived class to one of its parent classes will be performed.
+           For example, a char exception will not match with an int catch block. An int exception will not match a float catch block.
+           A const char* exception will not match a std::string or std::string_view catch block.
+           However, the following conversions are permitted during exception matching:
+           -- Binding a derived class object to an accessible base class reference (e.g. Derived& to const Base&)
+           -- Converting a derived class pointer to an accessible base class pointer (e.g. Derived* to const Base*)
+           -- Converting any pointer to a const void* pointer (catch (const void*))
 
     What catch blocks typically do
     -- If an exception is routed to a catch block, it is considered “handled” even if the catch block is empty. 
@@ -140,6 +149,24 @@
          information. Therefore, in debug builds, it can be useful to disable the catch-all handler. We can do this via conditional 
          compilation directives.
    
+   Custom termination handlers with std::set_terminate
+      -- When an exception is thrown and not caught by any handler, C++ calls std::terminate().
+      -- By default, std::terminate() calls std::abort(), which halts execution immediately.
+      -- However, C++ allows us to register our own custom termination handler function using std::set_terminate() from <exception>:
+            void myTerminateHandler()
+            {
+                std::cerr << "Fatal unhandled exception encountered! Writing crash dump...\n";
+                std::abort();
+            }
+            std::set_terminate(myTerminateHandler);
+      -- A custom termination handler must not throw any exceptions and must terminate the program (e.g. by calling std::abort() or std::exit()).
+   
+   Checking active exceptions with std::uncaught_exceptions (since C++17)
+      -- C++17 introduced int std::uncaught_exceptions() noexcept (in header <exception>).
+      -- It returns the number of currently active, uncaught exceptions that are in the process of stack unwinding.
+      -- This is especially useful in scope guards and RAII wrappers to detect whether a destructor is running as part of normal control flow or during stack unwinding due to an in-flight exception.
+      NOTE : C++98 originally provided bool std::uncaught_exception() (singular), but it was flawed because it could not distinguish between one active exception and a nested exception during stack unwinding. Consequently, it was deprecated in C++17 and completely removed in C++20 in favor of std::uncaught_exceptions() (plural).
+   
 5 — Exceptions, classes, and inheritance
    When constructors fail
       -- Constructors are another area of classes in which exceptions can be very useful. If a constructor must fail for some reason 
@@ -193,6 +220,24 @@
       -- Sometimes we’ll want to handle a specific type of exception differently. In this case, we can add a handler for that specific type, 
          and let all the others “fall through” to the base handler. 
    
+   The two main branches: std::logic_error vs std::runtime_error (in <stdexcept>)
+      -- The standard library divides most exceptions into two major categories derived from std::exception:
+         1. std::logic_error:
+            -- Represents errors that are a result of faulty logic within the program itself.
+            -- These are defects in code that in theory could be detected and prevented before execution by careful programming.
+            -- Common derived classes:
+               - std::invalid_argument: function received an invalid argument value
+               - std::out_of_range: index or value outside allowed bounds (e.g. vector::at())
+               - std::length_error: attempt to exceed maximum allowed size for a container
+               - std::domain_error: mathematical domain violation
+         2. std::runtime_error:
+            -- Represents errors due to events outside the scope of the program and not easily avoidable by static code analysis.
+            -- Common derived classes:
+               - std::range_error: internal computation result outside valid range
+               - std::overflow_error: arithmetic overflow
+               - std::underflow_error: arithmetic underflow
+               - std::system_error: operating system / environment failures
+   
    Using the standard exceptions directly
       -- Nothing throws a std::exception directly, and neither should we. However, you should feel free to throw the other standard exception
          classes in the standard library if they adequately represent your needs. 
@@ -239,6 +284,12 @@
       -- This throw keyword that doesn’t appear to throw anything in particular actually re-throws the exact same exception that was just 
          caught. No copies are made, meaning we don’t have to worry about performance killing copies or slicing.
       -- When rethrowing the same exception, use the throw keyword by itself
+   
+   Transporting exceptions with std::exception_ptr (since C++11)
+      -- In modern C++, exceptions can be captured and transferred across different threads or deferred to later execution using std::exception_ptr:
+         - std::current_exception(): Call inside a catch block to capture a shared pointer (std::exception_ptr) to the in-flight exception.
+         - std::rethrow_exception(ptr): Rethrows the captured exception pointer in another context or thread.
+      -- This enables asynchronous systems (such as std::future / std::promise and thread pools) to capture an exception occurring on a worker thread and rethrow it on the main thread.
    
 7 — Function try blocks
    -- In the case, where constructor may fail, we have to use a slightly modified try block called a function try block.
@@ -290,11 +341,12 @@
    Exceptions and destructors
       -- Unlike constructors, where throwing exceptions can be a useful way to indicate that object creation did not succeed, exceptions 
          should NEVER be thrown in destructors.
-      -- The problem occurs when an exception is thrown out of a destructor during the stack unwinding process. If that happens, the compiler
-         is put in a situation where it doesn’t know whether to continue the stack unwinding process or handle the new exception. The end 
-         result is that your program will be terminated immediately.
-      -- Consequently, the best course of action is just to abstain from using exceptions in destructors altogether. Write a message to a 
-         log file instead.
+      -- First, if an exception is thrown out of a destructor during the stack unwinding process, there are now two simultaneous active 
+         exceptions in flight. The C++ runtime cannot handle multiple active exceptions, and will immediately call std::terminate().
+      -- Second, since C++11, all destructors are implicitly marked noexcept(true) by default. Therefore, if an exception escapes from a 
+         destructor even when stack unwinding is NOT currently in progress, std::terminate() will still be called immediately!
+      -- Consequently, the best course of action is to abstain from allowing exceptions to escape destructors altogether. Catch any internal 
+         exceptions within the destructor body and write a message to a log file instead.
 
    Performance concerns
       -- Exceptions do come with a small performance price to pay. They increase the size of your executable, and they may also cause it to 
@@ -453,6 +505,11 @@
          function, and may break existing code. Making guarantees stronger by later adding noexcept to a function that was not originally 
          noexcept is considered safe.
 
+   noexcept in the C++ type system (since C++17)
+      -- Since C++17, noexcept is an integral part of a function's type signature.
+      -- A pointer to a noexcept function (e.g. void (*)() noexcept) cannot be assigned the address of a potentially throwing function.
+      -- However, a pointer to a potentially throwing function can point to a noexcept function (safe implicit subtype conversion).
+
    Dynamic exception specifications
       -- Before C++11, and until C++17, dynamic exception specifications were used in place of noexcept. 
          The dynamic exception specifications syntax uses the throw keyword to list which exception types a function might directly or 
@@ -475,7 +532,7 @@
       -- Thus, providing the strong exception guarantee for move constructors is hard: even if the move constructor itself avoids throwing,
          it may still call other potentially throwing constructors.
 
-      -- std::move_if_noexcept will return a movable r-value if the object has a noexcept move constructor, otherwise it will return a 
+      -- std::move_if_noexcept (defined in header <utility>) will return a movable r-value if the object has a noexcept move constructor, otherwise it will return a 
          copyable l-value. We can use the noexcept specifier in conjunction with std::move_if_noexcept to use move semantics only when a 
          strong exception guarantee exists (and use copy semantics otherwise).
       

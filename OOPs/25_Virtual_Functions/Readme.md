@@ -153,6 +153,37 @@ Under normal circumstances (with the single exception of **covariant return type
 > - A similar issue exists for destructors. If you call a virtual function in a `Base` class destructor, it will always resolve to the **`Base` class version**, because the `Derived` portion of the object has already been destroyed!
 > - Calling a pure virtual function from a base constructor or destructor results in **undefined behavior** (and typically an immediate crash, such as `pure virtual method called`).
 
+### Default Arguments and Virtual Functions (Static vs. Dynamic Binding Trap)
+
+A subtle and treacherous pitfall occurs when virtual functions declare default arguments:
+
+```cpp
+class Base
+{
+public:
+    virtual void print(int x = 10) { std::cout << "Base: " << x << '\n'; }
+};
+
+class Derived : public Base
+{
+public:
+    void print(int x = 20) override { std::cout << "Derived: " << x << '\n'; }
+};
+
+Derived d;
+Base* ptr = &d;
+ptr->print(); // Prints: "Derived: 10"!
+```
+
+> [!WARNING]
+> **Default arguments are bound at COMPILE TIME according to the STATIC type of the pointer or reference!**
+> Meanwhile, the virtual function body is resolved at **RUNTIME according to the DYNAMIC type** via the virtual table:
+> - Because `ptr` has static type `Base*`, the compiler inserts `Base`'s default argument value (`10`) at the call site.
+> - But dynamic dispatch routes execution to `Derived::print(int)`.
+> - Result: `Derived::print()` executes with `Base`'s default argument (`10`), NOT `Derived`'s default argument (`20`)!
+>
+> **Best practice rule**: **Never redefine an inherited default argument** in an overriding virtual function. Better yet, avoid providing default arguments on virtual functions altogether.
+
 ### The Downside of Virtual Functions
 Since virtual functions are so powerful, why not make every member function virtual?
 1. **Efficiency**: Resolving a virtual function call takes longer than resolving a regular direct function call because it requires navigating an extra level of indirection through the virtual table.
@@ -160,6 +191,7 @@ Since virtual functions are so powerful, why not make every member function virt
 
 ### 📁 Code Examples for Section 2
 - [`25_2_Virtual functions_n_polymorphism/1_polymorphism.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/25_Virtual_Functions/25_2_Virtual%20functions_n_polymorphism/1_polymorphism.cpp): Shows basic dynamic dispatch with a `Base` class declaring `virtual std::string_view getName() const` and `Derived` providing an override.
+- [`25_2_Virtual functions_n_polymorphism/2_virtual_functions_default_arguments_trap.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/25_Virtual_Functions/25_2_Virtual%20functions_n_polymorphism/2_virtual_functions_default_arguments_trap.cpp): Demonstrates the dangerous mismatch between static compile-time binding of default arguments and dynamic runtime dispatch of virtual functions.
 - [`25_2_Virtual functions_n_polymorphism/Function_Hiding_to_Overriding_using_virtual_functions/animal.hpp`](file:///home/prashanth/Learnings/learncpp/OOPs/25_Virtual_Functions/25_2_Virtual%20functions_n_polymorphism/Function_Hiding_to_Overriding_using_virtual_functions/animal.hpp): Defines the `Animal` hierarchy with `virtual std::string_view speak() const` to replace function hiding with true virtual overriding.
 - [`25_2_Virtual functions_n_polymorphism/Function_Hiding_to_Overriding_using_virtual_functions/main.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/25_Virtual_Functions/25_2_Virtual%20functions_n_polymorphism/Function_Hiding_to_Overriding_using_virtual_functions/main.cpp): Demonstrates invoking `rAnimal.speak()` where calls dynamically dispatch to `Dog::speak()` and `Cat::speak()` at runtime.
 - [`25_2_Virtual functions_n_polymorphism/Function_Hiding_to_Overriding_using_virtual_functions/1_arrays_for_derived_types.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/25_Virtual_Functions/25_2_Virtual%20functions_n_polymorphism/Function_Hiding_to_Overriding_using_virtual_functions/1_arrays_for_derived_types.cpp): Shows standard fixed array usage for derived types.

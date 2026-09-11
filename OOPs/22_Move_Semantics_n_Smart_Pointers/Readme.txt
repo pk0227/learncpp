@@ -250,7 +250,15 @@
         -- Second, don’t manually delete the resource out from underneath the std::unique_ptr.
            If you do, the std::unique_ptr will try to delete an already deleted resource, again leading to undefined behavior.
         -- Note that std::make_unique() prevents both of the above cases from happening inadvertently.
-    
+
+    Custom deleters in std::unique_ptr
+        -- By default, std::unique_ptr cleans up its resource using delete (or delete[] for array specializations).
+        -- However, std::unique_ptr can be configured with a custom deleter for non-memory resources (e.g., closing a FILE*, releasing an OS handle, or releasing a C API resource).
+        -- The custom deleter type is part of the std::unique_ptr type signature: std::unique_ptr<T, Deleter>.
+        -- If using a stateless struct/functor or lambda without captures, the size of std::unique_ptr remains the same as a raw pointer (via Empty Base Optimization, EBO).
+        -- If using a function pointer (e.g., std::unique_ptr<FILE, decltype(&fclose)>), sizeof(unique_ptr) doubles because it must store the pointer to the cleanup function.
+        -- Contrast with std::shared_ptr: In std::shared_ptr, the deleter is type-erased inside the control block and is NOT part of the smart pointer type.
+
 6 — std::shared_ptr
     -- std::shared_ptr is meant to solve the case where you need multiple smart pointers co-owning a resource.
     -- Internally, std::shared_ptr keeps track of how many std::shared_ptr are sharing the resource.
@@ -292,7 +300,20 @@
     std::shared_ptr and arrays
         -- In C++17 and earlier, std::shared_ptr does not have proper support for managing arrays, and should not be used to manage a C-style array. 
         -- As of C++20, std::shared_ptr does have support for arrays.
-    
+
+    Custom deleters in std::shared_ptr
+        -- Unlike std::unique_ptr, custom deleters in std::shared_ptr are type-erased: the deleter type is NOT part of the std::shared_ptr<T> signature.
+        -- A std::shared_ptr<Widget> can point to an object deleted via delete, a custom lambda, or a custom cleanup function without changing its type.
+        -- The custom deleter is stored inside the dynamically allocated control block.
+        -- Note: std::make_shared cannot accept a custom deleter; you must use the direct std::shared_ptr constructor: std::shared_ptr<T> ptr(new T, custom_deleter).
+
+    std::enable_shared_from_this and shared_from_this()
+        -- Problem: If a member function needs to obtain a std::shared_ptr to *this and does std::shared_ptr<T>(this), it will construct a completely new, independent control block!
+           When both independent shared pointers go out of scope, they will each delete *this, resulting in an undefined behavior double-free crash.
+        -- Solution: Inherit publicly from std::enable_shared_from_this<T> and call the member function shared_from_this().
+        -- shared_from_this() accesses the existing control block that already owns the object and returns a new std::shared_ptr sharing that same control block.
+        -- Critical requirement: The object must already be owned by an existing std::shared_ptr before calling shared_from_this(). Calling shared_from_this() on a raw stack-allocated object or raw pointer that is not managed by a shared_ptr throws std::bad_weak_ptr.
+
 7 — Circular dependency issues with std::shared_ptr, and std::weak_ptr
     Circular references / cyclical reference / a cycle
         -- It is a series of references where each object references the next, and the last object references back to the first, causing a referential loop.

@@ -4,7 +4,6 @@
 #include <exception>    // for std::exception base class
 #include <cstddef>      // for std::size_t
 #include <utility>      // for std::move
-#include <format>       // for std::format
 
 // Custom exception class derived from std::runtime_error (which itself derives from std::exception)
 // This allows our exceptions to be caught by handlers expecting std::exception or std::runtime_error
@@ -53,7 +52,7 @@ int main()
     {
         // Attempt to access element at index 10 (out of bounds)
         // This will throw ArrayException from operator[]
-        std::cout << std::format("gad[{}] : {}", index, gad[index]) << "\n";
+        std::cout << "gad[" << index << "] : " << gad[index] << "\n";
     }
     catch(const ArrayException& e)  // Catch our custom exception
     {

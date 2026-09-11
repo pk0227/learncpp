@@ -29,6 +29,10 @@
             -- when this was added to C++, references didn’t exist yet.
             -- If this were added to the C++ language today, it would undoubtedly be a reference instead of a pointer.
 
+        Modern C++ evolution: Explicit object parameter ("Deducing this" in C++23)
+            -- In C++23, C++ introduced explicit object parameters (syntax: void foo(this Self&& self)).
+            -- This allows member functions to explicitly declare the implicit object as a parameter, enabling value category and constness deduction without writing multiple const/ref-qualified overloads.
+
 2. Classes and header files
     -- C++ allows us to separate the “declaration” portion of the class from the “implementation” portion by defining member functions outside of the class definition.
     -- Note that the prototypes for these member functions still exist inside the class definition (as these functions need to be declared as part of the class type definition), but the actual implementation will be outside.
@@ -172,7 +176,18 @@
             -- Because constexpr members are implicitly inline (as of C++17), static constexpr members can also be initialized inside the class definition without explicit use of the inline keyword.
             -- Make your static members inline or constexpr so they can be initialized inside the class definition.
             -- Only static members may use type deduction (auto and CTAD)
-            -- Non-static members may not use auto or CTAD. 
+            -- Non-static members may not use auto or CTAD.
+
+        The Static Initialization Order Fiasco
+            -- In C++, static variables within a single translation unit are initialized in order of definition.
+            -- However, the relative initialization order of static variables in DIFFERENT translation units is undefined!
+            -- If a static member variable in File A accesses an uninitialized static member variable in File B during startup, it causes undefined behavior.
+            -- Solution: Use the "Construct On First Use" idiom (Meyers' Singleton), where the static object is wrapped inside a static function as a local static variable:
+               static Something& getSharedInstance()
+               {
+                   static Something s_instance{}; // C++11 guarantees thread-safe initialization on first call
+                   return s_instance;
+               } 
 
 7.  Static member functions
         -- Just as static member variables belong to the class rather than to objects of the class, static member functions also belong to the class rather than to any object.
@@ -229,6 +244,15 @@
     -- Class friendship is also not transitive. If class A is a friend of B, and B is a friend of C, that does not mean A is a friend of C.
     -- Nor is friendship inherited. If class A makes B a friend, classes derived from B are not friends of A.
     -- The friend declaration is placed inside the class that is GRANTING friendship (not inside the friend class/function). The class grants access to its own private members.
+
+    Friend member functions
+        -- Instead of making an entire class a friend, you can grant friendship to a specific member function of another class.
+        -- However, making a member function a friend requires a strict 4-step declaration order to resolve circular dependencies:
+           Step 1: Forward declare the class containing the private members (e.g. class BankAccount;).
+           Step 2: Fully define the class that contains the friend function (e.g. class BalanceCheck), but only DECLARE the friend function (do not define its body yet, because BankAccount is still incomplete).
+           Step 3: Fully define the class containing private members (BankAccount), and include the friend declaration:
+                   friend int BalanceCheck::getBankAccountDeposits(const BankAccount& acc) const;
+           Step 4: Finally, DEFINE the friend function body outside of BalanceCheck, after BankAccount has been fully defined.
 
 10. Ref qualifiers
         -- we know how calling access functions that return references to data members can be dangerous when the implicit object is an rvalue.

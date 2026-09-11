@@ -27,6 +27,34 @@ The output must have:
 
 ---
 
+## 🚪 The Uncompromising 4-Gate Verification Process (MANDATORY)
+
+Every chapter folder MUST pass through all 4 gates in strict sequence. An agent is **strictly forbidden** to declare a folder complete or jump ahead without satisfying each gate:
+
+```
+[Gate 1: Audit Readme.txt]
+   └── Check technical accuracy, C++ standard versions, missing idioms, and edge cases.
+   └── Cross-check upcoming folders to avoid duplicated deep dives.
+   └── Actively interrogate: "What modern C++ feature, edge case, or core concept is missing from this discussion?"
+
+[Gate 2: Update Readme.txt FIRST]
+   └── Readme.txt is the authoritative source of truth.
+   └── Apply all technical corrections, missing concepts, and reasoning chains directly into Readme.txt BEFORE touching Readme.md.
+
+[Gate 3: Mirror to Readme.md with 100% Preservation]
+   └── Every subsection, definition, "why" reasoning chain, warning, and table preserved in full.
+   └── ZERO summarization: do not condense multi-step explanations or drop motivating sentences.
+   └── Add rich Markdown: Table of Contents with working anchors, GitHub alerts, inline code snippets, and linked code examples.
+
+[Gate 4: Code Example Verification & Compilation]
+   └── Cross-reference every topic in corrected Readme.txt against existing .cpp files.
+   └── If a concept has no example, implement a standalone, focused N_name.cpp file.
+   └── Execute `g++ -std=c++20 -fsyntax-only` on EVERY .cpp file in the chapter.
+   └── Verify 100% clean compilation with ZERO errors and report compiler output.
+```
+
+---
+
 ## 📋 Mandatory Workflow (Do in Order)
 
 ### Step 1 — Read the Source
@@ -289,12 +317,13 @@ rather than *preserve and enhance*. The fix is to treat every sentence in Readme
 | **19_Dynamic_Allocation...** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 5 files linked (4 new) |
 | **20_Functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 12+ added | ✅ 11 files linked (1 new) |
 | **21_Operator_Overloading** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 21 files verified / linked |
-| **22_Move_Semantics_n_Smart_Pointers** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 19 files verified / linked |
-| **23_Object_Relationships** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 11 files verified / linked (1 new) |
-| **24_Inheritance** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 21 files verified / linked |
-| **25_Virtual_Functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 31 files linked (2 new) |
-| **26_Templates_and_Classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 16 files verified / linked |
-| **27_Exceptions** | ⏳ Up Next | Pending review | Not created yet | Pending | Pending | Under construction |
+| **22_Move_Semantics_n_Smart_Pointers** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 23 files verified / linked (2 new) |
+| **23_Object_Relationships** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 11 files verified / linked (2 new) |
+| **24_Inheritance** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 22 files verified / linked (1 new) |
+| **25_Virtual_Functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 32 files verified / linked (1 new) |
+| **26_Templates_and_Classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 16 files verified / linked (1 new) |
+| **27_Exceptions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 25 files verified / linked |
+| **28_Input_and_Output** | ⏳ Up Next | Pending review | Not created yet | Pending | Pending | Under construction |
 
 ---
 

@@ -54,6 +54,11 @@ OOP brings a number of other useful concepts to the table:
         -- Const objects via pass by const reference.
         -- Member function const and non-const overloading.
 
+    Mutable data members
+        -- In C++, the mutable keyword can be applied to a non-static, non-const class data member.
+        -- A mutable data member can be modified even when the object itself is const, and can be modified inside const member functions.
+        -- This is useful for members that do not affect the observable logical state ("bitwise constness vs logical constness"), such as internal caches, calculation memoization, access counters, or thread synchronization primitives (e.g. std::mutex).
+
 4. Public and private members and access specifiers and access functions
     -- Member access : Each member of a class type has a property called an access level that determines who can access that member.
     -- C++ has three different access levels: public, private, and protected. 
@@ -296,7 +301,9 @@ OOP brings a number of other useful concepts to the table:
         -- A copy constructor should not do anything other than copy an object. This is because the compiler may optimize the copy constructor out in certain cases.
         -- Copy constructors should have no side effects beyond copying.
         -- Prefer the implicit copy constructor, unless you have a specific reason to create your own.
-        -- If you write your own copy constructor, the parameter should be a const lvalue reference.
+        -- If you write your own copy constructor, the parameter must be an lvalue reference (almost always a const lvalue reference: const MyClass&).
+        -- Why can't a copy constructor take its parameter by value (MyClass(MyClass other))?
+           Because passing by value copies the argument into the parameter, which invokes the copy constructor, which requires passing by value, which invokes the copy constructor... causing infinite compile-time recursion! Therefore, C++ strictly disallows pass-by-value copy constructors.
 
         Pass by value and the copy constructor
             -- When an object is passed by value, the argument is copied into the parameter. When the argument and parameter are the same class type, the copy is made by implicitly invoking the copy constructor.
@@ -328,6 +335,10 @@ OOP brings a number of other useful concepts to the table:
         -- Unlike other types of optimization, copy elision is exempt from the “as-if” rule. 
         -- Copy constructors should not have side effects other than copying -- if the compiler elides the call to the copy constructor, the side effects won't execute, and the observable behavior of the program will change.
         -- Copy elision has two common forms: RVO (Return Value Optimization) -- when a temporary object is returned directly, and NRVO (Named Return Value Optimization) -- when a named local variable is returned.
+        -- Guaranteed (Mandatory) Copy Elision (since C++17):
+           In C++17 and later, copy elision when initializing an object from a prvalue (such as returning an unmaterialized temporary object via RVO) is MANDATORY and guaranteed by the language standard, not merely an optional compiler optimization.
+           Because no copy or move constructor is ever called, the class does not even need to have an accessible copy or move constructor for guaranteed elision to occur!
+           In contrast, Named Return Value Optimization (NRVO) remains an optional optimization that compilers are permitted (but not required) to perform.
         
 14. Converting constructors and the explicit keyword
     Converting constructors
@@ -349,6 +360,12 @@ OOP brings a number of other useful concepts to the table:
             -- If such a conversion is actually desired in a particular case, it is trivial to convert the implicit conversion into an explicit definition using direct list initialization.
             -- If an implicit conversion between types is both semantically equivalent and performant, you can consider making the constructor non-explicit.
             -- Do not make copy or move constructors explicit, as these do not perform conversions.
+
+        Conditionally explicit constructors with explicit(bool) (since C++20)
+            -- C++20 introduced the explicit(bool) specifier, which allows a constructor to be conditionally explicit based on a compile-time boolean expression.
+            -- explicit(true) behaves identically to explicit (non-converting constructor).
+            -- explicit(false) behaves identically to omitting explicit (converting constructor).
+            -- This is widely used in standard library templates (e.g. std::pair, std::optional) where a wrapper constructor is explicit if and only if the wrapped type's constructor is explicit.
 
 15. Constexpr aggregates and classes
     Constexpr aggregates

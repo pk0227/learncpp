@@ -433,9 +433,33 @@ auto res = std::make_unique<Fraction>(3, 5); // Preferred modern C++ syntax
 >    std::unique_ptr<int> p{&x}; // BUG: Destructor will call delete on stack memory!
 >    ```
 
+### Custom Deleters in `std::unique_ptr`
+
+By default, `std::unique_ptr` releases its managed resource via `delete` (or `delete[]` for arrays). However, it can be customized with a **custom deleter** for non-memory or C API resources (e.g. `FILE*`, POSIX file descriptors, socket handles):
+
+```cpp
+struct FileCloser
+{
+    void operator()(std::FILE* fp) const
+    {
+        if (fp) std::fclose(fp);
+    }
+};
+
+// Custom deleter type is part of std::unique_ptr type signature:
+std::unique_ptr<std::FILE, FileCloser> filePtr(std::fopen("data.txt", "r"));
+```
+
+> [!IMPORTANT]
+> The custom deleter type is **part of the `std::unique_ptr` type signature** (`std::unique_ptr<T, Deleter>`):
+> - If the deleter is a stateless struct/functor or stateless lambda, **Empty Base Optimization (EBO)** ensures `sizeof(std::unique_ptr)` remains equal to a raw pointer (8 bytes on 64-bit platforms).
+> - If the deleter is a function pointer (e.g. `std::unique_ptr<std::FILE, int(*)(std::FILE*)>`), `sizeof(std::unique_ptr)` doubles (16 bytes) because it must store the pointer to the cleanup function.
+> - **Contrast with `std::shared_ptr`**: In `std::shared_ptr`, the deleter is **type-erased** in the control block and is *not* part of the smart pointer type.
+
 ### 📁 Code Examples for Section 5
 - [`22_5_std_unique_ptr/1_std_unique_pointer.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/22_Move_Semantics_n_Smart_Pointers/22_5_std_unique_ptr/1_std_unique_pointer.cpp): Demonstrates `std::unique_ptr` creation, `std::make_unique`, `operator*`, `operator->`, null-checks, ownership transfer with `std::move`, and passing/returning unique pointers.
 - [`22_5_std_unique_ptr/2_misusing_std_unique_ptr.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/22_Move_Semantics_n_Smart_Pointers/22_5_std_unique_ptr/2_misusing_std_unique_ptr.cpp): Highlights common anti-patterns with `std::unique_ptr` (duplicate ownership, manual deletion, stack address binding) and explains how `std::make_unique` prevents them.
+- [`22_5_std_unique_ptr/3_custom_deleter_unique_ptr.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/22_Move_Semantics_n_Smart_Pointers/22_5_std_unique_ptr/3_custom_deleter_unique_ptr.cpp): Demonstrates custom deleters for `std::unique_ptr`, stateless functor EBO size preservation vs function pointer size doubling, and contrasts with type-erased deleters in `std::shared_ptr`.
 
 ---
 
@@ -509,13 +533,57 @@ std::unique_ptr<Resource> up = std::make_unique<Resource>();
 std::shared_ptr<Resource> sp = std::move(up); // Ownership transferred to shared_ptr
 ```
 
-However, a `std::shared_ptr` **cannot** be converted into a `std::unique_ptr`, because a shared resource cannot guarantee that no other co-owners exist.
+### Custom Deleters in `std::shared_ptr`
 
-> [!TIP]
-> If you are authoring a factory function and are uncertain whether callers will need unique or shared ownership, **always return `std::unique_ptr` by value**. Callers who only need unique ownership can keep it, while callers who require shared ownership can seamlessly convert it to `std::shared_ptr`.
+Unlike `std::unique_ptr`, custom deleters for `std::shared_ptr` are **type-erased**. The deleter type is NOT part of the smart pointer's type signature:
+
+```cpp
+// Both point to std::shared_ptr<FILE>, regardless of their deleter!
+std::shared_ptr<std::FILE> sp(std::fopen("log.txt", "w"), [](std::FILE* fp) {
+    if (fp) std::fclose(fp);
+});
+```
+
+- The deleter is stored inside the **dynamically allocated control block**, so `sizeof(std::shared_ptr<T>)` remains constant (two pointers: resource + control block).
+- `std::make_shared` cannot accept a custom deleter; you must use the direct constructor: `std::shared_ptr<T>(ptr, custom_deleter)`.
+
+### `std::enable_shared_from_this` and `shared_from_this()`
+
+A frequent trap occurs when a member function needs to hand out a `std::shared_ptr` to `*this`:
+
+```cpp
+// DANGEROUS ANTI-PATTERN:
+std::shared_ptr<Widget> Widget::getShared()
+{
+    return std::shared_ptr<Widget>(this); // CRITICAL BUG: Allocates a new independent control block!
+}
+```
+
+If multiple callers obtain a `shared_ptr` this way, each has its own independent control block unaware of the others. When each goes out of scope, it deletes `this`, triggering a fatal **double-free**.
+
+#### The Solution: `std::enable_shared_from_this<T>`
+
+Inherit publicly from `std::enable_shared_from_this<T>` and call `shared_from_this()`:
+
+```cpp
+#include <memory>
+
+class Widget : public std::enable_shared_from_this<Widget>
+{
+public:
+    std::shared_ptr<Widget> getShared()
+    {
+        return shared_from_this(); // Reuses existing control block safely!
+    }
+};
+```
+
+> [!WARNING]
+> An object **must already be owned by an existing `std::shared_ptr`** before `shared_from_this()` is called. Calling `shared_from_this()` on a stack-allocated object or a raw pointer not managed by a `std::shared_ptr` throws `std::bad_weak_ptr`.
 
 ### 📁 Code Examples for Section 6
 - [`22_6_std_shared_ptr/1_std_shared_ptr.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/22_Move_Semantics_n_Smart_Pointers/22_6_std_shared_ptr/1_std_shared_ptr.cpp): Demonstrates creation of `std::shared_ptr`, `use_count()`, `std::make_shared`, single vs dual control block allocation, and converting `std::unique_ptr` to `std::shared_ptr`.
+- [`22_6_std_shared_ptr/2_enable_shared_from_this.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/22_Move_Semantics_n_Smart_Pointers/22_6_std_shared_ptr/2_enable_shared_from_this.cpp): Demonstrates safe member-function shared pointer generation with `std::enable_shared_from_this` and `shared_from_this()`, and catches `std::bad_weak_ptr` on unmanaged objects.
 
 ---
 

@@ -75,6 +75,22 @@ int* ptr{ new int }; // Dynamically allocate an integer and assign address to pt
   ```
 - **Deleting `nullptr` is completely safe**: In C++, `delete nullptr` is guaranteed to be a safe no-op. There is never a need to wrap `delete` statements in `if (ptr != nullptr)`.
 
+### Placement `new`
+- Standard `new` allocates heap memory and then constructs an object in it.
+- **Placement `new`** constructs an object in **pre-existing, already allocated memory** without allocating new memory:
+  ```cpp
+  #include <new> // Required for placement new
+
+  alignas(MyClass) char buffer[sizeof(MyClass)]; // Pre-allocated raw storage
+  MyClass* obj = new (buffer) MyClass{ 42 };     // Construct object inside buffer
+  ```
+- **Crucial Rule**: Because placement `new` did not allocate heap memory, you **must NEVER call `delete` on a placement-new object**!
+- To clean up, you must **explicitly call the destructor**:
+  ```cpp
+  obj->~MyClass(); // Explicit destructor invocation
+  ```
+- This technique is how containers like `std::vector` allocate uninitialized raw storage and construct elements on-demand.
+
 ### Memory Leaks
 - A **memory leak** occurs when dynamically allocated memory (`new`, `new[]`, `malloc`) is never released using `delete`, `delete[]`, or `free`.
 - The memory remains marked as "in use" by the OS even though the application has lost all pointers to it and can no longer access it.

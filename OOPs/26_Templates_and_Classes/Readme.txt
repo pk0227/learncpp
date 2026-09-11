@@ -50,6 +50,29 @@
             -- A floating point type (since C++20)
     
     -- The non-type template type parameters must be constexpr. Otherwise, compiler will issue an error.
+
+    Template default arguments
+        -- Both template type parameters and non-type parameters can be given default values.
+        -- Syntax:
+               template <typename T = int, int size = 10>
+               class FixedBuffer
+               {
+                   T m_data[size]{};
+               };
+        -- When instantiating, default arguments allow omitting parameters from right to left:
+               FixedBuffer<double, 20> b1; // T = double, size = 20
+               FixedBuffer<double> b2;     // T = double, size = 10 (default)
+               FixedBuffer<> b3;           // T = int (default), size = 10 (default)
+        -- Note: If all template parameters have default values, an empty set of angle brackets (<>) must still be provided (unless CTAD applies).
+
+    Class Template Argument Deduction (CTAD) and Deduction Guides (C++17)
+        -- In C++17 and newer, the compiler can automatically deduce template type arguments for class templates from constructor arguments:
+               std::pair p{ 1, 2.5 }; // Automatically deduced as std::pair<int, double>
+        -- This eliminates the need for manual type specification or factory functions like std::make_pair().
+        -- Deduction Guides:
+           When automatic deduction is ambiguous or when working with aggregate class templates (prior to C++20), user-defined deduction guides instruct the compiler how to map constructor arguments to template arguments:
+               template <typename T, typename U>
+               Pair(T, U) -> Pair<T, U>;
   
 3 — Function template specialization
     -- When instantiating a function template for a given type, the compiler stencils out a copy of the templated function 

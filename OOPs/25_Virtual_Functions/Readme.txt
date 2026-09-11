@@ -57,6 +57,15 @@
         -- A similar issue exists for destructors. If you call a virtual function in a Base class destructor, 
            it will always resolve to the Base class version of the function, because the Derived portion of the class will already have been destroyed.
 
+    Default arguments and virtual functions (Static vs Dynamic Binding trap)
+        -- A treacherous pitfall in C++ occurs when a virtual function has default arguments:
+           Default arguments are bound at COMPILE TIME according to the STATIC type of the pointer or reference!
+           The virtual function body itself is dispatched at RUNTIME according to the DYNAMIC type of the underlying object!
+        -- If Base declares virtual void print(int x = 10) and Derived overrides it with void print(int x = 20) override:
+           Calling ptr->print() where ptr is a Base* pointing to a Derived object passes 10 (Base's default argument) to Derived's print() function!
+           The result is Derived::print(10) executing instead of Derived::print(20).
+        -- Best practice rule: NEVER redefine an inherited default argument in an overriding virtual function. Better yet, avoid default arguments on virtual functions altogether.
+
     The downside of virtual functions
         -- Since most of the time you’ll want your functions to be virtual, why not just make all functions virtual?
             -- The answer is because it’s inefficient -- resolving a virtual function call takes longer than resolving a regular one.

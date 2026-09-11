@@ -44,7 +44,7 @@
                 -- Inherited from C
                 -- Part of the core language
                 -- Fast but unsafe and behave inconsistently by modern standards
-            -- std::vector (C++03)
+            -- std::vector (C++98)
                 -- A dynamic array container class
                 -- Safest and most flexible of all array types
             -- std::array (C++11)

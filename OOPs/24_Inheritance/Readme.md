@@ -207,9 +207,28 @@ Destruction:   Base  <───  Derived
 > [!WARNING]
 > If a base class is intended to be used polymorphically (has virtual member functions), **its destructor must also be declared `virtual`**! Otherwise, deleting a derived object via a base class pointer causes **undefined behavior** because the derived destructor will never execute.
 
+### Inheriting Constructors (C++11)
+
+When a derived class has no member variables of its own (or when all its member variables have default member initializers), writing boilerplate constructors just to forward arguments to base constructors is tedious:
+
+```cpp
+class Derived : public Base
+{
+public:
+    // C++11 Inheriting constructors:
+    using Base::Base; // Makes all Base constructors available to construct Derived!
+};
+```
+
+- Inherited constructors initialize base subobjects via the chosen base constructor.
+- Any derived class member variables receive their **default member initializers**.
+- Default, copy, and move constructors are not inherited; they are generated or handled according to standard class rules.
+- If Derived defines a custom constructor with the exact same signature as a Base constructor, the Derived version takes precedence.
+
 ### 📁 Code Examples for Section 4
 - [`24_2_Constructors_n_initialization_of_derived_classes/1_initialization_of_classes_in_inheritance.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/24_Inheritance/24_2_Constructors_n_initialization_of_derived_classes/1_initialization_of_classes_in_inheritance.cpp): Demonstrates initializing base class members by explicitly invoking base constructors in the derived member initializer list.
 - [`24_2_Constructors_n_initialization_of_derived_classes/2_inheritance_chain.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/24_Inheritance/24_2_Constructors_n_initialization_of_derived_classes/2_inheritance_chain.cpp): Demonstrates multi-level constructor cascading across an inheritance chain and verifies destruction order.
+- [`24_2_Constructors_n_initialization_of_derived_classes/3_inheriting_constructors.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/24_Inheritance/24_2_Constructors_n_initialization_of_derived_classes/3_inheriting_constructors.cpp): Demonstrates C++11 inheriting constructors using `using Base::Base;`, eliminating boilerplate forwarding constructors.
 
 ---
 

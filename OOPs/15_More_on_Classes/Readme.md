@@ -79,6 +79,10 @@ public:
 - When `this` was added to C++, **references didn't exist yet**.
 - If `this` were added to C++ today, it would **undoubtedly be a reference** instead of a pointer.
 
+> [!NOTE]
+> **Modern C++ Evolution — Explicit Object Parameter ("Deducing this" in C++23):**
+> C++23 introduced explicit object parameters (`void foo(this Self&& self)`), allowing member functions to explicitly declare the implicit object as a parameter. This allows deducing value category and constness directly, avoiding the need for multiple const/ref-qualified boilerplate overloads.
+
 ### 📁 Code Examples
 - [`1_this_pointer.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_1_The_hidden_this_pointer_n_member_function_chaining/1_this_pointer.cpp) — `this` pointer usage: disambiguation, returning `*this` for function chaining, and reset pattern
 
@@ -278,6 +282,25 @@ bool Pair<T>::isEqual(const Pair<T>& other) const
 - **Only static members may use type deduction (`auto` and CTAD).**
 - **Non-static members may not use `auto` or CTAD.**
 
+### The Static Initialization Order Fiasco
+- Within a single translation unit, static variables are initialized in order of definition.
+- **However, the relative initialization order of static variables in DIFFERENT translation units is undefined!**
+- If a static member in `FileA.cpp` relies upon a static member in `FileB.cpp` during startup, and `FileA` initializes first, it accesses an uninitialized variable, causing **undefined behavior**.
+- **The Remedy: The "Construct On First Use" Idiom (Meyers' Singleton)**:
+  Wrap the static object inside a static member function as a local static variable:
+  ```cpp
+  class Configuration
+  {
+  public:
+      static Configuration& getSharedInstance()
+      {
+          // C++11 guarantees thread-safe initialization on the very first call
+          static Configuration s_instance{};
+          return s_instance;
+      }
+  };
+  ```
+
 ### 📁 Code Examples
 - [`1_static_member_variable.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_6_Static_member_variables/1_static_member_variable.cpp) — Static member variable: shared across objects, definition outside class, zero-init default
 - [`2_static_member_var_initialization_inside_class.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_6_Static_member_variables/2_static_member_var_initialization_inside_class.cpp) — Initializing static members inside the class using `inline`/`constexpr`
@@ -381,6 +404,38 @@ void printValue(const MyClass& obj) // defined as non-member
 - **Class friendship is not transitive.** If class A is a friend of B, and B is a friend of C, that does **not** mean A is a friend of C.
 - **Friendship is not inherited.** If class A makes B a friend, classes derived from B are **not** friends of A.
 - **The `friend` declaration is placed inside the class that is GRANTING friendship** (not inside the friend class/function). The class grants access to its own private members.
+
+### Friend Member Functions (Strict 4-Step Declaration Order)
+Instead of granting friendship to an entire class, you can grant friendship to a **single specific member function** of another class. Because the two classes reference each other, this requires a **strict 4-step declaration order**:
+
+1. **Forward declare the class with private members**:
+   ```cpp
+   class BankAccount; // Step 1: Forward declaration
+   ```
+2. **Define the class containing the friend member function**, but **only DECLARE the function** (do not define its body yet, because `BankAccount` is incomplete):
+   ```cpp
+   class BalanceCheck // Step 2: Full class, declared function
+   {
+   public:
+       int getBankAccountDeposits(const BankAccount& acc) const; // Declaration only!
+   };
+   ```
+3. **Define the class containing private members**, and declare the friend member function:
+   ```cpp
+   class BankAccount // Step 3: Grant friendship to specific member
+   {
+       friend int BalanceCheck::getBankAccountDeposits(const BankAccount& acc) const;
+       int m_savingDeposit{ 1000 };
+   };
+   ```
+4. **Define the friend member function body** outside the class, after `BankAccount` is fully defined:
+   ```cpp
+   // Step 4: Now BankAccount is complete, so members can be safely accessed
+   int BalanceCheck::getBankAccountDeposits(const BankAccount& acc) const
+   {
+       return acc.m_savingDeposit;
+   }
+   ```
 
 ### 📁 Code Examples
 - [`1_friend_class.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_9_Friend_classes_n_friend_member_functions/1_friend_class.cpp) — Friend class: full access to private members; demonstrating non-reciprocal, non-transitive, non-inherited friendship

@@ -63,6 +63,14 @@
 
         -- When constructing a derived class, the derived class constructor is responsible for determining which base class constructor is called. If no base class constructor is specified, the default base class constructor will be used.
 
+        Inheriting constructors (C++11)
+            -- If a derived class does not introduce new member variables needing custom constructor parameters (or if those members have default member initializers), writing forwarding constructors for every base constructor is tedious boilerplate.
+            -- In C++11 and newer, you can inherit all constructors from the base class using:
+                   using Base::Base;
+            -- This makes all non-default base class constructors available to construct derived class objects directly.
+            -- Note that inherited constructors will initialize base members via the selected base constructor, and any derived class members will receive their default member initializers.
+            -- Default, copy, and move constructors are not inherited; they are generated or handled by standard class rules.
+
 5 — Inheritance and access specifiers
     -- Private members can only be accessed by member functions of the same class or friends. This means derived classes can not access private members of the base class directly.
 
@@ -141,9 +149,13 @@
         Instead, we need a way to make our Derived class temporarily look like the Base class so that the right version of the function can be called.
         Solution: Use static_cast<const Base&>(derived_object) to upcast the Derived object to a Base reference, which enables argument-dependent lookup and overload resolution to invoke the Base friend function.
 
-    Overload resolution in derived classes
-        -- As noted at the top of the lesson, the compiler will select the best matching function from the most-derived class with at least one function with that name.
-            Go through some interesting examples available at https://github.com/pk0227
+    Overload resolution in derived classes and name hiding
+        -- The compiler looks up function names scope by scope from most-derived upward. As soon as it finds a scope with at least one matching function name, it stops searching further up the inheritance hierarchy!
+        -- Critical consequence: If a derived class defines ANY function with the same name as a base class function, ALL overloads of that name in the base class are hidden—even if their signatures (parameters) are completely different.
+        -- For example, if Base has print(int) and print(double), and Derived adds print(double), calling d.print(5) will NOT call Base::print(int). Instead, it calls Derived::print(double) by converting 5 to 5.0, because Base::print is hidden!
+        -- To make all base class overloads with that name participate in overload resolution alongside the derived class's functions, use a using-declaration in Derived:
+               using Base::print;
+        -- This brings all overloads of Base::print into Derived's scope so normal overload resolution can select the true best match.
     
 8 — Hiding inherited functionality
     Changing an inherited member’s access level

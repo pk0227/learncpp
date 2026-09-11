@@ -91,17 +91,27 @@
     
     Associations can be indirect
         -- Any kind of data that allows us to link two objects together suffices. The link needs not strictly be either pointers or references to directly link objects together.
+
+    Dependencies
+        -- A dependency occurs when an object relies on another object in order to perform a specific task, but does not maintain a persistent pointer or reference to that object as a member variable.
+        -- This models a transient "relies-on" relationship rather than a structural "has-a" or persistent "uses-a" relationship.
+        -- Dependencies typically occur when:
+            -- An object is passed to a member function by reference or value (e.g., passing std::ostream& to an operator<< or print() function).
+            -- An object is created as a local variable inside a member function.
+            -- An object is returned by value from a member function.
+        -- In UML diagrams, dependencies are represented by a dashed arrow pointing from the dependent class to the supplier class.
+        -- Reducing unnecessary dependencies reduces coupling, making code easier to refactor, test, and maintain.
     
-    Composition vs aggregation vs association summary
-    +-------------------------------------------+--------------+--------------+---------------------------+
-    | Property                                  | Composition  | Aggregation  | Association               |
-    +-------------------------------------------+--------------+--------------+---------------------------+
-    | Relationship type                         | Whole/part   | Whole/part   | Unrelated                 |
-    | Members can belong to multiple classes    | No           | Yes          | Yes                       |
-    | Members’ existence managed by class       | Yes          | No           | No                        |
-    | Directionality                            | Unidirectional | Unidirectional | Uni/Bidirectional     |
-    | Relationship verb                         | Part-of      | Has-a        | Uses-a                    |
-    +-------------------------------------------+--------------+--------------+---------------------------+
+    Composition vs aggregation vs association vs dependency summary
+    +-------------------------------------------+--------------+--------------+-------------------+-------------------+
+    | Property                                  | Composition  | Aggregation  | Association       | Dependency        |
+    +-------------------------------------------+--------------+--------------+-------------------+-------------------+
+    | Relationship type                         | Whole/part   | Whole/part   | Unrelated         | Transient/Relies  |
+    | Members can belong to multiple classes    | No           | Yes          | Yes               | N/A (not a member)|
+    | Members’ existence managed by class       | Yes          | No           | No                | No                |
+    | Directionality                            | Unidirectional | Unidirectional | Uni/Bidirectional | Unidirectional    |
+    | Relationship verb                         | Part-of      | Has-a        | Uses-a            | Depends-on        |
+    +-------------------------------------------+--------------+--------------+-------------------+-------------------+
 
 5 — Container classes
     -- A container class is a class designed to hold and organize multiple instances of another type (either another class, or a fundamental type). 
@@ -183,3 +193,9 @@
                 -- Delete the copy assignment operator
 
             -- If you provide list construction, it’s a good idea to provide list assignment as well.
+
+        Elements of std::initializer_list are always const
+            -- The underlying elements of a std::initializer_list<T> are always const T.
+            -- This means elements can never be modified, and more critically, elements CANNOT be moved out of a std::initializer_list!
+            -- Attempting to move from an element in std::initializer_list will silently invoke the copy constructor instead.
+            -- Consequently, containers of move-only types (such as std::vector<std::unique_ptr<T>>) cannot be initialized using std::initializer_list syntax! Attempting to do so results in a compilation error because std::unique_ptr cannot be copied.

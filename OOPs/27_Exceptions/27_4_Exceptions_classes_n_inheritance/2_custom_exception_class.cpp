@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <utility>
-#include <format>
 
 class ArrayException
 {
@@ -34,7 +33,7 @@ int main()
     int index{10};
     try
     {
-        std::cout << std::format("gai[{}] : {}", index, gai[index]) << "\n";
+        std::cout << "gai[" << index << "] : " << gai[index] << "\n";
     }
     catch(const ArrayException& e)
     {

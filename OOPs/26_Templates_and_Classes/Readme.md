@@ -163,8 +163,44 @@ A non-type parameter can be any of the following types:
 - **Compile-time safety**: Array sizes become part of the type signature (`StaticArray<int, 5>` and `StaticArray<int, 10>` are distinct types), preventing inadvertent operations between differently sized buffers.
 - **Compiler optimization**: Knowing buffer sizes at compile time allows loop unrolling and vectorization.
 
+### Template Default Arguments
+
+Both template type parameters and non-type template parameters can be given default values:
+
+```cpp
+template <typename T = int, int size = 10>
+class FixedBuffer
+{
+    T m_data[size]{};
+};
+
+FixedBuffer<double, 20> b1; // T = double, size = 20
+FixedBuffer<double>     b2; // T = double, size = 10 (default)
+FixedBuffer<>           b3; // T = int (default), size = 10 (default)
+```
+
+> [!NOTE]
+> If all template parameters provide default values, an empty pair of angle brackets (`<>`) must be provided when instantiating the class template (e.g. `FixedBuffer<>`), unless Class Template Argument Deduction (CTAD) is used.
+
+### Class Template Argument Deduction (CTAD) and Deduction Guides (C++17)
+
+Prior to C++17, instantiating a class template always required explicitly specifying template arguments in angle brackets. C++17 introduced **CTAD**, enabling the compiler to deduce template types automatically from constructor arguments:
+
+```cpp
+std::pair p{ 1, 2.5 }; // Automatically deduced as std::pair<int, double>
+```
+
+#### User-Defined Deduction Guides
+When constructor deduction is ambiguous or when working with aggregate class templates, you can provide an explicit **deduction guide**:
+
+```cpp
+template <typename T, typename U>
+Pair(T, U) -> Pair<T, U>; // Explicit deduction guide syntax
+```
+
 ### 📁 Code Examples for Section 2
 - [`26_2_Template_non-type_parameters/1_static_array.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/26_Templates_and_Classes/26_2_Template_non-type_parameters/1_static_array.cpp): Implements a stack-allocated fixed array using a non-type parameter `template <typename T, int size> class StaticArray`, demonstrating bounds, constexpr requirements, and stack memory layout.
+- [`26_2_Template_non-type_parameters/2_template_default_arguments_and_ctad.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/26_Templates_and_Classes/26_2_Template_non-type_parameters/2_template_default_arguments_and_ctad.cpp): Demonstrates template default arguments for type/non-type parameters, empty angle brackets instantiation (`FixedBuffer<>`), and C++17 Class Template Argument Deduction (CTAD) with custom deduction guides.
 
 ---
 

@@ -87,9 +87,32 @@ For class types which include structs, classes, and unions:
   - Call const member functions.
   - The `const` **only applies to members**.
 - Const member functions **may be called on non-const objects**.
-- **A member function that does not (and will not ever) modify the state of the object should be made `const`**, so that it can be called on both const and non-const objects.
 - Const objects via pass by const reference.
 - Member function const and non-const overloading.
+
+### Mutable Data Members
+In C++, the **`mutable` keyword** can be applied to a non-static, non-const class member variable:
+- A `mutable` data member **can be modified even when the object is const**, and can be modified inside `const` member functions.
+- This is intended for members that represent internal implementation details that do not affect the observable logical state of the object (**bitwise constness vs logical constness**), such as internal caches, memoization tables, access counters, or thread synchronization primitives (`std::mutex`):
+
+```cpp
+class DataViewer
+{
+    std::string m_data{};
+    mutable int m_viewCount{ 0 }; // mutable member
+
+public:
+    DataViewer(std::string_view data) : m_data{ data } {}
+
+    const std::string& getData() const
+    {
+        ++m_viewCount; // Allowed in const member function!
+        return m_data;
+    }
+
+    int getViewCount() const { return m_viewCount; }
+};
+```
 
 ### 📁 Code Examples
 - [`1_const_object_example.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/1_const_object_example.cpp) — ⚠️ Intentional compile errors: demonstrates what's disallowed on const objects
@@ -456,6 +479,10 @@ public:
 ### Using `= delete` to Prevent Copies
 - Occasionally we run into cases where we do not want objects of a certain class to be copyable. We can prevent this by **marking the copy constructor function as deleted**, using the **`= delete` syntax**.
 
+> [!IMPORTANT]
+> **Why must a copy constructor's parameter be a reference?**
+> If a copy constructor took its parameter by value (`MyClass(MyClass other)`), passing an argument would require copying it into `other`. That copy would invoke the copy constructor, which would pass by value, invoking the copy constructor again — resulting in **infinite compile-time recursion**! Therefore, C++ strictly requires copy constructors to accept their parameter by reference (almost always `const MyClass&`).
+
 ```cpp
 class NoCopy
 {
@@ -490,6 +517,11 @@ There are **three key differences** between the initialization forms:
 - Unlike other types of optimization, **copy elision is exempt from the "as-if" rule**.
 - **Copy constructors should not have side effects other than copying** — if the compiler elides the call to the copy constructor, the side effects won't execute, and the observable behavior of the program will change.
 - Copy elision has two common forms: **RVO** (Return Value Optimization) — when a temporary object is returned directly, and **NRVO** (Named Return Value Optimization) — when a named local variable is returned.
+
+### Guaranteed (Mandatory) Copy Elision (since C++17)
+- In C++17 and later, copy elision when initializing an object from a prvalue (such as returning an unmaterialized temporary object via RVO) is **MANDATORY and guaranteed by the language standard**, not merely an optional compiler optimization.
+- Because no copy or move constructor is ever called, the class **does not even need to have an accessible copy or move constructor** for guaranteed elision to occur!
+- In contrast, **Named Return Value Optimization (NRVO)** remains an *optional* optimization that compilers are permitted (but not required) to perform.
 
 ### 📁 Code Examples
 - [`1_type_of_initializations.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_13_Class_initialization_n_copy_elision/1_type_of_initializations.cpp) — Copy, direct, and list initialization compared side-by-side
@@ -542,6 +574,25 @@ MyString s3(5);     // OK: direct-init allowed
 - If such a conversion is actually desired in a particular case, it is trivial to convert the implicit conversion into an explicit definition using direct list initialization.
 - If an implicit conversion between types is both semantically equivalent and performant, you can consider making the constructor non-explicit.
 - **Do not make copy or move constructors explicit**, as these do not perform conversions.
+
+### Conditionally Explicit Constructors with `explicit(bool)` (since C++20)
+C++20 introduced the **`explicit(bool)`** specifier, which allows a constructor to be conditionally explicit based on a compile-time boolean expression:
+- `explicit(true)` behaves identically to `explicit` (non-converting constructor).
+- `explicit(false)` behaves identically to omitting `explicit` (converting constructor).
+- This is widely used in standard library templates (e.g. `std::pair`, `std::optional`) where a wrapper constructor is explicit if and only if the wrapped type's constructor is explicit:
+
+```cpp
+template <typename T>
+class Wrapper
+{
+    T m_val;
+public:
+    // Explicit only if T is not implicitly constructible from U
+    template <typename U>
+    explicit(!std::is_convertible_v<U, T>)
+    Wrapper(U&& val) : m_val{ std::forward<U>(val) } {}
+};
+```
 
 ### 📁 Code Examples
 - [`1_converting_constructors.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_14_Converting_constructors_n_explicit_keyword/1_converting_constructors.cpp) — Implicit conversion via converting constructors
