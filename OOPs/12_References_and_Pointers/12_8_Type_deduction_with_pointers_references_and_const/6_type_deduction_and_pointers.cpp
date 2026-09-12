@@ -12,7 +12,7 @@ int main()
     auto ptr1{ getPtr() }; // std::string*
     auto* ptr2{ getPtr() }; // std::string*
     auto ptr3{ *getPtr() };      // std::string (because we dereferenced getPtr())
-    auto* ptr4{ *getPtr() };     // does not compile (initializer not a pointer)
+    // auto* ptr4{ *getPtr() };  // COMPILE ERROR: cannot deduce 'auto*' from non-pointer type std::string
 
     std::cout << "ptr1 points to: " << *ptr1 << "\n";
     std::cout << "ptr2 points to: " << *ptr2 << "\n";

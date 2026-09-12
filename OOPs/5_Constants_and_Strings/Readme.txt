@@ -1,4 +1,33 @@
 =================================================================
+📘 C++ NUMERAL SYSTEMS & LITERALS
+=================================================================
+
+    🔹 1 — INTEGER BASES & LITERAL PREFIXES
+    -------------------------------------------------------------
+        - Decimal (base 10): Default numbers with no prefix (0–9)
+        - Hexadecimal (base 16): Prefix 0x or 0X (digits 0–9, a–f, A–F)
+        - Octal (base 8): Prefix 0 (digits 0–7)
+          ⚠️ WARNING: A leading zero indicates an octal literal in C++ (e.g. 044 is decimal 36, not 44)!
+        - Binary (base 2): Prefix 0b or 0B (digits 0–1, introduced in C++14)
+
+    🔹 2 — DIGIT SEPARATORS (C++14)
+    -------------------------------------------------------------
+        - Single quote (') can be used as a digit separator to make large literals readable:
+          int million { 1'000'000 };
+          int binaryByte { 0b1010'0101 };
+          int hexWord { 0x00FF'AABB };
+
+    🔹 3 — OUTPUTTING BINARY WITH std::bitset
+    -------------------------------------------------------------
+        - Standard stream output does not provide a native manipulator for binary prior to C++20/C++23.
+        - std::bitset<N> (in <bitset>) prints binary representations directly:
+          std::bitset<8> b{ 0b1010'0101 };
+          std::cout << b << '\n'; // 10100101
+        - Modern C++:
+          - C++20: std::format("{:b}", 36)
+          - C++23: std::println("{:b}", 36)
+
+=================================================================
 📘 C++ COMPILE-TIME PROGRAMMING & CONSTEXPR
 =================================================================
 
@@ -173,8 +202,10 @@
 
     🔹 7 — CONSTEXPR STRINGS
     -------------------------------------------------------------
-        ❌ constexpr std::string NOT supported in C++17/earlier
-        ✅ Use std::string_view for compile-time strings
+        ❌ constexpr std::string variable NOT supported in C++17 or earlier
+        ✅ In C++20, std::string gained transient allocation support in constexpr functions (must be freed before compile-time ends)
+        ✅ However, std::string objects cannot be stored as constexpr variables across compilation units
+        ✅ Use std::string_view for compile-time string constants
 
     🔹 8 — BEST PRACTICES
     -------------------------------------------------------------
@@ -383,9 +414,11 @@
     -------------------------------------------------------------
         - Can view substrings without copying
         - May or may not be null-terminated
-        - Length is tracked internally → conversion to std::string works
-
-        ⚠️ Warning: do not assume null-termination
+        - Length is tracked internally via an internal pointer and length member
+        ⚠️ CRITICAL WARNING: Do not assume std::string_view is null-terminated!
+            - Calling sv.data() on a substring or sliced view and passing it to C-style functions
+              expecting null-terminated strings (strlen, printf("%s"), std::atoi, fopen) causes buffer overrun!
+            - If a null-terminated string is required, convert explicitly: std::string{sv}
 
     🔹 8 — QUICK GUIDE: WHEN TO USE std::string vs std::string_view
     -------------------------------------------------------------

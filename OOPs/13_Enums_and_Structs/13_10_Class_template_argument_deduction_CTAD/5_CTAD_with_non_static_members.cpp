@@ -4,7 +4,7 @@
 struct Foo
 {
     std::pair<int, int> p1{ 1, 2 }; // ok, template arguments explicitly specified
-    std::pair p2{ 1, 2 };           // compile error, CTAD can't be used in this context
+    // std::pair p2{ 1, 2 };        // COMPILE ERROR: CTAD cannot be used for non-static member initialization in class definitions
 };
 
 int main()

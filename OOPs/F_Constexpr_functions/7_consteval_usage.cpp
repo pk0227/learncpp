@@ -13,7 +13,7 @@ int main()
     std::cout << greater(5, 6) << " is greater!\n"; // ok: will evaluate at compile-time
 
     int x{ 5 }; // not constexpr
-    std::cout << greater(x, 6) << " is greater!\n"; // error: consteval functions must evaluate at compile-time
+    // std::cout << greater(x, 6) << " is greater!\n"; // COMPILE ERROR: consteval functions must evaluate at compile-time, but 'x' is runtime
 
     return 0;
 }

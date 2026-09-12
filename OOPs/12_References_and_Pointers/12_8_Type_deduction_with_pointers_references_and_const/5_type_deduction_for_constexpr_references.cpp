@@ -1,12 +1,10 @@
 #include <iostream>
 
-//constexpr  std::string_view& getConstRef()
-constexpr const std::string_view& getConstRef()     // function is constexpr, returns a const std::string_view&
-{
-    //static  std::string_view str{"local_string"};
-    static constexpr std::string_view str{"local_string"};      //constexpr implcitly applies const
+static constexpr std::string_view g_str{"local_string"};
 
-    return str;
+constexpr const std::string_view& getConstRef() // function is constexpr, returns a const std::string_view&
+{
+    return g_str;
 }
 
 int main()

@@ -5,7 +5,8 @@ void print(int x, int y); // forward declaration, no default argument
 
 int main()
 {
-    print(6);   // compile error: default argument for y hasn't been defined yet
+    // print(6);   // COMPILE ERROR: default argument for y hasn't been defined yet at this point in the translation unit
+    print(6, 4);   // OK: passing both arguments explicitly works
     return 0;
 }
 

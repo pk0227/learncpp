@@ -21,7 +21,10 @@ int main()
 
     doSomething(3); // int value 3 implicitly converted to type long
 
-    int x { 3.5 }; // brace-initialization disallows conversions that result in data loss
-    
+    // int x { 3.5 }; // COMPILE ERROR: brace-initialization disallows narrowing conversions that cause data loss
+    int x = 3.5;      // Compiles (with warning): truncates to 3
+
+    std::cout << "x: " << x << '\n';
+
     return 0;
 }

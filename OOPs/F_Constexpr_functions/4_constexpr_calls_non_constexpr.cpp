@@ -17,7 +17,9 @@ constexpr int foo(int x)
 int main()
 {
     int x{foo(5)};              // okay: will evaluate at runtime
-    constexpr int y{foo(5)};    // compile error: foo(5) can't evaluate at compile-time
+    // constexpr int y{foo(5)}; // COMPILE ERROR: foo(5) can't evaluate at compile-time because getValue() is not constexpr
+
+    std::cout << "Runtime evaluation: " << x << '\n';
 
     return 0;
 }

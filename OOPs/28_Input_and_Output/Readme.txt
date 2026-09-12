@@ -38,6 +38,17 @@
         Unbuffered output is typically handled immediately, whereas buffered output is typically stored and written out as a block. 
         Because clog isn’t used very often, it is often omitted from the list of standard streams.
 
+    Stream synchronization and tying
+        -- By default, C++ standard streams (cin, cout, cerr, clog) synchronize their underlying buffers with the standard C I/O buffers (stdin, stdout, stderr).
+           This ensures that C++ stream operations and C stdio functions (like printf, scanf) can be safely mixed without interleaved output or input reordering.
+        -- However, this synchronization incurs a noticeable performance overhead. If your program does not mix C stdio and C++ streams, you can disable it via:
+               std::ios_base::sync_with_stdio(false);
+        -- Stream tying: By default, std::cin is "tied" to std::cout (and std::wcin to std::wcout).
+           This means that any input operation on std::cin automatically flushes std::cout first. This ensures that user prompts (printed via cout)
+           appear on screen before the program waits for user input.
+        -- To untie cin from cout for maximum performance (e.g. in competitive programming or high-throughput stream processing):
+               std::cin.tie(nullptr);
+
 2 — Input with istream
     Manipulator 
         -- is an object that is used to modify a stream when applied with the extraction (>>) or insertion (<<) operators.
@@ -95,6 +106,15 @@
             -- peek() allows you to read a character from the stream without removing it from the stream.
             -- unget() returns the last character read back into the stream so it can be read again by the next call.
             -- putback(char ch) allows you to put a character of your choice back into the stream to be read by the next call.
+
+        Robust input stream recovery
+            -- When an extraction fails (e.g., entering letters when an integer is expected), std::cin enters a failed state (failbit is set)
+               and leaves the problematic input in the stream buffer.
+            -- To recover and prompt the user again, you must perform two mandatory steps:
+               1. Clear the error state: std::cin.clear();
+               2. Flush the offending characters from the buffer up to the newline:
+                  #include <limits>
+                  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         
 3 — Output with ostream and ios
     The insertion operator
@@ -300,6 +320,19 @@
         std::cout << std::setw(10) << std::right << -12345 << '\n'; // print right justified            "****-12345"
         std::cout << std::setw(10) << std::internal << -12345 << '\n'; // print internally justified    "-****12345"
 
+    Modern C++ Alternatives: std::format (C++20) and std::print / std::println (C++23)
+        -- While iostream manipulators and flags are flexible and extensible, they have notable drawbacks:
+           -- Stateful: Manipulators (like std::hex or std::setprecision) permanently mutate stream state until manually reverted,
+              frequently introducing subtle formatting bugs elsewhere in the codebase.
+           -- Verbose: Aligning multiple columns or combining widths and precisions requires long chains of operator<< calls.
+           -- Performance: Type-checking and virtual dispatch within stream hierarchies make iostream slower than C stdio (printf).
+        -- C++20 introduced std::format (in header <format>), providing Python-style type-safe formatting with positional specifiers,
+           independent of stream state:
+               std::string s = std::format("Hex: {:#x}, Fixed: {:.2f}", 255, 3.14159);
+        -- C++23 introduced std::print and std::println (in header <print>), outputting formatted text directly to stdout/stderr with
+           higher performance than cout and without stream synchronization penalties:
+               std::println("Hello, {}! Value: {:04d}", "world", 42);
+
 4 — Stream classes for strings
     Stream classes
         -- The stream classes for strings that allow you to use the familiar insertions (<<) and extraction (>>) operators 
@@ -380,6 +413,15 @@
             os.clear(); // reset error flags
 
         NOTE : clear() resets any error flags that may have been set and returns the stream back to the ok state.
+
+    Modern C++ stringstream features (C++20)
+        -- In C++20, std::stringstream provides the .view() member function. Instead of creating and copying into a brand new std::string
+           (as .str() does), .view() returns a std::string_view directly referencing the existing internal buffer. This enables zero-copy
+           read-only inspection of buffered string data:
+               std::stringstream ss{};
+               ss << "Hello " << 42;
+               std::string_view sv = ss.view(); // C++20 zero-copy view
+        -- String streams also support move semantics (since C++11), allowing efficient buffer transfers without copying large strings.
     
 5 — Stream states and input validation
     Stream states
@@ -392,6 +434,13 @@
         | eofbit   | The stream has reached end of file                                    |
         | failbit  | A non-fatal error occurred (e.g., wrong input type from the user)     |
         +----------+-----------------------------------------------------------------------+
+
+    Stream boolean conversion
+        -- All stream classes can be evaluated directly in boolean contexts (e.g. if (std::cin) or while (std::cin >> x)).
+        -- Prior to C++11, streams implemented a conversion operator to void* to allow conditional checks without permitting accidental arithmetic.
+        -- Since C++11, streams provide an explicit operator bool() that returns !fail(). That is, the stream evaluates to true if neither
+           failbit nor badbit is set.
+        -- The operator! function returns fail(), returning true if either failbit or badbit is set.
         
         -- Although these flags live in ios_base, because ios is derived from ios_base and ios takes less typing than ios_base, 
            they are generally accessed through ios (e.g. as std::ios::failbit).
@@ -494,7 +543,28 @@
 
         Tip : fstream may fail if we include std::ios::in and the file doesn’t exist.
               To create a new file, open with only std::ios::out.
-        
+
+    Filesystem path support (C++17)
+        -- Since C++17, all file stream constructors and open() functions accept std::filesystem::path objects directly (#include <filesystem>),
+           allowing seamless, portable cross-platform path handling, directory navigation, and native Unicode filename support:
+               std::filesystem::path p{ "data/records.bin" };
+               std::ofstream out{ p, std::ios::binary };
+
+    Binary File I/O with read() and write()
+        -- In addition to formatted text I/O using << and >>, file streams provide unformatted binary I/O member functions:
+           -- ostream::write(const char* s, std::streamsize n): Writes n raw bytes from memory buffer s directly to disk.
+           -- istream::read(char* s, std::streamsize n): Reads up to n raw bytes from disk directly into memory buffer s.
+        -- Binary mode (std::ios::binary) is mandatory for binary files to prevent automatic newline translation on platforms like Windows.
+        -- Pointers to non-char objects must be explicitly cast using reinterpret_cast<char*> or reinterpret_cast<const char*>:
+               struct Record { int id; double value; };
+               Record r{ 1, 99.5 };
+               out.write(reinterpret_cast<const char*>(&r), sizeof(Record));
+               in.read(reinterpret_cast<char*>(&r), sizeof(Record));
+        -- gcount() can be called after in.read() to determine exactly how many raw bytes were extracted.
+        -- WARNING: Only trivially copyable types (primitive types, plain old data structs) may be safely written to and read from disk with read()/write().
+           Never write objects containing pointers, dynamic memory (std::string, std::vector), or virtual function tables (polymorphic classes),
+           as pointers will become invalid and point to undefined memory upon subsequent program executions.
+
 7 — Random file I/O
     The file pointer
         -- File pointer keeps an internal file pointer that tracks the current read/write position. All reads and writes happen at 

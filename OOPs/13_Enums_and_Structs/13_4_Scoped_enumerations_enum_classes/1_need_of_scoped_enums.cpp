@@ -39,8 +39,12 @@ int main()
     Color_scoped cs{Color_scoped::red};       // note: red is not directly accessible, we have to use Color_scoped::red
     Fruit_scoped fs{Fruit_scoped::banana};    // note: banana is not directly accessible, we have to use Fruit_scoped::banana
 
-    if(cs == fs)        // error: no match for 'operator==' (operand types are 'Color_scoped' and 'Fruit_scoped')
-        std::cout << "Both SCOPED enum class types are equal\n"; 
+    // if(cs == fs)        // COMPILE ERROR: no match for 'operator==' (operand types are 'Color_scoped' and 'Fruit_scoped')
+    //     std::cout << "Both SCOPED enum class types are equal\n"; 
+
+    // Scoped enums provide type-safety: different enum class types cannot be compared
+    if (cs == Color_scoped::red)
+        std::cout << "cs is red\n";
 
     return 0;
 }

@@ -1,1 +1,0 @@
-/home/prashanth/Learnings/.agents/rules/learncpp_oops_folder_work.md

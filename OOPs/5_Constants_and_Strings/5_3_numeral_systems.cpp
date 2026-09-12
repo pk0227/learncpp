@@ -16,7 +16,10 @@
 
 #include <iostream>
 #include <bitset>   // For binary representation
+#include <format>   // C++20: For std::format
+#if defined(__cpp_lib_print) || (defined(__cplusplus) && __cplusplus >= 202302L)
 #include <print>    // C++23: For std::print and std::println
+#endif
 
 int main()
 {
@@ -61,11 +64,16 @@ int main()
     std::cout << std::format("{:x}\n{:b}\n{:o}\n", dec, dec, dec);
     // Output: 24\n100100\n44
     
+#if defined(__cpp_lib_print) || (defined(__cplusplus) && __cplusplus >= 202302L)
     // std::print (C++23): Prints formatted output WITHOUT automatic newline
     std::print("----------------------------------\n");
     
     // std::println (C++23): Prints formatted output WITH automatic newline at the end
     std::println("{:x}\n{:b}\n{:o}\n", dec, dec, dec);
+#else
+    std::cout << "----------------------------------\n";
+    std::cout << std::format("{:x}\n{:b}\n{:o}\n", dec, dec, dec);
+#endif
 
     return 0;
 }

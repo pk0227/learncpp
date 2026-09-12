@@ -10,7 +10,8 @@ int main()
     return 0;
 }
 
-void print(int x, int y=4) // compile error: redefinition of default argument
+// void print(int x, int y=4) // COMPILE ERROR: default argument cannot be redeclared in definition if already declared in forward declaration
+void print(int x, int y)
 {
     std::cout << "x: " << x << '\n';
     std::cout << "y: " << y << '\n';

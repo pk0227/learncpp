@@ -99,4 +99,35 @@
             -- constexpr is part of the interface of a function. Once a function is made constexpr, it can be called by other constexpr functions or used in contexts that require constant expressions. Removing the constexpr later will break such code.
             -- constexpr functions can be harder to debug since you can’t breakpoint or step through them in a debugger.
 
+3. Constinit and compile-time variable initialization (C++20)
+    constinit
+        -- C++20 introduces the constinit keyword.
+        -- constinit asserts that a variable with static storage duration (global variables, static member variables, static local variables)
+           or thread storage duration is initialized at compile-time with a constant initializer.
+        -- Key distinction from constexpr:
+           -- constexpr implies const: a constexpr variable is immutable.
+           -- constinit does NOT imply const: a constinit variable can be modified at runtime!
+        -- Primary purpose: Prevents the Static Initialization Order Fiasco (SIOF) by guaranteeing that static/global variables
+           are fully initialized during the constant static initialization phase before any dynamic initialization runs.
+
+4. Evolution of constexpr across C++ Standards
+    -- C++11:
+       -- Very restrictive: constexpr functions could only contain a single return statement, using recursion and ternary operators.
+       -- No local variables, loops, or multiple statements allowed.
+    -- C++14:
+       -- Substantially relaxed: loops (for, while), branches (if, switch), and mutable local variables allowed inside constexpr functions.
+       -- Void-returning constexpr functions permitted.
+    -- C++20:
+       -- consteval keyword: immediate functions that must evaluate at compile-time.
+       -- constinit keyword: guarantees compile-time initialization for static/thread-local storage without requiring const.
+       -- std::is_constant_evaluated() in <type_traits>.
+       -- Transient dynamic allocations permitted (constexpr std::vector and std::string allowed, as long as freed before compile-time finishes).
+       -- Virtual constexpr functions and dynamic_cast allowed.
+       -- try/catch blocks allowed if no exception is actually thrown during constant evaluation.
+    -- C++23:
+       -- if consteval introduced as cleaner, less error-prone replacement for if (std::is_constant_evaluated()).
+       -- static local variables and thread_local variables allowed in constexpr functions (when unreached during constant evaluation).
+       -- Non-literal variables allowed in branches that are not evaluated at compile-time.
+
+
     

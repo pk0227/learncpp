@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdint>
 
 enum Color : std::int8_t
 {

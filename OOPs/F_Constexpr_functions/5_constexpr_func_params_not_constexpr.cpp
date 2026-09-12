@@ -7,9 +7,10 @@ consteval int goo(int c)    // c is not constexpr, and cannot be used in constan
 
 constexpr int foo(int b)    // b is not constexpr, and cannot be used in constant expressions
 {
-    constexpr int b2 { b }; // compile error: constexpr variable requires constant expression initializer
+    // constexpr int b2 { b }; // COMPILE ERROR: constexpr variable requires constant expression initializer
+    // return goo(b);          // COMPILE ERROR: consteval function call requires constant expression argument
 
-    return goo(b);          // compile error: consteval function call requires constant expression argument
+    return b;                  // OK: b can be returned, but cannot initialize a constexpr variable
 }
 
 int main()

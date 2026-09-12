@@ -19,6 +19,6 @@ int main()
     std::cout << addOne(1.2f) << '\n';
     std::cout << addOne(1.2) << '\n';
     std::cout << addOne(1.2f) << '\n';
-    std::cout << addOne("Hello") << '\n';
+    // std::cout << addOne("Hello") << '\n'; // COMPILE ERROR: use of deleted function specialization 'addOne<const char*>'
     return 0;
 }

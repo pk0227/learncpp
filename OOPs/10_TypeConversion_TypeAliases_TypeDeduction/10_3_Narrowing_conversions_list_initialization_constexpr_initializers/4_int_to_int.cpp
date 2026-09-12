@@ -24,9 +24,10 @@ int main()
     std::cout << "u2 : " << u2 << std::endl;
 */
     constexpr int big{1000};
-    char small{big};
+    // char small{big}; // COMPILE ERROR: narrowing conversion in list-initialization (1000 out of char range)
+    char small{ static_cast<char>(big) }; // OK: explicit static_cast
 
-    std::cout << "small : " << small << std::endl;
+    std::cout << "small : " << static_cast<int>(small) << std::endl;
 
     return 0;
 }

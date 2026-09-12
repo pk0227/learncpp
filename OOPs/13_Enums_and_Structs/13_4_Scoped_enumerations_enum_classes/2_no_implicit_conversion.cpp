@@ -25,7 +25,8 @@ int main()
     {
         //std::cout << "pet is " << pet << "\n";  // compilation error. unlike unscoped enums, scoped enums have no implicit int conversion.
         std::cout << static_cast<int>(pet) << "\n";
-        std::cout << std::to_underlying(pet) << "\n";
+        std::cout << static_cast<std::underlying_type_t<Pet>>(pet) << "\n"; // C++20 way
+        // std::cout << std::to_underlying(pet) << "\n"; // Note: std::to_underlying was introduced in C++23
     }
 
     return 0;

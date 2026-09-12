@@ -10,7 +10,8 @@ enum Feeling
 {
     happy,
     tired,
-    blue, // error: naming collision with the above blue
+    // blue, // COMPILE ERROR: naming collision with Color::blue in the same scope
+    feeling_blue,
 };
 
 int main()

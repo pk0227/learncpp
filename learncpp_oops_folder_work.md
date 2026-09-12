@@ -323,8 +323,14 @@ rather than *preserve and enhance*. The fix is to treat every sentence in Readme
 | **25_Virtual_Functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 32 files verified / linked (1 new) |
 | **26_Templates_and_Classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 16 files verified / linked (1 new) |
 | **27_Exceptions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 25 files verified / linked |
-| **28_Input_and_Output** | ⏳ Up Next | Pending review | Not created yet | Pending | Pending | Under construction |
+| **28_Input_and_Output** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 15 files verified / linked (2 new) |
+| **F_Constexpr_functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 10 files verified / linked (2 new) |
+| **5_Constants_and_Strings** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 20 files verified / linked |
+| **10_TypeConversion_TypeAliases_TypeDeduction** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 22 files verified / linked (1 new) |
+| **11_Function_Overloading_and_Function_Templates** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 20+ added | ✅ 43 files verified / linked |
+| **12_References_and_Pointers** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 20+ added | ✅ 42 files verified / linked |
+| **13_Enums_and_Structs** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 20+ added | ✅ 39 files verified / linked |
 
 ---
 
-*Steering file created: 2026-09-09 | Updated: 2026-09-10*
+*Steering file created: 2026-09-09 | Updated: 2026-09-13*
