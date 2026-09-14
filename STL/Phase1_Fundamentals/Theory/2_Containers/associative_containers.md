@@ -4,6 +4,26 @@
 
 ---
 
+## 📑 Table of Contents
+
+1. [Overview](#overview)
+2. [1. std::set - Unique Sorted Keys](#1-stdset---unique-sorted-keys)
+3. [2. std::map - Key-Value Pairs](#2-stdmap---key-value-pairs-unique-keys)
+   - [Basic Operations](#basic-operations-1)
+   - [Modern C++ Map Operations: try_emplace and insert_or_assign](#modern-c-map-operations-try_emplace-and-insert_or_assign)
+   - [Node Extraction and Splicing: extract()](#node-extraction-and-splicing-extract)
+   - [Heterogeneous Lookup with Transparent Comparators](#heterogeneous-lookup-with-transparent-comparators)
+   - [Interview Points](#interview-points-1)
+4. [3. std::multiset - Sorted Keys with Duplicates](#3-stdmultiset---sorted-keys-duplicates-allowed)
+5. [4. std::multimap - Key-Value Pairs with Duplicates](#4-stdmultimap---key-value-pairs-duplicate-keys-allowed)
+6. [Internal Structure: Red-Black Tree](#internal-structure-red-black-tree)
+7. [Common Interview Questions](#common-interview-questions)
+8. [C++23 Flat Containers Evolution](#c23-flat-containers-evolution)
+9. [Key Takeaways](#key-takeaways)
+10. [Next Steps](#next-steps)
+
+---
+
 ## Overview
 
 Associative containers store elements in **sorted order** using Red-Black Trees.
@@ -218,9 +238,59 @@ if (it != m.end()) {
 }
 ```
 
+### Modern C++ Map Operations: `try_emplace` and `insert_or_assign` (C++17)
+
+Prior to C++17, inserting or updating with `operator[]` required default-constructibility and performed redundant lookups or moves:
+```cpp
+std::map<std::string, HeavyObject> m;
+
+// 1. try_emplace: Constructs HeavyObject in-place ONLY IF key does not exist!
+// If "key" exists, arguments (100, "data") are untouched and no temporary is created.
+m.try_emplace("key", 100, "data");
+
+// 2. insert_or_assign: Updates value if key exists, inserts if not. Returns [it, bool].
+auto [it, inserted] = m.insert_or_assign("key", HeavyObject(200, "new_data"));
+```
+
+### Node Extraction and Splicing: `extract()` (C++17)
+
+Node handles allow **moving internal tree nodes** without copying data or reallocating memory:
+```cpp
+std::map<int, std::string> src = {{1, "one"}, {2, "two"}};
+std::map<int, std::string> dst;
+
+// Extract node for key 1 (takes ownership of heap node):
+auto node = src.extract(1);
+
+// Key can be modified in-place while detached from the tree!
+node.key() = 100;
+
+// Insert extracted node into destination map (zero heap allocations!):
+dst.insert(std::move(node));
+
+// Merge entire map efficiently (splices matching nodes without reallocation):
+dst.merge(src);
+```
+
+### Heterogeneous Lookup with Transparent Comparators (C++14 / C++20)
+
+When calling `find("alice")` on `std::map<std::string, int>`, standard `std::less<std::string>` constructs a temporary `std::string`, incurring a heap allocation!
+Using transparent `std::less<>`:
+```cpp
+// C++14 transparent comparator:
+std::map<std::string, int, std::less<>> fast_map;
+
+// Enables lookup directly via std::string_view or const char* with ZERO heap allocation:
+std::string_view sv = "alice";
+auto it = fast_map.find(sv);  // Zero allocation!
+
+// C++20 contains():
+if (fast_map.contains("bob")) { /* ... */ }
+```
+
 **Q: When to use `map` vs `unordered_map`?**
-- `map`: Need ordering, range queries, predictable O(log n)
-- `unordered_map`: Only need lookup, want O(1) average
+- `map`: Need ordering, range queries (`lower_bound`/`upper_bound`), predictable $O(\log n)$ worst-case, reference stability.
+- `unordered_map`: Only need single-key lookup, want $O(1)$ average, ordering irrelevant.
 
 ---
 
@@ -396,6 +466,26 @@ for (const auto& [word, count] : freq) {
 // banana: 2
 // cherry: 1
 ```
+
+---
+
+## C++23 Flat Containers Evolution
+
+In C++23, the standard library introduced **flat associative containers**:
+- `std::flat_set`
+- `std::flat_map`
+- `std::flat_multiset`
+- `std::flat_multimap`
+
+### Why Flat Containers?
+`std::map` and `std::set` are node-based Red-Black trees. Every insertion allocates a separate 32–48 byte node containing pointers to parent, left, and right children plus a color bit. This causes:
+1. **Cache fragmentation**: Pointers chase across heap memory.
+2. **Memory overhead**: Heavy pointer overhead per element.
+
+Flat containers use **contiguous sequence containers** (like two `std::vector`s or a vector of pairs) kept sorted at all times.
+- **Lookup**: $O(\log n)$ via binary search with continuous cache-line spatial locality (much faster than tree node traversal!).
+- **Insert/Erase**: $O(n)$ due to shifting elements.
+- **Best For**: Read-heavy workloads populated once and queried millions of times.
 
 ---
 

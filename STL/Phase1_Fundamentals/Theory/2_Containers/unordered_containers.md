@@ -4,6 +4,29 @@
 
 ---
 
+## 📑 Table of Contents
+
+1. [Overview](#overview)
+2. [Hash Table Basics](#hash-table-basics)
+   - [Internal Structure](#internal-structure)
+   - [Key Concepts](#key-concepts)
+3. [1. std::unordered_set - Unique Keys, Fast Lookup](#1-stdunordered_set---unique-keys-fast-lookup)
+4. [2. std::unordered_map - Key-Value, Fast Lookup](#2-stdunordered_map---key-value-fast-lookup)
+5. [3. std::unordered_multiset - Duplicates Allowed](#3-stdunordered_multiset---duplicates-allowed)
+6. [4. std::unordered_multimap - Duplicate Keys Allowed](#4-stdunordered_multimap---duplicate-keys-allowed)
+7. [Hash Function Design](#hash-function-design)
+   - [Custom Hash for User-Defined Types](#custom-hash-for-user-defined-types)
+   - [Combining Hashes](#combining-hashes)
+8. [Iterator and Reference Invalidation Rules](#iterator-invalidation)
+   - [Rehashing Invalidates Iterators BUT Preserves References](#rehashing-invalidates-all-iterators)
+   - [Safe Pattern: Reserve Capacity](#safe-pattern-reserve-capacity)
+9. [Performance Considerations](#performance-considerations)
+10. [Common Interview Questions](#common-interview-questions)
+11. [Key Takeaways](#key-takeaways)
+12. [Next Steps](#next-steps)
+
+---
+
 ## Overview
 
 Unordered containers use **hash tables** for O(1) average-case operations.
@@ -20,8 +43,8 @@ Unordered containers use **hash tables** for O(1) average-case operations.
 - **O(1) average** insert, find, erase
 - **O(n) worst case** (hash collisions)
 - **Forward iterators** only
-- **Hash table** internal structure
-- **Rehashing** invalidates all iterators
+- **Hash table** internal structure (separate chaining)
+- **Rehashing**: Invalidates all iterators, but **leaves all references and pointers to elements valid**!
 
 ---
 
@@ -376,8 +399,27 @@ auto it = us.insert(1).first;
 if (us.size() + 1 > us.bucket_count() * us.max_load_factor()) {
     // Rehashing will occur!
     us.insert(2);
-    // ⚠️ it is now invalid!
+    // ⚠️ 'it' is now invalid! (Bucket traversal structure changed)
 }
+```
+
+> [!IMPORTANT]
+> **Reference & Pointer Stability (Senior Interview Deep Dive)**:
+> In `std::unordered_map` and `std::unordered_set`, nodes are individually allocated on the heap (separate chaining).
+> When rehashing occurs:
+> - ❌ **All iterators are invalidated** (because iterators must traverse the bucket array which has been reallocated).
+> - ✅ **Pointers and references to existing elements REMAIN 100% VALID**!
+> The heap-allocated nodes are simply re-linked into the newly allocated bucket list. Their physical addresses never change.
+
+```cpp
+std::unordered_map<int, std::string> map = {{1, "one"}, {2, "two"}};
+std::string& val_ref = map[1]; // Reference to "one"
+
+// Force massive rehashing by increasing bucket count:
+map.rehash(10000);
+
+// val_ref is still completely valid!
+std::cout << val_ref << "\n"; // Safe: prints "one"
 ```
 
 ### Safe Pattern: Reserve Capacity

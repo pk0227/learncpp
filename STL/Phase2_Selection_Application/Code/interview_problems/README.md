@@ -1,24 +1,41 @@
 # 🎯 Interview Problems - Complete Catalog
 
-## Overview
-
-This directory contains popular interview problems with complete solutions, container selection analysis, and test cases.
+> **Compilable C++20 implementations of high-frequency senior interview problems**
 
 ---
 
-## 📋 Problems List
+## 📑 Table of Contents
+
+1. [Problems List](#problems-list)
+   - [Problem 01: LRU Cache](#problem-01-lru-cache)
+   - [Problem 02: Two Sum](#problem-02-two-sum)
+   - [Problem 03: Valid Parentheses](#problem-03-valid-parentheses)
+   - [Problem 04: Top K Frequent Elements](#problem-04-top-k-frequent-elements)
+   - [Problem 05: Group Anagrams](#problem-05-group-anagrams)
+   - [Problem 06: In-Memory File System](#problem-06-in-memory-file-system)
+   - [Problem 07: Design Twitter](#problem-07-design-twitter)
+   - [Problem 08: Merge Intervals](#problem-08-merge-intervals)
+2. [Coverage Summary](#coverage-summary)
+3. [Compilation and Execution](#compilation-and-execution)
+4. [Study Guide](#study-guide)
+5. [Key Takeaways](#key-takeaways)
+6. [More Problems to Practice](#more-problems-to-practice)
+
+---
+
+## Problems List
 
 ### Problem 01: LRU Cache ⭐⭐⭐
-**File:** `problem_01_lru_cache.cpp`  
+**File:** [`problem_01_lru_cache.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_01_lru_cache.cpp)  
 **Difficulty:** Medium-Hard  
-**Containers:** `unordered_map` + `list`  
+**Containers:** `std::unordered_map` + `std::list`  
 **Complexity:** O(1) get and put
 
 **Key Concepts:**
 - Hash table for O(1) lookup
 - Doubly linked list for O(1) insertion/deletion
 - Iterator stability
-- Splice operation
+- Splice operation (`items.splice`)
 
 **Interview Focus:**
 - Container selection justification
@@ -28,9 +45,9 @@ This directory contains popular interview problems with complete solutions, cont
 ---
 
 ### Problem 02: Two Sum ⭐⭐⭐
-**File:** `problem_02_two_sum.cpp`  
+**File:** [`problem_02_two_sum.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_02_two_sum.cpp)  
 **Difficulty:** Easy  
-**Container:** `unordered_map`  
+**Container:** `std::unordered_map`  
 **Complexity:** O(n) time, O(n) space
 
 **Key Concepts:**
@@ -38,182 +55,168 @@ This directory contains popular interview problems with complete solutions, cont
 - Single pass solution
 - Space-time tradeoff
 
-**Interview Focus:**
-- Why hash table?
-- Can you do better than O(n²)?
-- What if array is sorted?
-
 ---
 
 ### Problem 03: Valid Parentheses ⭐⭐⭐
-**File:** `problem_03_valid_parentheses.cpp`  
+**File:** [`problem_03_valid_parentheses.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_03_valid_parentheses.cpp)  
 **Difficulty:** Easy  
-**Container:** `stack`  
+**Container:** `std::stack`  
 **Complexity:** O(n) time, O(n) space
 
 **Key Concepts:**
-- LIFO behavior for matching
-- Stack naturally models the problem
-- Step-by-step demonstration
-
-**Interview Focus:**
-- Why stack?
-- Can you solve without extra space?
-- How to handle different bracket types?
+- LIFO stack matching
+- Early termination on mismatched brackets
 
 ---
 
 ### Problem 04: Top K Frequent Elements ⭐⭐⭐
-**File:** `problem_04_top_k_frequent.cpp`  
+**File:** [`problem_04_top_k_frequent.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_04_top_k_frequent.cpp)  
 **Difficulty:** Medium  
-**Containers:** `unordered_map` + `priority_queue`  
-**Complexity:** O(n log k) heap, O(n) bucket sort
+**Containers:** `std::unordered_map` + `std::priority_queue` (min-heap)  
+**Complexity:** O(n log k) time, O(n) space
 
 **Key Concepts:**
-- Min-heap of size k
-- Why min-heap not max-heap?
-- Bucket sort optimization
-
-**Interview Focus:**
-- Heap vs bucket sort trade-off
-- Why keep min-heap of size k?
-- Can you do better than O(n log k)?
+- Frequency counting with hash table
+- Size-bounded min-heap of size K
+- Custom comparator for pairs
 
 ---
 
 ### Problem 05: Group Anagrams ⭐⭐
-**File:** `problem_05_group_anagrams.cpp`  
+**File:** [`problem_05_group_anagrams.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_05_group_anagrams.cpp)  
 **Difficulty:** Medium  
-**Container:** `unordered_map<string, vector<string>>`  
+**Container:** `std::unordered_map<std::string, std::vector<std::string>>`  
 **Complexity:** O(n * k log k) sort, O(n * k) count
 
 **Key Concepts:**
-- Sorted string as key
-- Character count as key (faster)
-- Grouping with hash map
-
-**Interview Focus:**
-- Why sorted string works as key?
-- Can you optimize the key generation?
-- Character count vs sorting trade-off
+- Canonical representation as map key
+- Character counting array as key optimization
 
 ---
 
-## 🎯 Coverage Summary
+### Problem 06: In-Memory File System ⭐⭐⭐
+**File:** [`problem_06_file_system.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_06_file_system.cpp)  
+**Difficulty:** Hard  
+**Containers:** `std::map<std::string, Node*>` (ordered trie) + `std::string`  
+**Complexity:** O(depth * log(breadth)) for path navigation
+
+**Key Concepts:**
+- Hierarchical tree structure where nodes store sorted children
+- Path tokenization with `std::stringstream`
+- Clean memory cleanup and RAII in recursive destructor
+
+---
+
+### Problem 07: Design Twitter ⭐⭐⭐
+**File:** [`problem_07_design_twitter.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_07_design_twitter.cpp)  
+**Difficulty:** Hard  
+**Containers:** `std::unordered_map`, `std::unordered_set`, `std::priority_queue`  
+**Complexity:** O(K log N) news feed retrieval using max-heap merge
+
+**Key Concepts:**
+- Follower graph modeling with `std::unordered_map<int, std::unordered_set<int>>`
+- Global logical timestamp for temporal ordering
+- Merging K sorted tweet lists using a bounded heap
+
+### Problem 08: Merge Intervals ⭐⭐
+**File:** [`problem_08_merge_intervals.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_08_merge_intervals.cpp)  
+**Difficulty:** Medium  
+**Containers:** `std::vector` + `std::sort` (batch) & `std::map` (streaming)  
+**Complexity:** O(n log n) batch, O(log n) streaming insert  
+
+**Key Concepts:**
+- Sorting intervals by start time using custom comparator
+- Sequential range overlap merging
+- Streaming interval updates using `std::map::lower_bound`
+
+---
+
+## Coverage Summary
 
 ### By Container Type
 
 | Container | Problems |
-|-----------|----------|
-| **unordered_map** | Two Sum, Top K, Group Anagrams, LRU Cache |
-| **list** | LRU Cache |
-| **stack** | Valid Parentheses |
-| **priority_queue** | Top K Frequent |
-| **vector** | All (for storage/results) |
-
-### By Algorithm Type
-
-| Algorithm | Problems |
-|-----------|----------|
-| **Hash Table** | Two Sum, Group Anagrams, LRU Cache |
-| **Heap** | Top K Frequent |
-| **Stack** | Valid Parentheses |
-| **Linked List** | LRU Cache |
-| **Sorting** | Group Anagrams |
+|---|---|
+| **`std::unordered_map`** | Two Sum, Top K, Group Anagrams, LRU Cache, Design Twitter |
+| **`std::list`** | LRU Cache |
+| **`std::stack`** | Valid Parentheses |
+| **`std::priority_queue`** | Top K Frequent, Design Twitter |
+| **`std::map`** | File System (ordered directory traversal), Merge Intervals (streaming) |
+| **`std::unordered_set`** | Design Twitter (following list) |
+| **`std::vector`** | All (for storage and result returns) |
 
 ### By Difficulty
 
 | Difficulty | Count | Problems |
-|------------|-------|----------|
+|---|---|---|
 | **Easy** | 2 | Two Sum, Valid Parentheses |
-| **Medium** | 2 | Top K Frequent, Group Anagrams |
-| **Medium-Hard** | 1 | LRU Cache |
+| **Medium** | 3 | Top K Frequent, Group Anagrams, Merge Intervals |
+| **Hard / System Design** | 3 | LRU Cache, File System, Design Twitter |
 
 ---
 
-## 🚀 Compilation
+## Compilation and Execution
+
+All examples use standard C++20 and compile with:
 
 ```bash
-cd /home/prashanth/learncpp_workspace/STL/examples/interview_problems
+cd /home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems
 
-# Compile all
-g++ -std=c++20 -Wall -Wextra -O2 problem_01_lru_cache.cpp -o lru_cache
-g++ -std=c++20 -Wall -Wextra -O2 problem_02_two_sum.cpp -o two_sum
-g++ -std=c++20 -Wall -Wextra -O2 problem_03_valid_parentheses.cpp -o valid_parentheses
-g++ -std=c++20 -Wall -Wextra -O2 problem_04_top_k_frequent.cpp -o top_k_frequent
-g++ -std=c++20 -Wall -Wextra -O2 problem_05_group_anagrams.cpp -o group_anagrams
+# Compile all at once
+for file in problem_*.cpp; do
+    g++ -std=c++20 -Wall -Wextra -O2 "$file" -o "${file%.cpp}"
+done
 
 # Run examples
-./lru_cache
-./two_sum
-./valid_parentheses
-./top_k_frequent
-./group_anagrams
+./problem_01_lru_cache
+./problem_02_two_sum
+./problem_03_valid_parentheses
+./problem_04_top_k_frequent
+./problem_05_group_anagrams
+./problem_06_file_system
+./problem_07_design_twitter
 ```
 
 ---
 
-## 📚 Study Guide
+## Study Guide
 
 ### Week 1: Easy Problems
-1. **Two Sum** - Master hash table technique
-2. **Valid Parentheses** - Understand stack usage
+1. **Two Sum** - Master hash table lookup technique
+2. **Valid Parentheses** - Understand stack LIFO mechanics
 
 ### Week 2: Medium Problems
-3. **Top K Frequent** - Learn heap techniques
+3. **Top K Frequent** - Learn size-constrained min-heap technique
 4. **Group Anagrams** - Practice hash map with complex keys
 
-### Week 3: Hard Problems
-5. **LRU Cache** - Combine multiple containers
+### Week 3: Hard & Architecture Problems
+5. **LRU Cache** - Combine hash map and linked list with `splice()`
+6. **File System** - Multi-container trie navigation
+7. **Design Twitter** - Multi-user graph and heap-based feed aggregation
 
 ---
 
-## 🎓 Key Takeaways
+## Key Takeaways
 
 ### Container Selection Patterns
-
-1. **Need O(1) lookup by key?** → `unordered_map`
-2. **Need LIFO behavior?** → `stack`
-3. **Need top K elements?** → `priority_queue` (min-heap of size k)
-4. **Need O(1) insert/delete with iterator?** → `list`
-5. **Need to group items?** → `unordered_map<key, vector<items>>`
-
-### Common Interview Patterns
-
-1. **Two pointers** - Sorted array problems
-2. **Hash table** - O(1) lookup, complement finding
-3. **Stack** - Matching, parsing, backtracking
-4. **Heap** - Top K, merge K, priority-based
-5. **Multiple containers** - Complex data structures (LRU)
+1. **Need O(1) lookup by key?** $\to$ `std::unordered_map`
+2. **Need LIFO behavior?** $\to$ `std::stack`
+3. **Need top K elements?** $\to$ `std::priority_queue` (min-heap of size K)
+4. **Need O(1) insert/delete with iterator stability?** $\to$ `std::list`
+5. **Need sorted directory contents?** $\to$ `std::map`
+6. **Need fast member set checks?** $\to$ `std::unordered_set`
 
 ---
 
-## 💡 Interview Tips
+## More Problems to Practice
 
-1. **Always explain container choice** - Why this container?
-2. **Discuss trade-offs** - Time vs space, simplicity vs performance
-3. **Mention alternatives** - What else could work?
-4. **Analyze complexity** - Time and space for each approach
-5. **Test edge cases** - Empty input, single element, duplicates
-
----
-
-## 🔥 More Problems to Practice
-
-See [06_Interview_Problems.md](file:///home/prashanth/learncpp_workspace/STL/06_Interview_Problems.md) for:
-- Sliding Window Maximum
-- Merge Intervals
-- Find Median from Data Stream
-- Design Twitter
-- And 5 more problems!
+See [06_Interview_Problems.md](../../Theory/06_Interview_Problems.md) for:
+- Sliding Window Maximum (monotonic deque technique)
+- Merge Intervals (interval sorting)
+- Find Median from Data Stream (two-heaps pattern)
+- LFU Cache (frequency map + list of keys)
+- Iterator Safety Debugging Exercises
 
 ---
 
-**All problems include:**
-- ✅ Complete working solutions
-- ✅ Container selection analysis
-- ✅ Complexity analysis
-- ✅ Test cases
-- ✅ Interview follow-up questions
-
-**Total:** 5 compilable problems covering all major container types!
+**Total:** 7 compilable problems covering all major container types!

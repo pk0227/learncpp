@@ -4,15 +4,38 @@
 
 ---
 
+## 📑 Table of Contents
+
+1. [🚨 Why This Matters](#-why-this-matters)
+2. [🗺️ Container Selection Flowchart](#️-container-selection-flowchart)
+3. [📊 Complete Comparison Matrix](#-complete-comparison-matrix)
+4. [🥊 Head-to-Head Comparisons](#-head-to-head-comparisons)
+   - [1. vector vs list](#1-vector-vs-list)
+   - [2. map vs unordered_map](#2-map-vs-unordered_map)
+   - [3. deque vs vector](#3-deque-vs-vector)
+   - [4. set vs priority_queue](#4-set-vs-priority_queue)
+   - [5. array vs vector](#5-array-vs-vector)
+   - [6. std::map vs std::flat_map (C++23)](#6-stdmap-vs-stdflat_map-c23)
+5. [🎯 Decision-Making Framework](#-decision-making-framework)
+6. [🔥 Real Interview System Design Problems](#-real-interview-system-design-problems)
+   - [Q1: LRU Cache (unordered_map + list)](#q1-design-a-cache-with-o1-lookup-insert-and-eviction-lru-cache)
+   - [Q2: Median in a Data Stream (Two Heaps)](#q2-find-median-in-a-stream-of-integers)
+   - [Q3: Range Sum Queries (Prefix Sums vs Trees)](#q3-implement-a-data-structure-for-range-sum-queries)
+7. [🎓 Key Takeaways](#-key-takeaways)
+8. [📁 Code Examples](#-code-examples)
+9. [📚 Next Steps](#-next-steps)
+
+---
+
 ## 🚨 Why This Matters
 
 > **90% of senior C++ interviews include container selection questions.**
 
-Interviewers care MORE about your **decision-making process** than your ability to use containers. They want to see you:
-- Understand trade-offs
-- Justify your choices
-- Consider performance implications
-- Think about real-world constraints
+Interviewers care MORE about your **decision-making process** than your ability to memorize syntax. They want to see you:
+- Understand hardware cache lines and memory layout trade-offs
+- Justify container choices with Big-O and empirical benchmark reality
+- Consider iterator and reference invalidation safety
+- Factor in modern C++ features (`std::span`, PMR, flat containers)
 
 ---
 
@@ -27,7 +50,7 @@ START: What do you need to store?
 │   │   │
 │   │   ├─► YES → Need duplicates?
 │   │   │   ├─► YES → std::multimap
-│   │   │   └─► NO  → std::map
+│   │   │   └─► NO  → std::map (or std::flat_map in C++23 if lookups dominate)
 │   │   │
 │   │   └─► NO → Need duplicates?
 │   │       ├─► YES → std::unordered_multimap
@@ -37,24 +60,24 @@ START: What do you need to store?
 │       │
 │       ├─► YES → Need ordering?
 │       │   │
-│       │   ├─► YES → std::set
+│       │   ├─► YES → std::set (or std::flat_set in C++23)
 │       │   └─► NO  → std::unordered_set
 │       │
 │       └─► NO → What access pattern?
 │           │
-│           ├─► Random access → Size known?
+│           ├─► Random access → Size known at compile time?
 │           │   ├─► YES (fixed) → std::array
 │           │   └─► NO (dynamic) → std::vector
 │           │
-│           ├─► Front/back only → std::deque
+│           ├─► Front/back push & pop only → std::deque
 │           │
-│           ├─► Frequent middle insert/delete → std::list
+│           ├─► Frequent middle insert/delete with iterator stability → std::list
 │           │
 │           ├─► LIFO (stack) → std::stack
 │           │
 │           ├─► FIFO (queue) → std::queue
 │           │
-│           └─► Priority-based → std::priority_queue
+│           └─► Priority-based (extremum access) → std::priority_queue
 ```
 
 ---
@@ -63,32 +86,32 @@ START: What do you need to store?
 
 ### Performance Characteristics
 
-| Container | Access | Insert (end) | Insert (front) | Insert (middle) | Find | Delete | Memory Overhead |
-|-----------|--------|--------------|----------------|-----------------|------|--------|-----------------|
-| **array** | O(1) | N/A | N/A | N/A | O(n) | N/A | None |
-| **vector** | O(1) | O(1)* | O(n) | O(n) | O(n) | O(n) | Low |
-| **deque** | O(1) | O(1) | O(1) | O(n) | O(n) | O(n) | Medium |
-| **list** | O(n) | O(1) | O(1) | O(1)† | O(n) | O(1)† | High |
-| **forward_list** | O(n) | O(1)‡ | O(1) | O(1)† | O(n) | O(1)† | Medium |
-| **set/map** | N/A | O(log n) | O(log n) | O(log n) | O(log n) | O(log n) | High |
-| **unordered_set/map** | N/A | O(1)** | O(1)** | O(1)** | O(1)** | O(1)** | High |
+| Container | Access | Insert (End) | Insert (Front) | Insert (Middle) | Find | Delete | Memory Overhead |
+|---|---|---|---|---|---|---|---|
+| **`std::array`** | $O(1)$ | N/A | N/A | N/A | $O(N)$ | N/A | 0 bytes |
+| **`std::vector`** | $O(1)$ | Amortized $O(1)^*$ | $O(N)$ | $O(N)$ | $O(N)$ | $O(N)$ | Low (3 pointers) |
+| **`std::deque`** | $O(1)$ | Amortized $O(1)$ | Amortized $O(1)$ | $O(N)$ | $O(N)$ | $O(N)$ | Medium (map of chunks) |
+| **`std::list`** | $O(N)$ | $O(1)$ | $O(1)$ | $O(1)^\dagger$ | $O(N)$ | $O(1)^\dagger$ | High (16 bytes/node) |
+| **`std::forward_list`** | $O(N)$ | $O(1)^\ddagger$ | $O(1)$ | $O(1)^\dagger$ | $O(N)$ | $O(1)^\dagger$ | Medium (8 bytes/node) |
+| **`std::set` / `std::map`** | N/A | $O(\log N)$ | $O(\log N)$ | $O(\log N)$ | $O(\log N)$ | $O(\log N)$ | High (24–32 bytes/node) |
+| **`std::unordered_set/map`** | N/A | Avg $O(1)$, Worst $O(N)$ | Avg $O(1)$, Worst $O(N)$ | Avg $O(1)$, Worst $O(N)$ | Avg $O(1)$, Worst $O(N)$ | Avg $O(1)$, Worst $O(N)$ | High (buckets + nodes) |
+| **`std::flat_map` (C++23)** | $O(\log N)$ | $O(N)$ | $O(N)$ | $O(N)$ | $O(\log N)$ | $O(N)$ | Very Low (contiguous vectors) |
 
-\* Amortized  
-† If you have iterator to position  
-‡ No direct access to end  
-** Average case; worst case O(n)
+$^*$ Amortized due to geometric capacity doubling.  
+$^\dagger$ Constant time $O(1)$ only when iterator to the insertion position is already held.  
+$^\ddagger$ Requires keeping an iterator/pointer to the last node.
 
-### Iterator Categories
+### Iterator Categories & Stability
 
 | Container | Iterator Category | Invalidation Risk |
-|-----------|------------------|-------------------|
-| **array** | Random Access, Contiguous | Never (fixed size) |
-| **vector** | Random Access, Contiguous | High (reallocation) |
-| **deque** | Random Access | Medium |
-| **list** | Bidirectional | Low |
-| **forward_list** | Forward | Low |
-| **set/map** | Bidirectional | Low |
-| **unordered_set/map** | Forward | Medium (rehash) |
+|---|---|---|
+| **`std::array`** | Random Access, Contiguous | Never (fixed compile-time size) |
+| **`std::vector`** | Random Access, Contiguous | High (reallocation invalidates all; insertion/erase invalidates downstream) |
+| **`std::deque`** | Random Access | Medium (insertion at ends invalidates all iterators; middle ops invalidate all) |
+| **`std::list`** | Bidirectional | Low (only erased node invalidated; iterators never relocate) |
+| **`std::forward_list`** | Forward | Low (only erased node invalidated) |
+| **`std::set` / `std::map`** | Bidirectional | Low (only erased node invalidated) |
+| **`std::unordered_set/map`** | Forward | Medium (rehash invalidates all iterators; element references remain valid) |
 
 ---
 
@@ -99,57 +122,51 @@ START: What do you need to store?
 **The Classic Interview Question!**
 
 #### Use `vector` when:
-✅ Random access needed (`v[i]`)  
-✅ Cache-friendly performance critical  
-✅ Mostly append operations  
-✅ Infrequent insertions/deletions in middle  
-✅ Memory efficiency matters  
+- ✅ Random access is needed (`v[i]`)
+- ✅ Cache-friendly traversal is critical (modern CPUs fetch 64-byte cache lines)
+- ✅ Elements are predominantly appended to the end
+- ✅ Insertions/deletions in the middle are infrequent or container size is small ($<10,000$)
+- ✅ Memory overhead must be minimized
 
 #### Use `list` when:
-✅ Frequent insertions/deletions in middle  
-✅ Iterator stability required (no invalidation)  
-✅ Splicing operations needed  
-✅ No random access needed  
+- ✅ Frequent insertions/deletions occur in the middle AND you already hold an iterator
+- ✅ Strict **iterator stability** is required (iterators must never invalidate on insertion)
+- ✅ Constant-time $O(1)$ **splicing** between lists is needed
+- ✅ Elements are very expensive to move/copy and cannot be stored via pointers
 
 #### Example Scenario
 
 ```cpp
-// Scenario: Maintain a sorted list of tasks, frequently add/remove in middle
+#include <vector>
+#include <list>
+#include <algorithm>
 
-// ❌ BAD: vector (O(n) for each insert/delete in middle)
+struct Task { int id; int priority; };
+
+// ❌ ANTI-PATTERN: std::list for simple sorted iteration
+// LinkedList causes pointer chasing and cache misses on every node access!
+
+// ✅ PREFERRED: std::vector + std::sort + std::lower_bound
 std::vector<Task> tasks;
-// Insert in middle: O(n) - shifts all elements
-tasks.insert(tasks.begin() + pos, task);
-
-// ✅ GOOD: list (O(1) for insert/delete if you have iterator)
-std::list<Task> tasks;
-// Insert in middle: O(1) if you have iterator
-auto it = find_position(tasks, task);
-tasks.insert(it, task);  // O(1)!
-
-// But if you need random access frequently:
-// ✅ BETTER: vector + sort + binary search
-std::vector<Task> tasks;
-tasks.push_back(task);
-std::sort(tasks.begin(), tasks.end());
-auto it = std::lower_bound(tasks.begin(), tasks.end(), target);
+tasks.push_back({101, 2});
+std::sort(tasks.begin(), tasks.end(), [](const Task& a, const Task& b) {
+    return a.priority < b.priority;
+});
+// Binary search in contiguous memory is blisteringly fast
 ```
 
 #### Benchmark Reality Check
+```
+Insert 1,000 small elements in middle:
+- std::vector: ~50 μs (O(N) memory shift, but prefetcher keeps memory in L1/L2 cache)
+- std::list:   ~200 μs (O(1) pointer relink, but every node allocation incurs malloc lock & cache miss)
 
-```cpp
-// Modern CPUs love contiguous memory (cache lines)
-// Even with O(n) operations, vector often wins!
-
-// Insert 1000 elements in middle:
-// vector: ~50μs  (O(n) but cache-friendly)
-// list:   ~200μs (O(1) but cache misses)
-
-// Lesson: Big-O isn't everything! Cache matters!
+Lesson: Big-O notation ignores constant factors and hardware cache hierarchies!
 ```
 
-**Interview Answer Template:**
-> "I'd choose `vector` by default for cache efficiency, unless I have frequent middle insertions/deletions AND the container is large (>10,000 elements). Even then, I'd benchmark before switching to `list`."
+> [!TIP]
+> **Interview Answer Template:**  
+> *"I choose `std::vector` as my default container because contiguous memory maximizes CPU cache line utilization and hardware prefetching. I only switch to `std::list` if I have frequent middle insertions/deletions on large objects where iterator stability is mandatory or where I must splice ranges in $O(1)$ without copying."*
 
 ---
 
@@ -157,370 +174,296 @@ auto it = std::lower_bound(tasks.begin(), tasks.end(), target);
 
 **Another Top Interview Question!**
 
-#### Use `map` when:
-✅ Need sorted/ordered iteration  
-✅ Need range queries (`lower_bound`, `upper_bound`)  
-✅ Predictable performance required (always O(log n))  
-✅ Small datasets (overhead of hashing not worth it)  
+#### Use `std::map` when:
+- ✅ Sorted in-order iteration is required
+- ✅ Range queries are needed (`std::lower_bound`, `std::upper_bound`)
+- ✅ Strict $O(\log N)$ worst-case performance guarantee is mandatory (no hash collision spikes)
+- ✅ Key type does not have a readily available or efficient hash function
 
-#### Use `unordered_map` when:
-✅ Only need lookup/insert/delete (no ordering)  
-✅ Large datasets (O(1) beats O(log n))  
-✅ Can provide good hash function  
-✅ Average-case performance acceptable  
+#### Use `std::unordered_map` when:
+- ✅ Only point lookups (`find`), insertions, and deletions are needed (no ordering)
+- ✅ Large datasets where average $O(1)$ beats $O(\log N)$
+- ✅ An efficient, well-distributed hash function is available
 
-#### Example Scenario
+#### Example Scenarios
 
 ```cpp
-// Scenario 1: Word frequency counter
-// ✅ GOOD: unordered_map (only need counts, no ordering)
+#include <map>
+#include <unordered_map>
+#include <string>
+#include <iostream>
+
+// Scenario 1: Word frequency counter (no ordering needed)
+// ✅ GOOD: unordered_map for O(1) average update
 std::unordered_map<std::string, int> word_count;
-word_count[word]++;
+word_count["apple"]++;
 
-// Scenario 2: Range query - find all keys between 10 and 20
-// ✅ GOOD: map (supports range queries)
-std::map<int, std::string> data;
-auto start = data.lower_bound(10);
-auto end = data.upper_bound(20);
-for (auto it = start; it != end; ++it) { /* ... */ }
-
-// ❌ BAD: unordered_map (would need to iterate ALL elements)
-std::unordered_map<int, std::string> data;
-for (const auto& [key, value] : data) {
-    if (key >= 10 && key <= 20) { /* ... */ }  // O(n)!
+// Scenario 2: Range query - find all accounts with balance between $1,000 and $5,000
+// ✅ GOOD: map (ordered tree allows logarithmic lower_bound and upper_bound)
+std::map<int, std::string> account_balances;
+auto it_start = account_balances.lower_bound(1000);
+auto it_end   = account_balances.upper_bound(5000);
+for (auto it = it_start; it != it_end; ++it) {
+    // Range query processed in O(log N + K) where K is number of matched accounts
 }
-
-// Scenario 3: Sorted output required
-// ✅ GOOD: map (already sorted)
-std::map<std::string, int> word_count;
-for (const auto& [word, count] : word_count) {
-    std::cout << word << ": " << count << "\n";  // Alphabetical!
-}
-
-// ❌ BAD: unordered_map (need to sort separately)
-std::unordered_map<std::string, int> word_count;
-std::vector<std::pair<std::string, int>> sorted(word_count.begin(), word_count.end());
-std::sort(sorted.begin(), sorted.end());  // Extra O(n log n) work!
 ```
 
 #### Performance Comparison
 
-| Operation | map | unordered_map |
-|-----------|-----|---------------|
-| Insert | O(log n) | O(1) average, O(n) worst |
-| Lookup | O(log n) | O(1) average, O(n) worst |
-| Delete | O(log n) | O(1) average, O(n) worst |
-| Iterate (sorted) | O(n) | O(n log n) (need to sort) |
-| Range query | O(log n + k) | O(n) |
-| Memory | ~3× element size | ~4× element size |
-
-**Interview Answer Template:**
-> "I'd use `unordered_map` for pure lookup performance on large datasets, but `map` if I need ordering, range queries, or predictable performance. For small datasets (<1000 elements), the difference is negligible."
+| Operation | `std::map` | `std::unordered_map` |
+|---|---|---|
+| Average Lookup | $O(\log N)$ | Average $O(1)$, Worst $O(N)$ |
+| Worst-case Lookup | Guaranteed $O(\log N)$ | $O(N)$ (hash collision attack) |
+| Memory Overhead | 3 pointers + color bit per node | Bucket vector + node pointers |
+| Iteration Order | Strictly sorted by key | Unspecified bucket order |
+| Range Queries | $O(\log N + K)$ | $O(N)$ (must inspect every element) |
 
 ---
 
 ### 3. `deque` vs `vector`
 
-#### Use `vector` when:
-✅ Only append at end  
-✅ Random access is primary operation  
-✅ Cache locality critical  
-✅ Memory contiguity required (e.g., passing to C API)  
+#### Use `std::vector` when:
+- ✅ Elements are only appended at the end
+- ✅ Memory must be contiguous (e.g., passing `vec.data()` to C APIs or GPU buffers)
+- ✅ Maximum cache locality is needed
 
-#### Use `deque` when:
-✅ Need fast insertion at **both** front and back  
-✅ Don't need contiguous memory  
-✅ Want to avoid iterator invalidation on growth  
+#### Use `std::deque` when:
+- ✅ You require fast $O(1)$ insertion and removal at **both front and back**
+- ✅ You are allocating millions of elements and want to **avoid massive contiguous reallocation failures** (deque allocates fixed chunks)
+- ✅ You require pointer/reference validity across front/back insertions
 
-#### Example Scenario
+#### Example Scenario: Sliding Window
 
 ```cpp
-// Scenario: Sliding window of last N elements
-// ✅ GOOD: deque (efficient push_back + pop_front)
+#include <deque>
+#include <vector>
+
+// ✅ GOOD: deque for sliding window (efficient pop_front)
 std::deque<int> window;
-window.push_back(new_value);  // O(1)
-if (window.size() > N) {
-    window.pop_front();  // O(1)
+window.push_back(42);
+if (window.size() > 5) {
+    window.pop_front();  // O(1) operation!
 }
 
-// ❌ BAD: vector (pop_front is O(n))
-std::vector<int> window;
-window.push_back(new_value);  // O(1)
-if (window.size() > N) {
-    window.erase(window.begin());  // O(n) - shifts all elements!
-}
+// ❌ BAD: vector for sliding window
+// window.erase(window.begin()) is O(N) because it shifts every remaining element!
 ```
-
-#### Internal Structure
-
-```
-vector:  [████████████████████████]  Contiguous
-                                     
-deque:   [████] [████] [████] [████]  Segmented chunks
-         ↑                        ↑
-         front                    back
-```
-
-**Interview Answer Template:**
-> "`vector` is my default choice for dynamic arrays. I'd only use `deque` if I specifically need efficient front insertion/deletion, like implementing a sliding window or a queue."
 
 ---
 
 ### 4. `set` vs `priority_queue`
 
-**Subtle but Important Difference!**
+#### Use `std::set` when:
+- ✅ You need to **search**, **iterate**, and **remove arbitrary elements**
+- ✅ Elements must be strictly unique
+- ✅ Range queries (`lower_bound`) are needed
 
-#### Use `set` when:
-✅ Need to **maintain** sorted unique elements  
-✅ Need to **iterate** in sorted order  
-✅ Need to **search** for specific elements  
-✅ Need to **remove** arbitrary elements  
-
-#### Use `priority_queue` when:
-✅ Only need **top** element (max or min)  
-✅ Don't need to iterate  
-✅ Don't need to search  
-✅ Only remove top element  
-
-#### Example Scenario
+#### Use `std::priority_queue` when:
+- ✅ You only need access to the **extremum** (maximum or minimum element via `.top()`)
+- ✅ You do not need to iterate through all elements
+- ✅ You want minimum memory overhead (flat heap stored inside a contiguous `std::vector`)
 
 ```cpp
-// Scenario: Find K largest elements (need to access all K)
-// ✅ GOOD: set (can iterate over all elements)
-std::set<int, std::greater<int>> top_k;
-for (int x : data) {
-    top_k.insert(x);
-    if (top_k.size() > k) {
-        top_k.erase(--top_k.end());  // Remove smallest
-    }
-}
-// Access all K elements
-for (int x : top_k) { /* ... */ }
+#include <queue>
+#include <set>
 
-// ❌ BAD: priority_queue (can only access top, need to pop to see others)
-std::priority_queue<int> top_k;
-// Can't iterate! Must pop to access elements (destructive)
-
-// Scenario: Dijkstra's algorithm (only need minimum)
-// ✅ GOOD: priority_queue (only need top element)
-std::priority_queue<Node, std::vector<Node>, std::greater<Node>> pq;
-while (!pq.empty()) {
-    auto node = pq.top();  // Get minimum
-    pq.pop();
-    // Process...
-}
-
-// ❌ OVERKILL: set (don't need iteration or search)
+// Dijkstra's shortest path: only needs the smallest tentative distance
+// ✅ GOOD: priority_queue (cache friendly, low memory)
+std::priority_queue<std::pair<int, int>, 
+                    std::vector<std::pair<int, int>>, 
+                    std::greater<>> pq;
 ```
-
-**Interview Answer Template:**
-> "`priority_queue` is optimized for accessing only the top element (heap operations). If I need to iterate, search, or remove arbitrary elements, I'd use `set`. For algorithms like Dijkstra's, `priority_queue` is perfect."
 
 ---
 
 ### 5. `array` vs `vector`
 
-#### Use `array` when:
-✅ Size known at **compile time**  
-✅ Want **stack allocation**  
-✅ Need **zero overhead** (no capacity tracking)  
-✅ Interfacing with C APIs (fixed-size buffers)  
+#### Use `std::array` when:
+- ✅ Element count is fixed and known at **compile time**
+- ✅ You want pure **stack allocation** (zero heap fragmentation)
+- ✅ Zero runtime overhead (no capacity or dynamic pointer tracking)
 
-#### Use `vector` when:
-✅ Size known only at **runtime**  
-✅ Need **dynamic resizing**  
-✅ Size varies during execution  
+#### Use `std::vector` when:
+- ✅ Element count is determined at **runtime**
+- ✅ The collection must dynamically grow or shrink
 
-#### Example Scenario
+---
 
-```cpp
-// Scenario: 3D point (always 3 coordinates)
-// ✅ GOOD: array (fixed size, stack allocated)
-std::array<double, 3> point = {1.0, 2.0, 3.0};
+### 6. `std::map` vs `std::flat_map` (C++23)
 
-// ❌ OVERKILL: vector (unnecessary heap allocation)
-std::vector<double> point = {1.0, 2.0, 3.0};  // Heap allocation!
+In C++23, `std::flat_map` stores keys and values in two parallel contiguous `std::vector` containers kept in sorted order.
 
-// Scenario: Read N integers from user
-// ✅ GOOD: vector (size unknown at compile time)
-int n;
-std::cin >> n;
-std::vector<int> data(n);
-
-// ❌ CAN'T USE: array (size must be compile-time constant)
-// std::array<int, n> data;  // Error: n is not constant!
-```
-
-**Interview Answer Template:**
-> "If the size is fixed and known at compile time, `array` is better (stack allocation, zero overhead). Otherwise, `vector` is the right choice."
+| Metric | `std::map` (Node-based) | `std::flat_map` (Contiguous) |
+|---|---|---|
+| Storage Layout | Heap nodes scattered across memory | Two contiguous vectors (`vector<Key>`, `vector<Value>`) |
+| Lookup (`find`) | $O(\log N)$ pointer dereferencing | $O(\log N)$ binary search in contiguous cache line |
+| Insertion | $O(\log N)$ node allocation | $O(N)$ shifting contiguous vector elements |
+| Memory Overhead | 24–32 bytes per element | Minimal vector capacity overhead |
+| Ideal Use Case | Dynamic frequent insertions and lookups | Build-once, lookup-heavy read workloads |
 
 ---
 
 ## 🎯 Decision-Making Framework
 
-### Step 1: What's Your Access Pattern?
+### Step 1: What Is Your Access Pattern?
 
-| Pattern | Container |
-|---------|-----------|
-| Random access by index | `vector`, `deque`, `array` |
-| Sequential access only | Any container |
-| Key-based lookup | `map`, `unordered_map`, `set`, `unordered_set` |
-| Only front/back access | `deque`, `list`, `queue`, `stack` |
-| Priority-based access | `priority_queue` |
+| Access Pattern | Primary Recommendation |
+|---|---|
+| Random access by integer index | `std::vector`, `std::array`, `std::deque` |
+| Key-based associative lookup | `std::unordered_map` (speed) or `std::map` (ordering) |
+| Front and back push/pop | `std::deque` |
+| Extremum (min/max) only | `std::priority_queue` |
+| Sequential iteration only | `std::vector` |
 
-### Step 2: What Operations Are Frequent?
+### Step 2: What Are Your Constraints?
 
-| Frequent Operation | Container |
-|-------------------|-----------|
-| Append at end | `vector`, `deque` |
-| Insert at front | `deque`, `list`, `forward_list` |
-| Insert in middle | `list` (if large), `vector` (if small) |
-| Remove from middle | `list` (if large), `vector` (if small) |
-| Find element | `set`, `map`, `unordered_set`, `unordered_map` |
-| Maintain sorted order | `set`, `map` |
-| Get min/max | `priority_queue`, `set` |
-
-### Step 3: What Are Your Constraints?
-
-| Constraint | Consideration |
-|------------|---------------|
-| Memory limited | Avoid `list` (high overhead), prefer `vector` |
-| Cache performance critical | Prefer `vector`, `array`, `deque` |
-| Iterator stability required | Use `list`, `set`, `map` |
-| Predictable performance | Use `map`, `set` (avoid `unordered_*`) |
-| Need contiguous memory | Use `vector`, `array` |
-| Fixed size | Use `array` |
+| Primary Constraint | Container Recommendation |
+|---|---|
+| **Low Latency / Cache Critical** | `std::vector`, `std::array`, `std::flat_map` |
+| **Iterator Stability Required** | `std::list`, `std::set`, `std::map` |
+| **Zero Heap Allocations** | `std::array` |
+| **Guaranteed Worst-Case Time** | `std::map`, `std::set` (avoid `unordered_*`) |
+| **Non-owning Function Parameter** | `std::span` (C++20) or `std::string_view` (C++17) |
 
 ---
 
-## 🔥 Real Interview Questions
+## 🔥 Real Interview System Design Problems
 
-### Q1: Design a cache with O(1) lookup, insert, and eviction (LRU Cache)
+### Q1: Design a Cache with O(1) Lookup, Insert, and Eviction (LRU Cache)
 
-**Answer:**
+**Container Selection:** `std::unordered_map` + `std::list`
+- `std::list` maintains access order from MRU (front) to LRU (back).
+- `std::unordered_map` maps `Key -> list::iterator`.
+- **Why this combination?** `std::list::splice` moves nodes in $O(1)$ time without invalidating existing iterators stored in the map.
+
 ```cpp
-// Combination of unordered_map + list
+#include <list>
+#include <unordered_map>
+#include <utility>
+
 class LRUCache {
     int capacity;
-    std::list<std::pair<int, int>> items;  // {key, value}
+    std::list<std::pair<int, int>> items; // {key, value}
     std::unordered_map<int, std::list<std::pair<int, int>>::iterator> cache;
-    
+
 public:
+    LRUCache(int cap) : capacity(cap) {}
+
     int get(int key) {
-        if (cache.find(key) == cache.end()) return -1;
-        
-        // Move to front (most recently used)
-        items.splice(items.begin(), items, cache[key]);
-        return cache[key]->second;
+        auto it = cache.find(key);
+        if (it == cache.end()) return -1;
+
+        // Splice moves node to front in O(1) without reallocating
+        items.splice(items.begin(), items, it->second);
+        return it->second->second;
     }
-    
+
     void put(int key, int value) {
-        if (cache.find(key) != cache.end()) {
-            items.erase(cache[key]);
+        auto it = cache.find(key);
+        if (it != cache.end()) {
+            it->second->second = value;
+            items.splice(items.begin(), items, it->second);
+            return;
         }
-        
-        items.push_front({key, value});
-        cache[key] = items.begin();
-        
-        if (cache.size() > capacity) {
-            auto last = items.back();
-            cache.erase(last.first);
+
+        if (cache.size() == capacity) {
+            auto lru = items.back();
+            cache.erase(lru.first);
             items.pop_back();
         }
+
+        items.push_front({key, value});
+        cache[key] = items.begin();
     }
 };
 ```
 
-**Why this combination?**
-- `unordered_map` - O(1) lookup by key
-- `list` - O(1) move to front, O(1) remove from back, iterator stability
-
 ---
 
-### Q2: Find median in a stream of integers
+### Q2: Find Median in a Stream of Integers
 
-**Answer:**
+**Container Selection:** Two Heaps (`std::priority_queue`)
+- Max-heap stores smaller half of stream.
+- Min-heap stores larger half of stream.
+- **Why two heaps?** Provides $O(\log N)$ insertion and instantaneous $O(1)$ median retrieval.
+
 ```cpp
+#include <queue>
+#include <vector>
+
 class MedianFinder {
-    std::priority_queue<int> max_heap;  // Left half (smaller elements)
-    std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap;  // Right half
-    
+    std::priority_queue<int> max_heap; // Lower half
+    std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap; // Upper half
+
 public:
     void addNum(int num) {
         max_heap.push(num);
         min_heap.push(max_heap.top());
         max_heap.pop();
-        
+
         if (max_heap.size() < min_heap.size()) {
             max_heap.push(min_heap.top());
             min_heap.pop();
         }
     }
-    
-    double findMedian() {
-        return max_heap.size() > min_heap.size() 
-            ? max_heap.top() 
-            : (max_heap.top() + min_heap.top()) / 2.0;
+
+    double findMedian() const {
+        if (max_heap.size() > min_heap.size()) {
+            return max_heap.top();
+        }
+        return (max_heap.top() + min_heap.top()) / 2.0;
     }
 };
 ```
-
-**Why two heaps?**
-- Maintain balance: left half ≤ median ≤ right half
-- O(log n) insert, O(1) median access
-- Alternative: `multiset` (allows iteration, but slower)
 
 ---
 
-### Q3: Implement a data structure for range sum queries
+### Q3: Implement a Data Structure for Range Sum Queries
 
-**Answer:**
+**Container Selection:** Prefix Sums inside `std::vector` (if read-heavy), or Binary Indexed Tree (Fenwick) / Segment Tree (if updates are frequent).
+
 ```cpp
-// If updates are rare: prefix sum array
+#include <vector>
+
 class NumArray {
     std::vector<int> prefix;
 public:
-    NumArray(std::vector<int>& nums) {
-        prefix.resize(nums.size() + 1);
-        for (int i = 0; i < nums.size(); ++i) {
+    NumArray(const std::vector<int>& nums) : prefix(nums.size() + 1, 0) {
+        for (size_t i = 0; i < nums.size(); ++i) {
             prefix[i + 1] = prefix[i] + nums[i];
         }
     }
-    
-    int sumRange(int left, int right) {
-        return prefix[right + 1] - prefix[left];  // O(1)!
+
+    int sumRange(int left, int right) const {
+        return prefix[right + 1] - prefix[left]; // O(1) query!
     }
 };
-
-// If updates are frequent: segment tree or Fenwick tree
-// (More complex, but O(log n) update and query)
 ```
-
-**Why `vector` for prefix sums?**
-- Random access needed: O(1)
-- Fixed size after construction
-- Cache-friendly
 
 ---
 
 ## 🎓 Key Takeaways
 
-1. **Default to `vector`** unless you have a specific reason not to
-2. **`map` vs `unordered_map`** - Ordering vs speed
-3. **`list` is rarely the answer** - Cache performance usually beats Big-O
-4. **Combine containers** for complex data structures (LRU cache, median finder)
-5. **Benchmark if unsure** - Theory vs practice can differ
-6. **Consider iterator invalidation** - Affects algorithm correctness
-7. **Memory overhead matters** - `list` uses 2-3× more memory than `vector`
+1. **Default to `std::vector`** for dynamic collections; hardware cache lines favor contiguous memory.
+2. **`std::map` vs `std::unordered_map`** is a trade-off between strict ordering/predictability ($O(\log N)$) and raw point lookup speed (average $O(1)$).
+3. **`std::list` is rarely the right choice** unless node splicing or unconditional iterator stability across modifications is strictly needed.
+4. **Compose containers** (`unordered_map` + `list`) to combine point lookup with stable ordering.
+5. **Modern C++23 Flat Containers** (`std::flat_map`) provide vector cache performance with map lookup semantics for read-heavy workloads.
+
+---
+
+## 📁 Code Examples
+
+- [`Phase2_Selection_Application/Code/interview_problems/problem_01_lru_cache.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_01_lru_cache.cpp): Complete LRU Cache implementation with `unordered_map` + `list`.
+- [`Phase2_Selection_Application/Code/interview_problems/problem_04_top_k_frequent.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_04_top_k_frequent.cpp): Top-K frequent elements using min-heap `priority_queue`.
+- [`Phase2_Selection_Application/Code/interview_problems/problem_05_group_anagrams.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_05_group_anagrams.cpp): Anagram grouping using hash map bucketing.
+- [`Phase2_Selection_Application/Code/interview_problems/problem_07_design_twitter.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Code/interview_problems/problem_07_design_twitter.cpp): Social graph design composing vectors, maps, and priority queues.
 
 ---
 
 ## 📚 Next Steps
 
-1. [**Iterator Invalidation**](05_Iterator_Invalidation.md) - Understand invalidation rules
-2. [**Interview Problems**](06_Interview_Problems.md) - Practice container selection
-3. [**Container Guides**](../../Phase1_Fundamentals/Theory/containers/sequence_containers.md) - Deep dive into each container
-
----
-
-**Remember:** In interviews, **justify your choice** with trade-offs. There's rarely one "correct" answer!
+1. [**Iterator Invalidation**](05_Iterator_Invalidation.md) - Understand invalidation rules and pitfalls
+2. [**Interview Problems**](06_Interview_Problems.md) - Practice container selection scenarios
+3. [**Sequence Containers Guide**](../../Phase1_Fundamentals/Theory/2_Containers/sequence_containers.md) - Deep dive into vector, deque, and list
+4. [**Associative Containers Guide**](../../Phase1_Fundamentals/Theory/2_Containers/associative_containers.md) - Deep dive into map and set
