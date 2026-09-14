@@ -1,4 +1,25 @@
-## Asynchrony
+# Asynchronous Programming — Linux Async I/O & Modern C++ Engineering Guide
+
+> In-depth exploration of non-blocking I/O, event loops, coroutines, futures, promises, and the evolution from epoll to io_uring in high-throughput systems.
+
+---
+
+## 📑 Table of Contents
+
+1. [Building Blocks of Asynchronous Programming](#building-blocks-of-asynchronous-programming)
+   - [Function vs Coroutine](#function-vs-coroutine)
+   - [Event Loop](#event-loop)
+2. [Asynchrony vs. Multithreading](#asynchrony-vs-multithreading)
+3. [Challenges and Considerations](#challenges-and-considerations)
+4. [Typical Applications](#typical-applications)
+5. [Code Examples by Language](#examples)
+6. [Summary Matrix](#summary)
+7. [Advanced Linux Asynchrony and Modern C++ Internals Deep Dive](#advanced-linux-asynchrony-and-modern-c-internals-deep-dive)
+   - [1. The `std::future` Destructor Trap with `std::async`](#1-the-stdfuture-destructor-trap-with-stdasync)
+   - [2. C++20 Coroutines Architecture](#2-c20-coroutines-architecture)
+   - [3. Linux Kernel Asynchronous I/O Evolution](#3-linux-kernel-asynchronous-io-evolution)
+
+---
 
 Asynchronous programming is a technique used to achieve concurrency, where tasks can be executed independently without waiting for other tasks to finish. It allows for nonblocking behavior, in contrast to synchronous execution that waits for one task to complete before starting the next task.
 
@@ -8,7 +29,7 @@ Asynchronous programming is particularly useful for tasks that involve I/O opera
 
 Asynchronous programming offers non-blocking execution, which is especially beneficial for I/O-bound operations. The two main pillars of this paradigm are the event loop and async functions.
 
-#### Function vs Corutine
+#### Function vs Coroutine
 
 - In programming, a **function** is a block of code that encapsulates a specific task, allowing it to be reused throughout the program. It usually accepts inputs called arguments and may produce a result or output by returning a value.
 - Functions help in breaking down complex problems into smaller, manageable pieces, making the code easier to understand and maintain. They follow a synchronous execution model, meaning the program flow waits for a function to complete before proceeding to the next line of code.
@@ -835,7 +856,7 @@ Here is a table comparing asynchronous programming features in C++, Python, and 
 
 ---
 
-## Advanced Linux Asynchrony & Modern C++ Internals Deep Dive
+## Advanced Linux Asynchrony and Modern C++ Internals Deep Dive
 
 ### 1. The `std::future` Destructor Trap with `std::async`
 

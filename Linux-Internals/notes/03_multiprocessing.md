@@ -1,4 +1,29 @@
-## Multiprocessing
+# Multiprocessing — Linux Process Internals & Systems Programming Guide
+
+> Comprehensive guide to POSIX process creation, isolated memory spaces, Copy-on-Write (COW), process synchronization, IPC mechanisms, and kernel lifecycle management.
+
+---
+
+## 📑 Table of Contents
+
+1. [Introduction to Processes](#introduction-to-processes)
+   - [Child Processes](#child-processes)
+   - [Zombie Processes](#zombie-process)
+   - [Orphan Processes](#orphan-process)
+2. [Communication Between Processes (IPC)](#communication-between-processes)
+3. [Challenges with Multiprocessing](#challenges-with-multiprocessing)
+4. [Process Management Techniques](#process-management-techniques)
+5. [Process Synchronization](#process-synchronization)
+6. [Typical Applications](#typical-applications)
+7. [Alternatives to Multiprocessing](#alternatives-to-multiprocessing)
+8. [Code Examples by Language](#examples)
+9. [Advanced Linux Multiprocessing and Kernel Internals Deep Dive](#advanced-linux-multiprocessing-and-kernel-internals-deep-dive)
+   - [1. The POSIX `fork()` in Multithreaded Applications Hazard](#1-the-posix-fork-in-multithreaded-applications-hazard)
+   - [2. Copy-on-Write (COW) Kernel and MMU Mechanics](#2-copy-on-write-cow-kernel-and-mmu-mechanics)
+   - [3. Zombie and Orphan Process Architecture](#3-zombie-and-orphan-process-architecture)
+   - [4. IPC Performance and Latency Hierarchy](#4-ipc-performance-and-latency-hierarchy)
+
+---
 
 **Multiprocessing** involves running multiple processes simultaneously. Each process has its own memory space, making them more isolated from each other compared to threads, which share the same memory. This isolation means that multiprocessing can be more robust and less prone to errors from shared state, as each process runs independently. Multiprocessing is often used to leverage multiple CPU cores, allowing a program to perform computationally intensive tasks in parallel, thus improving performance. Communication between processes is typically achieved through inter-process communication (IPC) mechanisms, such as pipes, sockets, or shared memory. While more resource-intensive than multithreading, due to the need for separate memory spaces, multiprocessing can achieve better performance for CPU-bound tasks and provides better fault isolation.
 
@@ -1438,7 +1463,7 @@ Node.js's `child_process` module offers a powerful way to handle multiple proces
 
 ---
 
-## Advanced Linux Multiprocessing & Kernel Internals Deep Dive
+## Advanced Linux Multiprocessing and Kernel Internals Deep Dive
 
 ### 1. The POSIX `fork()` in Multithreaded Applications Hazard
 
@@ -1476,7 +1501,7 @@ POSIX provides `pthread_atfork(prepare, parent, child)` callbacks to acquire all
 
 ---
 
-### 2. Copy-on-Write (COW) Kernel & MMU Mechanics
+### 2. Copy-on-Write (COW) Kernel and MMU Mechanics
 
 Traditional UNIX `fork()` copied the entire physical memory of the parent into the child, which was prohibitively slow for large processes. Modern Linux implements **Copy-on-Write (COW)**:
 
@@ -1542,7 +1567,7 @@ void sigchld_handler(int) {
 
 ---
 
-### 4. IPC Performance & Latency Hierarchy
+### 4. IPC Performance and Latency Hierarchy
 
 When choosing an Inter-Process Communication mechanism in Linux systems:
 

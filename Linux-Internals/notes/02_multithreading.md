@@ -1,4 +1,24 @@
-## Multithreading
+# Multithreading — Systems & C++ Concurrency Engineering Guide
+
+> Deep dive into shared-memory concurrency, thread synchronization, race conditions, memory ordering models, and modern C++20 primitives.
+
+---
+
+## 📑 Table of Contents
+
+1. [Thread Pool vs On-Demand Thread](#thread-pool-vs-on-demand-thread)
+2. [Worker Threads](#worker-threads)
+3. [Advantages of Threads over Processes](#advantages-of-threads-over-processes)
+4. [Challenges with Multithreading](#challenges-with-multithreading)
+   - [Data Race & Race Conditions](#data-race)
+5. [Code Examples by Language](#examples)
+6. [Advanced Linux and C++ Multithreading Deep Dive](#advanced-linux-and-c-multithreading-deep-dive)
+   - [1. The C++ Memory Model and Atomic Memory Orderings](#1-the-c-memory-model-and-atomic-memory-orderings)
+   - [2. Condition Variable Pitfalls and Best Practices](#2-condition-variable-pitfalls-and-best-practices)
+   - [3. Modern C++20 Concurrency Primitives](#3-modern-c20-concurrency-primitives)
+   - [4. False Sharing and CPU Cache Lines](#4-false-sharing-and-cpu-cache-lines)
+
+---
 
 **Multithreading** refers to the capability of a CPU, or a single core within a multi-core processor, to execute multiple threads concurrently. A thread is the smallest unit of processing that can be scheduled by an operating system. In a multithreaded environment, a program, or process, can perform multiple tasks at the same time, as each thread runs in the same shared memory space. This can be useful for tasks that are IO-bound, as threads can be used to keep the CPU busy while waiting for IO operations to complete. However, because threads share the same memory, they must be carefully synchronized to avoid issues like race conditions, where two threads attempt to modify the same data concurrently, leading to unpredictable outcomes.
 
@@ -1694,9 +1714,9 @@ Here are some example code snippets demonstrating various aspects of multithread
 
 ---
 
-## Advanced Linux & C++ Multithreading Deep Dive
+## Advanced Linux and C++ Multithreading Deep Dive
 
-### 1. The C++ Memory Model & Atomic Memory Orderings
+### 1. The C++ Memory Model and Atomic Memory Orderings
 
 In concurrent programming, compiler optimizations (instruction reordering) and CPU architecture (out-of-order execution, store buffers, cache invalidation queues) can cause memory reads and writes to become visible in an order different from program text.
 
@@ -1742,7 +1762,7 @@ void consumer() {
 
 ---
 
-### 2. Condition Variable Pitfalls & Best Practices
+### 2. Condition Variable Pitfalls and Best Practices
 
 #### Pitfall A: Spurious Wakeups
 A thread waiting on `std::condition_variable` can unblock even if no thread notified it (due to OS kernel context switches, signals, or internal futex wakeups).
@@ -1806,7 +1826,7 @@ Lightweight synchronization primitive that maintains a counter without requiring
 
 ---
 
-### 4. False Sharing & CPU Cache Lines
+### 4. False Sharing and CPU Cache Lines
 
 When multiple threads concurrently modify independent variables that happen to reside on the same **cache line** (typically 64 bytes on modern CPUs), the CPU cache coherency protocol (MESI/MOESI) forces the cache line to bounce back and forth between CPU cores. This causes severe performance degradation known as **false sharing**.
 

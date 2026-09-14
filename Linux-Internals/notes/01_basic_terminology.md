@@ -1,4 +1,33 @@
-## Basic terminology
+# Basic Operating Systems & Concurrency Terminology
+
+> Foundational systems programming guide covering execution models, process and thread architectures, CPU vs I/O bottlenecks, and Linux kernel execution internals.
+
+---
+
+## 📑 Table of Contents
+
+1. [Sequential vs Non-sequential Execution](#sequential-vs-non-sequential-execution)
+2. [Concurrency vs Parallelism](#concurrency-vs-parallelism)
+3. [Synchronous vs Asynchronous Execution](#synchronous-vs-asynchronous-execution)
+4. [Comparison of Execution Paradigms](#comparison-of-execution-paradigms)
+5. [Process Architecture & Lifecycle](#process)
+   - [Characteristics of a Process](#characteristics-of-a-process)
+   - [Role of the Operating System](#role-of-the-operating-system-os)
+   - [Process Table](#process-table)
+   - [States of a Process](#states-of-a-process)
+6. [Thread Architecture](#thread)
+   - [Thread Management and Scheduling](#thread-management-and-scheduling)
+   - [Memory Allocation in a Program](#memory-allocation-in-a-program)
+7. [Processes vs Threads (In-Depth Comparison)](#processes-vs-threads)
+8. [CPU-Bound vs I/O-Bound Workloads](#cpu-bound-vs-io-bound)
+   - [CPU-Bound Characteristics & Optimization](#cpu-bound)
+   - [I/O-Bound Characteristics & Optimization](#io-bound)
+9. [Advanced Operating System and Linux Kernel Execution Internals](#advanced-operating-system-and-linux-kernel-execution-internals)
+   - [1. Virtual Address Space Layout (Linux x86-64)](#1-virtual-address-space-layout-linux-x86-64)
+   - [2. Context Switching Costs: Process vs Thread](#2-context-switching-costs-process-vs-thread)
+   - [3. Linux Kernel Scheduling Policies](#3-linux-kernel-scheduling-policies)
+
+---
 
 Let's start by defining some helpful terms and emphasizing the distinctions between related concepts. In general those concepts are universal and may be applied to any programming language. The differences between the languages will be discussed in greater detail later, when we attempt to explain the specific approach in implementing concurrency.
 
@@ -254,7 +283,7 @@ In this example, the CPU is often waiting for I/O operations to complete before 
 
 ---
 
-## Advanced Operating System & Linux Kernel Execution Internals
+## Advanced Operating System and Linux Kernel Execution Internals
 
 ### 1. Virtual Address Space Layout (Linux x86-64)
 

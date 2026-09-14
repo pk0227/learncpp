@@ -5,23 +5,23 @@
 ---
 
 ## Table of Contents
-1. [Architectural Overview & The Big Picture](#1-architectural-overview--the-big-picture)
-2. [sleep() — Time-Based Thread Suspension](#2-sleep--time-based-thread-suspension)
-3. [wait() and waitpid() — Process Synchronization](#3-wait-and-waitpid--process-synchronization)
-4. [pause() — Signal-Driven Suspension](#4-pause--signal-driven-suspension)
+1. [Architectural Overview and The Big Picture](#1-architectural-overview-and-the-big-picture)
+2. [sleep(): Time-Based Thread Suspension](#2-sleep-time-based-thread-suspension)
+3. [wait() and waitpid(): Process Synchronization](#3-wait-and-waitpid-process-synchronization)
+4. [pause(): Signal-Driven Suspension](#4-pause-signal-driven-suspension)
 5. [Comparative Analysis (Side-by-Side)](#5-comparative-analysis-side-by-side)
 6. [Execution Models: Single-Threaded vs Multithreaded](#6-execution-models-single-threaded-vs-multithreaded)
 7. [Common Misconceptions Cleared](#7-common-misconceptions-cleared)
 8. [Modern Multithreaded Alternative: sigwait()](#8-modern-multithreaded-alternative-sigwait)
-9. [High-Resolution Timing: nanosleep() & clock_nanosleep()](#9-high-resolution-timing-nanosleep--clock_nanosleep)
-10. [waitpid() Options & Exit Status Inspection Macros](#10-waitpid-options--exit-status-inspection-macros)
+9. [High-Resolution Timing: nanosleep() and clock_nanosleep()](#9-high-resolution-timing-nanosleep-and-clock_nanosleep)
+10. [waitpid() Options and Exit Status Inspection Macros](#10-waitpid-options-and-exit-status-inspection-macros)
 11. [Production SIGCHLD Reaper Pattern (Non-Blocking Loop)](#11-production-sigchld-reaper-pattern-non-blocking-loop)
 12. [Race Conditions: pause() vs sigsuspend()](#12-race-conditions-pause-vs-sigsuspend)
-13. [Interview One-Liners & Cheat Sheet](#13-interview-one-liners--cheat-sheet)
+13. [Interview One-Liners and Cheat Sheet](#13-interview-one-liners-and-cheat-sheet)
 
 ---
 
-## 1. Architectural Overview & The Big Picture
+## 1. Architectural Overview and The Big Picture
 
 These three fundamental POSIX APIs are frequently conflated because they all transition a calling thread into a **sleeping/blocked state** (`TASK_INTERRUPTIBLE` in the Linux kernel). However, their operational purpose and wake triggers are completely distinct:
 
@@ -37,7 +37,7 @@ These three fundamental POSIX APIs are frequently conflated because they all tra
 
 ---
 
-## 2. sleep() — Time-Based Thread Suspension
+## 2. sleep(): Time-Based Thread Suspension
 
 ### Function Signature
 ```cpp
@@ -52,7 +52,7 @@ unsigned int sleep(unsigned int seconds);
 
 ---
 
-## 3. wait() and waitpid() — Process Synchronization
+## 3. wait() and waitpid(): Process Synchronization
 
 ### Function Signatures
 ```cpp
@@ -90,7 +90,7 @@ void fork_and_wait() {
 
 ---
 
-## 4. pause() — Signal-Driven Suspension
+## 4. pause(): Signal-Driven Suspension
 
 ### Function Signature
 ```cpp
@@ -162,7 +162,7 @@ void signal_monitor_thread() {
 
 ---
 
-## 9. High-Resolution Timing: nanosleep() & clock_nanosleep()
+## 9. High-Resolution Timing: nanosleep() and clock_nanosleep()
 
 ```cpp
 #include <ctime>
@@ -181,7 +181,7 @@ if (nanosleep(&req, &rem) == -1) {
 
 ---
 
-## 10. waitpid() Options & Exit Status Inspection Macros
+## 10. waitpid() Options and Exit Status Inspection Macros
 
 ```cpp
 #include <sys/wait.h>
@@ -257,7 +257,7 @@ sigsuspend(&wait_mask); // Zero window for race conditions
 
 ---
 
-## 13. Interview One-Liners & Cheat Sheet
+## 13. Interview One-Liners and Cheat Sheet
 
 - **`sleep()`**: *"Suspends the calling thread for a specified duration."*
 - **`wait()`**: *"Suspends the calling thread until an OS child process changes state."*

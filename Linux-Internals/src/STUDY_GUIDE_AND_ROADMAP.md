@@ -6,24 +6,24 @@
 
 ## 📑 Table of Contents
 
-1. [Operating System Architecture & Platform Guidelines](#1-operating-system-architecture--platform-guidelines)
+1. [Operating System Architecture and Platform Guidelines](#1-operating-system-architecture-and-platform-guidelines)
 2. [Master 5-Phase Learning Roadmap](#2-master-5-phase-learning-roadmap)
    - [Phase 1: Shared-Memory Multithreading (38 Files)](#phase-1-shared-memory-multithreading-38-files)
-   - [Phase 2: Multiprocessing & Process Lifecycle (14 Files)](#phase-2-multiprocessing--process-lifecycle-14-files)
-   - [Phase 3: Deep Dive: Inter-Process Communication (IPC) & Signals (8 Files)](#phase-3-deep-dive-inter-process-communication-ipc--signals-8-files)
-   - [Phase 4: Modern C++ Asynchrony & Event-Driven Patterns (16 Files)](#phase-4-modern-c-asynchrony--event-driven-patterns-16-files)
+   - [Phase 2: Multiprocessing and Process Lifecycle (14 Files)](#phase-2-multiprocessing-and-process-lifecycle-14-files)
+   - [Phase 3: Deep Dive into Inter-Process Communication (IPC) and Signals (8 Files)](#phase-3-deep-dive-into-inter-process-communication-ipc-and-signals-8-files)
+   - [Phase 4: Modern C++ Asynchrony and Event-Driven Patterns (16 Files)](#phase-4-modern-c-asynchrony-and-event-driven-patterns-16-files)
    - [Phase 5: Distributed-Memory Parallelism with MPI (11 Files)](#phase-5-distributed-memory-parallelism-with-mpi-11-files)
 3. [Concurrency vs Multiprocessing Architecture Matrix](#3-concurrency-vs-multiprocessing-architecture-matrix)
-4. [Linux IPC Mechanism Performance & Latency Hierarchy](#4-linux-ipc-mechanism-performance--latency-hierarchy)
-5. [Senior / Staff Interview Preparation Framework](#5-senior--staff-interview-preparation-framework)
+4. [Linux IPC Mechanism Performance and Latency Hierarchy](#4-linux-ipc-mechanism-performance-and-latency-hierarchy)
+5. [Senior and Staff Interview Preparation Framework](#5-senior-and-staff-interview-preparation-framework)
    - [High-Frequency Architectural Questions](#high-frequency-architectural-questions)
-   - [Common Production Traps & Pitfalls](#common-production-traps--pitfalls)
+   - [Common Production Traps and Pitfalls](#common-production-traps-and-pitfalls)
 6. [Executive Cheat Sheet: When to Use What](#6-executive-cheat-sheet-when-to-use-what)
-7. [Verification & Compilation Instructions](#7-verification--compilation-instructions)
+7. [Verification and Compilation Instructions](#7-verification-and-compilation-instructions)
 
 ---
 
-## 1. Operating System Architecture & Platform Guidelines
+## 1. Operating System Architecture and Platform Guidelines
 
 This curriculum teaches **native Linux/POSIX systems programming and modern C++ (C++17/C++20/C++23)**.
 
@@ -92,7 +92,7 @@ g++ -std=c++20 -pthread -lrt example.cpp -o example
 
 ---
 
-### Phase 2: Multiprocessing & Process Lifecycle (14 Files)
+### Phase 2: Multiprocessing and Process Lifecycle (14 Files)
 
 > Explores POSIX process creation, isolated memory spaces, Copy-on-Write (COW), process supervision, and zombie/orphan lifecycle management.
 
@@ -115,7 +115,7 @@ g++ -std=c++20 -pthread -lrt example.cpp -o example
 
 ---
 
-### Phase 3: Deep Dive: Inter-Process Communication (IPC) & Signals (8 Files)
+### Phase 3: Deep Dive into Inter-Process Communication (IPC) and Signals (8 Files)
 
 > Production-grade Linux IPC implementations with system call ergonomics, error handling, atomicity rules, and signal architectures.
 
@@ -132,7 +132,7 @@ g++ -std=c++20 -pthread -lrt example.cpp -o example
 
 ---
 
-### Phase 4: Modern C++ Asynchrony & Event-Driven Patterns (16 Files)
+### Phase 4: Modern C++ Asynchrony and Event-Driven Patterns (16 Files)
 
 > Asynchronous task coordination using `std::async`, futures, promises, packaged tasks, and coroutines.
 
@@ -190,7 +190,7 @@ g++ -std=c++20 -pthread -lrt example.cpp -o example
 
 ---
 
-## 4. Linux IPC Mechanism Performance & Latency Hierarchy
+## 4. Linux IPC Mechanism Performance and Latency Hierarchy
 
 ```mermaid
 graph TD
@@ -209,7 +209,7 @@ graph TD
 
 ---
 
-## 5. Senior / Staff Interview Preparation Framework
+## 5. Senior and Staff Interview Preparation Framework
 
 ### High-Frequency Architectural Questions
 
@@ -232,6 +232,16 @@ while (waitpid(-1, &status, WNOHANG) > 0) {}
 - `release`: Guarantees that prior memory reads/writes cannot be reordered after this store.
 - `seq_cst`: Full sequential consistency with a globally agreed total order across all CPU cores.
 
+### Common Production Traps and Pitfalls
+
+| Trap / Anti-Pattern | Manifestation | Correct Engineering Fix |
+|---|---|---|
+| **`fork()` in multithreaded process** | Silent deadlock in child process when calling `malloc` or I/O. | Only fork before creating threads, or invoke `execve()` immediately. |
+| **Discarding `std::async` future** | Sequential execution bottleneck instead of parallel concurrency. | Store the returned `std::future` handle and call `.get()` / `.wait()`. |
+| **Lost signals / zombie accumulation** | PID exhaustion (`/proc/sys/kernel/pid_max`). | Loop with `waitpid(-1, &status, WNOHANG)` inside `SIGCHLD` handler. |
+| **Signal handler heap allocation** | Deadlock when interrupted thread holds the allocator arena lock. | Only call async-signal-safe functions (`write`, `_exit`) or use `sigwait()`. |
+| **False sharing on shared cache lines** | Multi-core performance drops 10x–50x due to cache-line bouncing. | Align independent hot atomic/mutex variables using `alignas(std::hardware_destructive_interference_size)`. |
+
 ---
 
 ## 6. Executive Cheat Sheet: When to Use What
@@ -250,7 +260,7 @@ while (waitpid(-1, &status, WNOHANG) > 0) {}
 
 ---
 
-## 7. Verification & Compilation Instructions
+## 7. Verification and Compilation Instructions
 
 To verify that all 87 source files in `src/` compile cleanly on your Linux machine:
 

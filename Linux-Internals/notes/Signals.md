@@ -9,28 +9,28 @@
 2. [Signal Disposition (Handler)](#2-signal-disposition-handler)
    - [2a. Signals That CANNOT Be Caught, Blocked, or Ignored](#2a-signals-that-cannot-be-caught-blocked-or-ignored)
    - [2b. Essential Linux Signals Taxonomy](#2b-essential-linux-signals-taxonomy)
-3. [sigaction() — Why It Is Preferred](#3-sigaction--why-it-is-preferred)
-4. [Signal Masking — Core Mechanics](#4-signal-masking--core-mechanics)
+3. [sigaction(): Why It Is Preferred](#3-sigaction-why-it-is-preferred)
+4. [Signal Masking: Core Mechanics](#4-signal-masking-core-mechanics)
 5. [Signal Mask: Per-Thread (Critical Rule)](#5-signal-mask-per-thread-critical-rule)
 6. [APIs for Masking (sigprocmask vs pthread_sigmask)](#6-apis-for-masking-sigprocmask-vs-pthread_sigmask)
 7. [Signal Delivery in Multithreaded Programs](#7-signal-delivery-in-multithreaded-programs)
 8. [Thread Selection Clarification](#8-thread-selection-clarification)
 9. [Masking During Handler Execution (sa_mask)](#9-masking-during-handler-execution-sa_mask)
-10. [sa_flags — Behavior Modifiers](#10-sa_flags--behavior-modifiers)
+10. [sa_flags: Behavior Modifiers](#10-sa_flags-behavior-modifiers)
 11. [Async-Signal Safety (Critical System Concept)](#11-async-signal-safety-critical-system-concept)
-12. [sigwait() — Synchronous Signal Handling](#12-sigwait--synchronous-signal-handling)
+12. [sigwait(): Synchronous Signal Handling](#12-sigwait-synchronous-signal-handling)
 13. [Mandatory Rules for sigwait()](#13-mandatory-rules-for-sigwait)
 14. [Correct sigwait() Design Pattern for Multithreading](#14-correct-sigwait-design-pattern-for-multithreading)
 15. [Why sigwait() Does Not Use sigaction()](#15-why-sigwait-does-not-use-sigaction)
 16. [Resolving Common Handler Misconceptions](#16-resolving-common-handler-misconceptions)
 17. [Thread-Directed vs Process-Directed Signals](#17-thread-directed-vs-process-directed-signals)
-18. [Final Mental Model & Rules of Thumb](#18-final-mental-model--rules-of-thumb)
+18. [Final Mental Model and Rules of Thumb](#18-final-mental-model-and-rules-of-thumb)
 19. [Decision Matrix: When to Use What](#19-decision-matrix-when-to-use-what)
 20. [Executive Interview Summary](#20-executive-interview-summary)
 21. [Real-Time Signals vs Standard Signals](#21-real-time-signals-vs-standard-signals)
 22. [Signals Across fork() and execve()](#22-signals-across-fork-and-execve)
-23. [Deep Dive: sigaction Flags & SA_SIGINFO](#23-deep-dive-sigaction-flags--sa_siginfo)
-24. [Reentrancy & Deadlock Hazards in Signal Handlers](#24-reentrancy--deadlock-hazards-in-signal-handlers)
+23. [Deep Dive: sigaction Flags and SA_SIGINFO](#23-deep-dive-sigaction-flags-and-sa_siginfo)
+24. [Reentrancy and Deadlock Hazards in Signal Handlers](#24-reentrancy-and-deadlock-hazards-in-signal-handlers)
 
 ---
 
@@ -95,7 +95,7 @@ Signal handlers are installed using:
 
 ---
 
-## 3. sigaction() — Why It Is Preferred
+## 3. sigaction(): Why It Is Preferred
 
 `sigaction()` atomically configures the complete signal handling contract without race conditions:
 1. The handler function pointer (`sa_handler` or `sa_sigaction`).
@@ -124,7 +124,7 @@ void install_handler() {
 
 ---
 
-## 4. Signal Masking — Core Mechanics
+## 4. Signal Masking: Core Mechanics
 
 **Signal masking** is the process of temporarily blocking the kernel from delivering specific signals.
 
@@ -204,7 +204,7 @@ When a signal handler is invoked:
 
 ---
 
-## 10. sa_flags — Behavior Modifiers
+## 10. sa_flags: Behavior Modifiers
 
 - **`SA_RESTART`**: Automatically restarts interruptible system calls (`read()`, `write()`, `waitpid()`) if interrupted by this signal, preventing `EINTR`.
 - **`SA_NODEFER`**: Disables automatic masking of the signal during handler execution.
@@ -232,7 +232,7 @@ When a signal handler is invoked:
 
 ---
 
-## 12. sigwait() — Synchronous Signal Handling
+## 12. sigwait(): Synchronous Signal Handling
 
 `sigwait()` converts asynchronous signal events into **synchronous procedural calls**:
 
@@ -339,7 +339,7 @@ int main() {
 
 ---
 
-## 18. Final Mental Model & Rules of Thumb
+## 18. Final Mental Model and Rules of Thumb
 
 1. **Signal Disposition**: Process-wide.
 2. **Signal Mask**: Per-thread.
@@ -396,7 +396,7 @@ Linux supports two distinct signal classes:
 
 ---
 
-## 23. Deep Dive: sigaction Flags & SA_SIGINFO
+## 23. Deep Dive: sigaction Flags and SA_SIGINFO
 
 When `sa_flags` includes `SA_SIGINFO`, the handler receives extended context:
 
@@ -414,7 +414,7 @@ void detailed_handler(int sig, siginfo_t *info, void *ucontext) {
 
 ---
 
-## 24. Reentrancy & Deadlock Hazards in Signal Handlers
+## 24. Reentrancy and Deadlock Hazards in Signal Handlers
 
 ### The Heap Mutex Deadlock
 ```
