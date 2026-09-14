@@ -96,7 +96,7 @@ int* ptr{ new int }; // Dynamically allocate an integer and assign address to pt
 - The memory remains marked as "in use" by the OS even though the application has lost all pointers to it and can no longer access it.
 
 ### 📁 Code Examples for Section 1
-- [`2_dynamic_allocation_new_delete.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_(_Under_Construction_)_/2_dynamic_allocation_new_delete.cpp): Demonstrates scalar `new`, `delete`, preventing dangling pointers by setting to `nullptr`, safe null deletion, and `std::nothrow`.
+- [`2_dynamic_allocation_new_delete.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_%28_Under_Construction_%29_/2_dynamic_allocation_new_delete.cpp): Demonstrates scalar `new`, `delete`, preventing dangling pointers by setting to `nullptr`, safe null deletion, and `std::nothrow`.
 
 ---
 
@@ -134,7 +134,7 @@ array = nullptr;
 - **Modern Solution**: Use **`std::vector`**, which manages resizing, memory growth, and element copying automatically.
 
 ### 📁 Code Examples for Section 2
-- [`3_dynamic_arrays_new_delete.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_(_Under_Construction_)_/3_dynamic_arrays_new_delete.cpp): Demonstrates dynamic array allocation with `new[]`, list initialization, `sizeof` decay behavior, and proper cleanup using `delete[]`.
+- [`3_dynamic_arrays_new_delete.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_%28_Under_Construction_%29_/3_dynamic_arrays_new_delete.cpp): Demonstrates dynamic array allocation with `new[]`, list initialization, `sizeof` decay behavior, and proper cleanup using `delete[]`.
 
 ---
 
@@ -164,7 +164,7 @@ public:
 > Calling `std::exit()` terminates the program **immediately**. Local stack variables are **not destroyed**, and their destructors are **never called**. If your destructors flush buffers, release file locks, or write closing log entries, `std::exit()` will bypass that cleanup.
 
 ### 📁 Code Examples for Section 3
-- [`1_2D_array_class.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_(_Under_Construction_)_/1_2D_array_class.cpp): Implements a complete RAII 2D dynamic array class template managing heap memory allocation and guaranteed cleanup in its destructor.
+- [`1_2D_array_class.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_%28_Under_Construction_%29_/1_2D_array_class.cpp): Implements a complete RAII 2D dynamic array class template managing heap memory allocation and guaranteed cleanup in its destructor.
 
 ---
 
@@ -235,8 +235,8 @@ delete[] flatArray;
 ```
 
 ### 📁 Code Examples for Section 4
-- [`1_2D_array_class.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_(_Under_Construction_)_/1_2D_array_class.cpp): Demonstrates allocating dynamic 2D arrays with an array of pointers, reverse-order deallocation in the destructor, and double indexing (`arr[r][c]`) via a proxy class.
-- [`4_flattened_and_jagged_arrays.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_(_Under_Construction_)_/4_flattened_and_jagged_arrays.cpp): Demonstrates dynamic triangular jagged arrays with reverse cleanup, and single-allocation 1D flattened 2D arrays with index mapping formula.
+- [`1_2D_array_class.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_%28_Under_Construction_%29_/1_2D_array_class.cpp): Demonstrates allocating dynamic 2D arrays with an array of pointers, reverse-order deallocation in the destructor, and double indexing (`arr[r][c]`) via a proxy class.
+- [`4_flattened_and_jagged_arrays.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_%28_Under_Construction_%29_/4_flattened_and_jagged_arrays.cpp): Demonstrates dynamic triangular jagged arrays with reverse cleanup, and single-allocation 1D flattened 2D arrays with index mapping formula.
 
 ---
 
@@ -275,4 +275,4 @@ delete[] flatArray;
 > A `void&` does not exist in C++ because references must refer to an identifiable object of known type.
 
 ### 📁 Code Examples for Section 5
-- [`5_void_pointers.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_(_Under_Construction_)_/5_void_pointers.cpp): Demonstrates `void*` assignment, `static_cast` conversions, the undefined behavior trap of deleting a `void*`, and deletion safety.
+- [`5_void_pointers.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/19_Dynamic_Allocation_%28_Under_Construction_%29_/5_void_pointers.cpp): Demonstrates `void*` assignment, `static_cast` conversions, the undefined behavior trap of deleting a `void*`, and deletion safety.

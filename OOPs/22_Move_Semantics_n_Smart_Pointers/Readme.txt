@@ -185,7 +185,12 @@
     
     -- There is a useful variant of std::move() called std::move_if_noexcept() that returns a movable r-value if the object has a noexcept move constructor, otherwise it returns a copyable l-value.
 
-5 — std::unique_ptr
+    Critical Pitfall: std::move on const objects silently copies!
+        -- If an object is declared const (e.g. const std::string s = "Hello";), calling std::move(s) produces const std::string&&.
+        -- Because move constructors require non-const r-value references (std::string&&), const std::string&& CANNOT bind to them.
+        -- Consequently, the compiler falls back to the copy constructor (const std::string&), silently performing an expensive deep copy!
+        -- The code compiles without errors or warnings, but move semantics is completely defeated. Never declare objects const if you intend to move from them.
+
     -- Smart pointer is that it manages a dynamically allocated resource provided by the user of the smart pointer, and ensures the dynamically allocated object is properly cleaned up at the appropriate time (usually when the smart pointer goes out of scope).
     -- Because of this, smart pointers should never be dynamically allocated themselves (otherwise, there is the risk that the smart pointer may not be properly deallocated, which means the object it owns would not be deallocated, causing a memory leak).
     -- By always allocating smart pointers on the stack (as local variables or composition members of a class), we’re guaranteed that the smart pointer will properly go out of scope when the function or object it is contained within ends, 
@@ -273,6 +278,14 @@
         -- std::make_shared() can (and should) be used to make a std::shared_ptr.
         -- The reasons for using std::make_shared() are the same as std::make_unique() 
             -- std::make_shared() is simpler and safer (there’s no way to create two independent std::shared_ptr pointing to the same resource but unaware of each other).
+        
+        The Tradeoff of std::make_shared: Memory Retention with std::weak_ptr
+            -- Because std::make_shared combines the managed object and control block into a single contiguous allocation,
+               the underlying memory cannot be freed by operator delete until both the strong count and weak count reach zero.
+            -- If all std::shared_ptr instances are destroyed, the managed object's destructor runs immediately, but the memory
+               occupied by the object cannot be deallocated until all std::weak_ptr observers are also destroyed.
+            -- If keeping memory minimal for huge objects observed by long-lived weak_ptrs is critical, separate allocation via 
+               std::shared_ptr<T>(new T) allows the object's memory to be freed as soon as strong count hits zero.
     
     Digging into std::shared_ptr
         -- Unlike std::unique_ptr, which uses a single pointer internally, std::shared_ptr uses two pointers internally.

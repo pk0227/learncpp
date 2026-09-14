@@ -1691,3 +1691,133 @@ Here are some example code snippets demonstrating various aspects of multithread
 | 12 |  <a href="https://github.com/djeada/Parallel-And-Concurrent-Programming/blob/master/src/js/multithreading/12_thread_local_storage.js">thread_local_storage</a>   | Illustrate the concept of Thread Local Storage (TLS) and how it can be used to store thread-specific data. |
 | 13 |  <a href="https://github.com/djeada/Parallel-And-Concurrent-Programming/blob/master/src/js/multithreading/13_thread_pool.js">thread_pool</a>          | Show how to create and use a thread pool to efficiently manage a fixed number of worker threads for executing multiple tasks. |
 | 14 |  <a href="https://github.com/djeada/Parallel-And-Concurrent-Programming/blob/master/src/js/multithreading/14_reader_writer_lock.js">reader_writer_lock</a>   | Explain the concept of Reader-Writer Locks and their use for efficient access to shared resources with multiple readers and a single writer. |
+
+---
+
+## Advanced Linux & C++ Multithreading Deep Dive
+
+### 1. The C++ Memory Model & Atomic Memory Orderings
+
+In concurrent programming, compiler optimizations (instruction reordering) and CPU architecture (out-of-order execution, store buffers, cache invalidation queues) can cause memory reads and writes to become visible in an order different from program text.
+
+C++11 established a formal memory model defining six memory orderings (`std::memory_order`):
+
+| Memory Order | Operations Allowed | Semantics & Hardware Effect |
+|---|---|---|
+| **`memory_order_relaxed`** | Load, Store, RMW | **No synchronization or ordering constraints**. Only guarantees atomicity of the single operation. |
+| **`memory_order_consume`** | Load | Data-dependency ordering (rarely used, frequently promoted to `acquire` by compilers). |
+| **`memory_order_acquire`** | Load, RMW | **No subsequent reads or writes can be reordered BEFORE this load**. Synchronizes-with a release store. |
+| **`memory_order_release`** | Store, RMW | **No prior reads or writes can be reordered AFTER this store**. All prior modifications become visible to the acquiring thread. |
+| **`memory_order_acq_rel`** | RMW (Read-Modify-Write) | Combines both `acquire` and `release` semantics on an atomic operation (e.g. `fetch_add`, `compare_exchange`). |
+| **`memory_order_seq_cst`** | Load, Store, RMW | **Sequentially Consistent**. Enforces a single, globally agreed-upon total order of all atomic operations across all threads. (Default in C++). |
+
+#### The Acquire-Release Synchronization Pattern
+Acquire-release semantics enable lock-free data transfer without the performance penalty of full sequential consistency (`seq_cst`):
+
+```cpp
+#include <atomic>
+#include <string>
+#include <thread>
+#include <cassert>
+
+std::string payload;
+std::atomic<bool> ready{false};
+
+void producer() {
+    payload = "Engineered High-Frequency Data"; // 1. Non-atomic write
+    ready.store(true, std::memory_order_release); // 2. Release fence: payload write CANNOT pass this point!
+}
+
+void consumer() {
+    while (!ready.load(std::memory_order_acquire)) { // 3. Acquire fence: subsequent reads CANNOT be moved before this!
+        // spin or pause
+    }
+    assert(payload == "Engineered High-Frequency Data"); // 4. Guaranteed visible without data race!
+}
+```
+
+#### Hardware Architecture Note: x86-64 vs ARM
+- **x86-64 (Total Store Order - TSO)**: Hardware already enforces that stores are not reordered with older stores, and loads are not reordered with older loads. Therefore, on x86, `acquire` and `release` compile to regular `MOV` instructions with zero barrier overhead!
+- **ARM / POWER (Weakly Ordered)**: Memory operations can be aggressively reordered by the CPU hardware. On ARM, `acquire` compiles to `LDAR` (Load-Acquire) and `release` compiles to `STLR` (Store-Release), or issues explicit `DMB` (Data Memory Barrier) instructions.
+
+---
+
+### 2. Condition Variable Pitfalls & Best Practices
+
+#### Pitfall A: Spurious Wakeups
+A thread waiting on `std::condition_variable` can unblock even if no thread notified it (due to OS kernel context switches, signals, or internal futex wakeups).
+
+> [!WARNING]
+> **Never wait on a condition variable with an `if` statement.**
+> Always use a `while` loop or the predicate overload of `wait()`:
+
+```cpp
+std::unique_lock<std::mutex> lock(mtx);
+// WRONG: if (!ready) cv.wait(lock);
+// CORRECT:
+cv.wait(lock, []{ return ready; }); // Equivalent to: while (!ready) cv.wait(lock);
+```
+
+#### Pitfall B: Lost Wakeups
+If the producer thread calls `cv.notify_one()` **before** the consumer thread enters `cv.wait()`, and the consumer has not checked the predicate under the mutex, the notification is lost forever, causing the consumer to deadlock. Checking the shared predicate while holding the mutex completely avoids lost wakeups.
+
+#### Why `std::unique_lock` is Mandatory
+`std::lock_guard` cannot be used with `std::condition_variable::wait()`. The condition variable must be able to **atomically unlock** the mutex when entering sleep, and **re-lock** the mutex upon waking up. `std::unique_lock` provides the required `.unlock()` and `.lock()` member functions.
+
+---
+
+### 3. Modern C++20 Concurrency Primitives
+
+#### `std::jthread` (RAII Auto-Join & Cooperative Cancellation)
+In C++11, if an `std::thread` is destroyed while still joinable, its destructor immediately calls `std::terminate()`, crashing the process.
+C++20 introduced `std::jthread`:
+1. **RAII Joining**: Automatically calls `request_stop()` followed by `join()` in its destructor.
+2. **Cooperative Cancellation**: Built-in support for `std::stop_token` and `std::stop_source`.
+
+```cpp
+#include <thread>
+#include <chrono>
+#include <iostream>
+
+void cancellable_worker(std::stop_token token) {
+    while (!token.stop_requested()) {
+        std::cout << "Working...\n";
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    std::cout << "Stop requested, exiting cleanly.\n";
+}
+
+int main() {
+    std::jthread jt(cancellable_worker);
+    std::this_thread::sleep_for(std::chrono::milliseconds(350));
+    // jt destructor automatically requests stop and joins!
+    return 0;
+}
+```
+
+#### `std::counting_semaphore` & `std::binary_semaphore`
+Lightweight synchronization primitive that maintains a counter without requiring a mutex and condition variable pair:
+- `acquire()`: Decrements the counter; blocks if the counter is 0.
+- `release()`: Increments the counter; unblocks waiting threads.
+
+#### `std::latch` vs `std::barrier`
+- **`std::latch`**: Single-use countdown latch. Threads decrement the counter (`count_down()`) or wait for it to reach zero (`wait()`). Once it hits zero, it cannot be reset.
+- **`std::barrier`**: Reusable multi-phase synchronization barrier. When all participating threads arrive (`arrive_and_wait()`), an optional completion callback executes, and the barrier resets for the next phase.
+
+---
+
+### 4. False Sharing & CPU Cache Lines
+
+When multiple threads concurrently modify independent variables that happen to reside on the same **cache line** (typically 64 bytes on modern CPUs), the CPU cache coherency protocol (MESI/MOESI) forces the cache line to bounce back and forth between CPU cores. This causes severe performance degradation known as **false sharing**.
+
+#### The Remedy: Cache Line Alignment
+In C++17 and later, use `std::hardware_destructive_interference_size` from `<new>`:
+
+```cpp
+#include <new>
+
+struct alignas(std::hardware_destructive_interference_size) ThreadData {
+    uint64_t counter{0}; // Occupies its own dedicated 64-byte cache line
+};
+```
+

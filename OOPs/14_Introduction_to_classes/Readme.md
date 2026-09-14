@@ -119,6 +119,7 @@ public:
 - [`2_const_member_function_example.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/2_const_member_function_example.cpp) — Const member functions: what they can/cannot do
 - [`3_obj_via_const_ref.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/3_obj_via_const_ref.cpp) — Passing const objects via const reference
 - [`4_const_member_function_overloading.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/4_const_member_function_overloading.cpp) — Overloading const vs non-const member functions
+- [`5_mutable_data_members.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/5_mutable_data_members.cpp) — Using the `mutable` keyword to allow state updates inside `const` member functions
 
 ---
 
@@ -340,9 +341,9 @@ std::optional<Fraction> makeFraction(int num, int den)
 ```
 
 ### 📁 Code Examples
-- [`1_member_initialization_order.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_8_Constructor_member_initializer%20_lists/1_member_initialization_order.cpp) — ⚠️ Demonstrates that MIL initializes in declaration order (intentional `-Wreorder` warning)
-- [`2_member_initializer_list_default_member_initializer_list.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_8_Constructor_member_initializer%20_lists/2_member_initializer_list_default_member_initializer_list.cpp) — MIL vs default member initializer precedence
-- [`3_constructor_failure_handle.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_8_Constructor_member_initializer%20_lists/3_constructor_failure_handle.cpp) — Handling invalid arguments in constructors using exceptions / `std::optional`
+- [`1_member_initialization_order.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_8_Constructor_member_initializer_lists/1_member_initialization_order.cpp) — ⚠️ Demonstrates that MIL initializes in declaration order (intentional `-Wreorder` warning)
+- [`2_member_initializer_list_default_member_initializer_list.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_8_Constructor_member_initializer_lists/2_member_initializer_list_default_member_initializer_list.cpp) — MIL vs default member initializer precedence
+- [`3_constructor_failure_handle.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_8_Constructor_member_initializer_lists/3_constructor_failure_handle.cpp) — Handling invalid arguments in constructors using exceptions / `std::optional`
 
 ---
 
@@ -535,6 +536,7 @@ There are **three key differences** between the initialization forms:
 ### Converting Constructors
 - A constructor that can be used to perform an implicit conversion is called a **converting constructor**.
 - **By default, all constructors are converting constructors.**
+- In C++98, only single-argument constructors could be converting constructors. **Since C++11 (list initialization), constructors taking multiple parameters can also act as converting constructors** when an object is initialized using a braced initializer list (e.g., `Foo f = { 1, 2.0 };`). Marking such constructors `explicit` prevents this implicit list conversion.
 - **Only one user-defined conversion may be applied.**
 - An implicit conversion (that would otherwise use a converting constructor) can be **made explicit at the call site** by using direct initialization or direct list initialization instead of copy initialization.
 
@@ -599,6 +601,7 @@ public:
 - [`2_one_user_defined_conversion_required.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_14_Converting_constructors_n_explicit_keyword/2_one_user_defined_conversion_required.cpp) — Only one user-defined conversion allowed per expression
 - [`3_explicit_keyword.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_14_Converting_constructors_n_explicit_keyword/3_explicit_keyword.cpp) — `explicit` keyword preventing implicit conversions
 - [`4_explicit_keyword_return_by_value.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_14_Converting_constructors_n_explicit_keyword/4_explicit_keyword_return_by_value.cpp) — ⚠️ Intentional compile error: `explicit` constructor blocks implicit return conversion
+- [`5_conditionally_explicit_bool.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_14_Converting_constructors_n_explicit_keyword/5_conditionally_explicit_bool.cpp) — C++20 `explicit(bool)` conditionally explicit constructors in wrapper types
 
 ---
 

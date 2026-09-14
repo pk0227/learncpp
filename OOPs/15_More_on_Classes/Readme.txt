@@ -16,6 +16,7 @@
             --  The primary reason to do this is to allow member functions to be “chained” together, so several member functions can be called on the same object in a single expression! This is called function chaining.
             --  Returning *this by value in method chaining is generally discouraged because it may create unnecessary object copies—especially in older C++ versions or when copy elision is disabled—whereas returning *this by reference (or returning this as a pointer) avoids copying and is the recommended, efficient, and idiomatic approach.
             --  If returning this as a pointer is used, Because this always points to the implicit object, we don’t need to check whether it is a null pointer before dereferencing it.
+            --  Calling a member function on a null pointer (e.g., ptr->func() where ptr is nullptr) is STRICTLY UNDEFINED BEHAVIOR. 'this' can never legally be nullptr in valid C++, and compilers are permitted to optimize away any 'if (this == nullptr)' checks.
         
         Resetting a class back to default state
             -- Constructors are only for initialization of new objects, and should not be called directly. Doing so will result in unexpected behavior.
@@ -129,6 +130,10 @@
     -- the std::exit() function, can be used to terminate your program immediately. When the program is terminated immediately, the program just ends. Local variables are not destroyed first, and because of this, no destructors will be called. Be wary if you’re relying on your destructors to do necessary cleanup work in such a case.
     -- Unhandled exceptions will also cause the program to terminate, and may not unwind the stack before doing so. If stack unwinding does not happen, destructors will not be called prior to the termination of the program.
 
+    Constexpr destructors (since C++20)
+    -- In C++20, destructors can be declared constexpr. This enables objects of classes with non-trivial user-declared destructors to be constructed and destroyed in constant expressions (compile-time evaluation).
+    -- If a class object is created in a constexpr context, its destructor must also be constexpr and all member/base destructors must be constexpr.
+
 5. Class templates with member functions
     Type template parameters in member functions
         -- Type template parameters defined as part of a class template parameter declaration can be used both as the type of data members and as the type of member function parameters.
@@ -224,7 +229,8 @@
 8. Friend non-member functions
     -- In C++, a friend is a class or function (member or non-member) that has been granted full access to the private and protected members of another class. In this way, a class can selectively give other classes or functions full access to their members without impacting anything else.
     -- The friend declaration is not affected by access controls, so it does not matter where within the class body it is placed.
-    -- Defining a friend non-member inside a class.
+    -- Defining a friend non-member inside a class (The "Hidden Friend" Idiom):
+       When a friend function is defined inside a class definition, it is not placed into the enclosing namespace for ordinary unqualified name lookup. Instead, it is a "hidden friend" that can ONLY be found via Argument-Dependent Lookup (ADL). This prevents namespace pollution, avoids unintended implicit conversions, and accelerates compiler lookup times.
     -- There were times we might prefer to use a non-member function over a member function.
 
     Multiple friends

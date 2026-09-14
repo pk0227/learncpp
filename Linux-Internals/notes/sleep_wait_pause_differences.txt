@@ -226,6 +226,89 @@ sigwait():
 - pause()  → "Thread waits until a signal arrives"
 - sigwait()→ "Thread synchronously waits for a signal"
 
+------------------------------------------------------------
+9. Modern High-Resolution Timing: nanosleep() & clock_nanosleep()
+------------------------------------------------------------
+Limitations of sleep():
+- Resolution is only in whole seconds.
+- May be implemented using SIGALRM on older POSIX systems, interfering with alarms.
+
+Modern POSIX Alternative:
+- int nanosleep(const struct timespec *req, struct timespec *rem);
+- int clock_nanosleep(clockid_t clock_id, int flags, const struct timespec *req, struct timespec *rem);
+- Nanosecond resolution.
+- Guaranteed independent of signals like SIGALRM.
+- If interrupted by a signal, stores remaining un-slept time in *rem.
+- C++11 std::this_thread::sleep_for() / sleep_until() is built on these primitives.
+
+------------------------------------------------------------
+10. waitpid() Options & Status Inspection Macros
+------------------------------------------------------------
+Prototype: pid_t waitpid(pid_t pid, int *status, int options);
+
+Meaning of the 'pid' Argument:
+- pid > 0: Wait for the specific child whose process ID equals 'pid'.
+- pid == -1: Wait for ANY child process (identical behavior to wait()).
+- pid == 0: Wait for any child process whose process group ID (PGID) equals
+  that of the calling parent process.
+- pid < -1: Wait for any child process whose PGID equals |pid| (absolute value).
+
+Return Values:
+- > 0: PID of the child that changed state / terminated.
+- == 0: Returned only when WNOHANG is set and children exist, but none
+  have changed state yet.
+- == -1: Error. errno = ECHILD (no unreaped children exist), or errno = EINTR.
+
+Options flags:
+- WNOHANG: Return immediately if no child has terminated (non-blocking).
+- WUNTRACED: Return if a child stopped (e.g. via SIGSTOP / SIGTSTP).
+- WCONTINUED: Return if a stopped child was resumed via SIGCONT.
+
+Status Inspection Macros (MUST inspect status before reading code):
+- WIFEXITED(status)   : True if child terminated normally (exit() or return).
+- WEXITSTATUS(status) : Returns the 8-bit exit status (0-255).
+- WIFSIGNALED(status) : True if child was killed by an unhandled signal.
+- WTERMSIG(status)    : Returns the signal number that killed the child.
+- WCOREDUMP(status)   : True if child produced a core dump.
+- WIFSTOPPED(status)  : True if child is stopped by a signal.
+- WSTOPSIG(status)    : Returns the signal number that stopped the child.
+
+------------------------------------------------------------
+11. Production SIGCHLD Reaper Loop (The Non-Blocking Pattern)
+------------------------------------------------------------
+Why a simple wait() inside SIGCHLD handler is a BUG:
+- Standard signals (like SIGCHLD) are NOT queued.
+- If 5 children terminate simultaneously, the kernel delivers only ONE SIGCHLD.
+- Calling wait() once reaps only one child, leaving 4 zombies!
+- Calling wait() in a loop will block when no more zombies exist, hanging the process.
+
+The Correct Production Reaper:
+    void sigchld_handler(int) {
+        int saved_errno = errno;
+        pid_t pid;
+        int status;
+        // Non-blocking loop reaps all currently terminated children:
+        while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+            // Child pid reaped cleanly
+        }
+        errno = saved_errno;
+    }
+
+------------------------------------------------------------
+12. Race Conditions: pause() vs sigsuspend()
+------------------------------------------------------------
+The Classic pause() Race Condition:
+    // Thread wants to wait for a signal:
+    // If signal arrives HERE (before pause executes),
+    // the handler runs, finishes, and then:
+    pause(); // Hangs forever! Missed the signal!
+
+The Solution — sigsuspend():
+- Atomically replaces the thread's signal mask AND suspends the thread.
+- Eliminates the race condition between unmasking a signal and pausing.
+- Prototype: int sigsuspend(const sigset_t *mask);
+- In multithreaded C++, sigwait() or std::condition_variable is preferred.
+
 ============================================================
 END OF NOTES
 ============================================================

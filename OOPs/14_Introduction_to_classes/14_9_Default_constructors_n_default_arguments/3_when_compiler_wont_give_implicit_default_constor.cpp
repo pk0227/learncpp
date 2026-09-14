@@ -22,8 +22,9 @@ int main()
     Person p1{"Rama", 30};
     p1.print();
 
-    Person p2{};        // compiler error : no matching constructor.
-    p2.print();
+    // COMPILE ERROR: no matching constructor. Compiler does NOT generate implicit default constructor when any user-declared constructor exists.
+    // Person p2{};
+    // p2.print();
 
     return 0;
 }

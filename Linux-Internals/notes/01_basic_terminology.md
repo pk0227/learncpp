@@ -251,3 +251,75 @@ CPU Processing  --->                  ---->                    ---->
 ```
 
 In this example, the CPU is often waiting for I/O operations to complete before it can continue processing. The speed at which tasks are completed is primarily limited by the efficiency of the I/O operations.
+
+---
+
+## Advanced Operating System & Linux Kernel Execution Internals
+
+### 1. Virtual Address Space Layout (Linux x86-64)
+
+In modern 64-bit Linux, each process has a 48-bit (or 57-bit with 5-level paging) virtual address space split into User Space and Kernel Space:
+
+```
+0xFFFFFFFFFFFFFFFF ┌─────────────────────────────────────────┐
+                   │ Kernel Space (128 TB)                   │
+                   │ - Kernel code, page tables, slab/slub   │
+                   │ - Inaccessible to user mode (Ring 3)    │
+0xFFFF800000000000 ├─────────────────────────────────────────┤
+                   │ Non-canonical gap                       │
+0x00007FFFFFFFFFFF ├─────────────────────────────────────────┤
+                   │ User Space (128 TB)                     │
+                   │                                         │
+                   │ [ Stack ] (grows downward)              │
+                   │     │                                   │
+                   │     ▼                                   │
+                   │                                         │
+                   │ [ Memory Mapping Segment (mmap) ]       │
+                   │ - Shared libraries (.so), dynamic mmap  │
+                   │                                         │
+                   │     ▲                                   │
+                   │     │                                   │
+                   │ [ Heap ] (grows upward via brk/sbrk)    │
+                   │                                         │
+                   │ [ BSS Segment ] (uninitialized globals) │
+                   │ [ Data Segment ] (initialized globals)  │
+                   │ [ Text Segment ] (compiled code, r-x)   │
+0x0000000000000000 └─────────────────────────────────────────┘
+```
+
+---
+
+### 2. Context Switching Costs: Process vs Thread
+
+A **context switch** is the mechanism by which the CPU suspends one execution unit and resumes another.
+
+| Operation | Thread Context Switch | Process Context Switch |
+|---|---|---|
+| **Architectural Registers** | Saved & Restored (PC, SP, general regs) | Saved & Restored (PC, SP, general regs) |
+| **Virtual Address Space** | **Unchanged** (shared across threads) | **Switched** (reload `CR3` register) |
+| **Translation Lookaside Buffer (TLB)** | **Preserved** (valid virtual-to-physical mappings) | **Flushed / Invalidated** (unless PCID is enabled) |
+| **CPU Data & Instruction Caches** | High hit rate (warm cache) | Severe cache miss storm (cold cache penalty) |
+| **Approximate Latency** | ~ 0.5 – 1.5 microseconds | ~ 2.0 – 5.0+ microseconds |
+
+---
+
+### 3. Linux Kernel Scheduling Policies
+
+The Linux kernel scheduler decides which runnable entity (`task_struct`) gains access to a CPU core:
+
+1. **CFS (Completely Fair Scheduler — `SCHED_NORMAL` / `SCHED_OTHER`)**:
+   - Default for general-purpose applications.
+   - Models an "ideal multi-tasking CPU" where each process gets an equal proportion of CPU power.
+   - Tracks each task's virtual execution time (`vruntime`) using a balanced **Red-Black Tree**. The task with the lowest `vruntime` is chosen next ($O(1)$ lookup).
+
+2. **Real-Time FIFO (`SCHED_FIFO`)**:
+   - Highest priority real-time policy.
+   - A `SCHED_FIFO` task runs until it either voluntarily yields, blocks on I/O, or is preempted by a higher-priority real-time task. It is never preempted by time-slicing.
+
+3. **Real-Time Round-Robin (`SCHED_RR`)**:
+   - Similar to `SCHED_FIFO`, but tasks of equal priority are assigned a fixed time slice (quantum) and rotated cyclically.
+
+4. **Deadline Scheduler (`SCHED_DEADLINE`)**:
+   - Uses Earliest Deadline First (EDF) and Constant Bandwidth Server (CBS).
+   - Designed for hard real-time systems (audio processing, robotics, avionics) with strict deadline guarantees.
+

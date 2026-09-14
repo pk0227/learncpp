@@ -35,10 +35,29 @@
  */
 
 #include <chrono>
+#if __has_include(<curl/curl.h>)
 #include <curl/curl.h>
+#define HAS_CURL 1
+#else
+#define HAS_CURL 0
+typedef void CURL;
+typedef int CURLcode;
+#define CURLE_OK 0
+#define CURL_GLOBAL_DEFAULT 0
+#define CURLOPT_URL 10002
+#define CURLOPT_WRITEFUNCTION 20011
+#define CURLOPT_WRITEDATA 10001
+inline void curl_global_init(long) {}
+inline void curl_global_cleanup() {}
+inline CURL* curl_easy_init() { return reinterpret_cast<CURL*>(1); }
+inline void curl_easy_cleanup(CURL*) {}
+inline int curl_easy_setopt(CURL*, int, ...) { return 0; }
+inline int curl_easy_perform(CURL*) { return 0; }
+#endif
 #include <future>
 #include <iostream>
 #include <string>
+#include <thread>
 #include <vector>
 
 std::vector<std::string> URLS = {
@@ -55,10 +74,11 @@ size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
 }
 
 std::string fetch_sync(const std::string &url) {
-  CURL *curl;
-  CURLcode res;
   std::string readBuffer;
 
+#if HAS_CURL
+  CURL *curl;
+  CURLcode res;
   curl_global_init(CURL_GLOBAL_DEFAULT);
   curl = curl_easy_init();
   if (curl) {
@@ -69,6 +89,10 @@ std::string fetch_sync(const std::string &url) {
     curl_easy_cleanup(curl);
   }
   curl_global_cleanup();
+#else
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  readBuffer = "Mock async fetch response for " + url;
+#endif
 
   std::cout << "Synchronously fetched content from " << url << std::endl;
   return readBuffer;

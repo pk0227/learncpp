@@ -10,7 +10,7 @@ Operator overloading is a feature of C++ that allows user-defined types (classes
 3. [3 — Overloading Operators Using Normal Functions](#3--overloading-operators-using-normal-functions)
 4. [4 — Overloading the I/O Operators](#4--overloading-the-io-operators)
 5. [5 — Overloading Operators Using Member Functions](#5--overloading-operators-using-member-functions)
-6. [6 — Overloading Unary Operators +, -, and !](#6--overloading-unary-operators---and-)
+6. [6 — Overloading Unary Operators +, -, and !](#6--overloading-unary-operators----and-)
 7. [7 — Overloading the Comparison Operators](#7--overloading-the-comparison-operators)
 8. [8 — Overloading the Increment and Decrement Operators](#8--overloading-the-increment-and-decrement-operators)
 9. [9 — Overloading the Subscript Operator](#9--overloading-the-subscript-operator)
@@ -516,7 +516,7 @@ public:
 - [`21_8_Overloading_subscript_operator/2_subscript_operator_overloading_advance.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/21_Operator_Overloading/21_8_Overloading_subscript_operator/2_subscript_operator_overloading_advance.cpp): Dual non-const and const overloads of `operator[]` ensuring const-correct access.
 - [`21_8_Overloading_subscript_operator/3_don't_use_pointer_to_object_subscript_overload_.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/21_Operator_Overloading/21_8_Overloading_subscript_operator/3_don't_use_pointer_to_object_subscript_overload_.cpp): Demonstrates the pointer dereferencing gotcha (`(*ptr)[i]` vs `ptr[i]`).
 - [`21_8_Overloading_subscript_operator/4_index_can_be_any_type.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/21_Operator_Overloading/21_8_Overloading_subscript_operator/4_index_can_be_any_type.cpp): Demonstrates non-integral indexing using `std::string_view` keys.
-- [`21_8_Overloading_subscript_operator/5_c++23_supports_[]_multiple_subscripts.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/21_Operator_Overloading/21_8_Overloading_subscript_operator/5_c++23_supports_[]_multiple_subscripts.cpp): Demonstrates multidimensional subscripting in C++23 (`operator[](r, c)`) alongside C++20 `operator()(r, c)`.
+- [`21_8_Overloading_subscript_operator/5_c++23_supports_\[\]_multiple_subscripts.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/21_Operator_Overloading/21_8_Overloading_subscript_operator/5_c++23_supports_%5B%5D_multiple_subscripts.cpp): Demonstrates multidimensional subscripting in C++23 (`operator[](r, c)`) alongside C++20 `operator()(r, c)`.
 
 ---
 

@@ -39,6 +39,7 @@
 #include <iostream>
 #include <mutex>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <thread>
 #include <unistd.h>
 

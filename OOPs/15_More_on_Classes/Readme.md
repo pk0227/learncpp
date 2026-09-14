@@ -42,8 +42,10 @@ public:
 ### Returning `*this` for Function Chaining
 - The primary reason to return `*this` is to allow member functions to be **"chained" together**, so several member functions can be called on the same object in a single expression! This is called **function chaining**.
 - **Returning `*this` by value in method chaining is generally discouraged** because it may create unnecessary object copies — especially in older C++ versions or when copy elision is disabled.
-- **Returning `*this` by reference** (or returning `this` as a pointer) avoids copying and is the **recommended, efficient, and idiomatic approach**.
 - If returning `this` as a pointer is used: because `this` always points to the implicit object, **we don't need to check whether it is a null pointer** before dereferencing it.
+
+> [!WARNING]
+> Calling a member function on a null pointer (e.g. `ptr->func()` where `ptr == nullptr`) is **strictly Undefined Behavior**. In valid C++, `this` can **never legally be `nullptr`**, and modern optimizing compilers will aggressively optimize away any `if (this == nullptr)` checks.
 
 ```cpp
 class Builder
@@ -168,10 +170,10 @@ public:
 - While you can forward declare a nested type after the definition of the enclosing class, since the enclosing class will already contain a declaration for the nested type, doing so is redundant.
 
 ### 📁 Code Examples
-- [`1_nested_types.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_3_Nested_types_(_member_types_)/1_nested_types.cpp) — Defining and using nested types inside a class
-- [`2_nested_class_n_type_aliases.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_3_Nested_types_(_member_types_)/2_nested_class_n_type_aliases.cpp) — Nested class and nested type aliases
-- [`3_nested_types_forward_declaration.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_3_Nested_types_(_member_types_)/3_nested_types_forward_declaration.cpp) — Valid forward declaration of a nested type within its enclosing class
-- [`4_nested_types_forward_declaration.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_3_Nested_types_(_member_types_)/4_nested_types_forward_declaration.cpp) — ⚠️ Intentional compile error: cannot forward-declare a nested type before the outer class is defined
+- [`1_nested_types.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_3_Nested_types_%28_member_types_%29/1_nested_types.cpp) — Defining and using nested types inside a class
+- [`2_nested_class_n_type_aliases.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_3_Nested_types_%28_member_types_%29/2_nested_class_n_type_aliases.cpp) — Nested class and nested type aliases
+- [`3_nested_types_forward_declaration.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_3_Nested_types_%28_member_types_%29/3_nested_types_forward_declaration.cpp) — Valid forward declaration of a nested type within its enclosing class
+- [`4_nested_types_forward_declaration.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_3_Nested_types_%28_member_types_%29/4_nested_types_forward_declaration.cpp) — ⚠️ Intentional compile error: cannot forward-declare a nested type before the outer class is defined
 
 ---
 
@@ -198,6 +200,28 @@ public:
 > [!WARNING]
 > **`std::exit()` and Destructors**: `std::exit()` **terminates the program immediately**. Local variables are **not destroyed first**, and because of this, **no destructors will be called**. Be wary if you're relying on your destructors for necessary cleanup.
 > **Unhandled exceptions** will also cause the program to terminate, and may not unwind the stack before doing so. If stack unwinding does not happen, **destructors will not be called** prior to termination.
+
+### Constexpr Destructors (since C++20)
+- **In C++20, destructors can be declared `constexpr`.**
+- This enables objects of classes with non-trivial user-declared destructors to be **constructed and destroyed within constant expressions** (compile-time evaluation).
+- If a class object is instantiated in a `constexpr` context, its destructor must also be `constexpr`, and all member/base destructors must be `constexpr`.
+
+```cpp
+class Resource
+{
+    int m_val{};
+public:
+    constexpr Resource(int v) : m_val{v} {}
+    constexpr ~Resource() {} // C++20: constexpr destructor enables compile-time destruction
+};
+
+constexpr int test()
+{
+    Resource r{10}; // created and destroyed at compile time
+    return 42;
+}
+static_assert(test() == 42);
+```
 
 
 ### 📁 Code Examples
@@ -304,6 +328,7 @@ bool Pair<T>::isEqual(const Pair<T>& other) const
 ### 📁 Code Examples
 - [`1_static_member_variable.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_6_Static_member_variables/1_static_member_variable.cpp) — Static member variable: shared across objects, definition outside class, zero-init default
 - [`2_static_member_var_initialization_inside_class.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_6_Static_member_variables/2_static_member_var_initialization_inside_class.cpp) — Initializing static members inside the class using `inline`/`constexpr`
+- [`3_meyers_singleton_first_use.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/15_More_on_Classes/15_6_Static_member_variables/3_meyers_singleton_first_use.cpp) — Solving the Static Initialization Order Fiasco using Meyers' Singleton ("Construct On First Use")
 
 ---
 
@@ -363,17 +388,34 @@ int x = Something::getValue();
 
 - In C++, a **friend** is a class or function (member or non-member) that has been **granted full access to the private and protected members of another class**. In this way, a class can selectively give other classes or functions full access to their members without impacting anything else.
 - **The `friend` declaration is not affected by access controls**, so it does not matter where within the class body it is placed.
-- Defining a friend non-member inside a class.
+- Defining a friend non-member inside a class: **The "Hidden Friend" Idiom**.
+  When a friend function is defined *inline* inside a class definition, it is a **hidden friend**. It is not injected into the enclosing namespace for ordinary unqualified name lookup; it can **only be found via Argument-Dependent Lookup (ADL)** when called with an argument of the enclosing class type.
+  - **Benefits**: Eliminates global namespace pollution, avoids unintended implicit conversions, and significantly reduces compiler symbol lookup overhead.
 - There were times we might prefer to use a **non-member function over a member function**.
+
+```cpp
+class Fraction
+{
+    int m_num{ 0 }, m_den{ 1 };
+public:
+    Fraction(int n, int d) : m_num{n}, m_den{d} {}
+
+    // Hidden friend: defined inline inside class; found ONLY via ADL!
+    friend std::ostream& operator<<(std::ostream& out, const Fraction& f)
+    {
+        return out << f.m_num << '/' << f.m_den;
+    }
+};
+```
 
 ```cpp
 class MyClass
 {
     int m_value{ 5 };
-    friend void printValue(const MyClass& obj); // friend declaration inside the class
+    friend void printValue(const MyClass& obj); // friend declaration inside class
 };
 
-void printValue(const MyClass& obj) // defined as non-member
+void printValue(const MyClass& obj) // defined as non-member outside class
 {
     std::cout << obj.m_value << '\n'; // can access private m_value
 }

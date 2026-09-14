@@ -1,5 +1,9 @@
 // Program 3: Broadcast Communication
+#if __has_include(<mpi.h>)
 #include <mpi.h>
+#else
+#include "mpi.h"
+#endif
 #include <iostream>
 int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);

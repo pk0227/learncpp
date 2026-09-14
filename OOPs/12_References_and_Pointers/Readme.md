@@ -5,16 +5,16 @@ References and pointers are foundational mechanisms in C++ that allow programs t
 ---
 
 ## Table of Contents
-1. [12.0 — Introduction to Compound Data Types](#120----introduction-to-compound-data-types)
-2. [12.1 — Value Categories (Lvalues and Rvalues)](#121----value-categories-lvalues-and-rvalues)
-3. [12.2 — Lvalue References](#122----lvalue-references)
-4. [12.3 — Lvalue References to Const](#123----lvalue-references-to-const)
-5. [12.4 — Pass by Const Lvalue Reference](#124----pass-by-const-lvalue-reference)
-6. [12.5 — Pointers and Null Pointers](#125----pointers-and-null-pointers)
-7. [12.6 — Return by Reference and Return by Address](#126----return-by-reference-and-return-by-address)
-8. [12.7 — In, Out, and In-Out Parameters](#127----in-out-and-in-out-parameters)
-9. [12.8 — Type Deduction with Pointers, References, and Const](#128----type-deduction-with-pointers-references-and-const)
-10. [12.9 — std::optional (C++17)](#129----stdoptional-c17)
+1. [12.0 — Introduction to Compound Data Types](#120--introduction-to-compound-data-types)
+2. [12.1 — Value Categories (Lvalues and Rvalues)](#121--value-categories-lvalues-and-rvalues)
+3. [12.2 — Lvalue References](#122--lvalue-references)
+4. [12.3 — Lvalue References to Const](#123--lvalue-references-to-const)
+5. [12.4 — Pass by Const Lvalue Reference](#124--pass-by-const-lvalue-reference)
+6. [12.5 — Pointers and Null Pointers](#125--pointers-and-null-pointers)
+7. [12.6 — Return by Reference and Return by Address](#126--return-by-reference-and-return-by-address)
+8. [12.7 — In, Out, and In-Out Parameters](#127--in-out-and-in-out-parameters)
+9. [12.8 — Type Deduction with Pointers, References, and Const](#128--type-deduction-with-pointers-references-and-const)
+10. [12.9 — std::optional (C++17)](#129--stdoptional-c17)
 
 ---
 

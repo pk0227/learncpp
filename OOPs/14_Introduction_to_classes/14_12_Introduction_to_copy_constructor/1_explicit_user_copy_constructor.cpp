@@ -52,8 +52,9 @@ int main()
     //Fraction f2{f1};        // Calls Fraction(const Fraction&) copy constructor
     //f2.print();
 
-    Fraction f3{generateFraction(20, 4)};   // Fraction is returned using copy constructor
-    printFunction(f3);          // f is copied into the function parameter using copy constructor
+    Fraction f3{generateFraction(20, 4)};   // Fraction is returned using copy constructor (or guaranteed elision in C++17)
+    // COMPILE ERROR: printFunction takes Fraction by value, which attempts to call the deleted copy constructor:
+    // printFunction(f3);
 
     return 0;
 }

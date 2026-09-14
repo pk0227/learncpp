@@ -5,13 +5,13 @@ Function overloading and templates are the twin pillars of polymorphism and gene
 ---
 
 ## Table of Contents
-1. [11.1 — Function Overload Differentiation](#111----function-overload-differentiation)
-2. [11.2 — Function Overload Resolution and Ambiguous Matches](#112----function-overload-resolution-and-ambiguous-matches)
-3. [11.3 — Default Arguments](#113----default-arguments)
-4. [11.4 — Function Templates](#114----function-templates)
-5. [11.5 — Function Templates with Multiple Template Types](#115----function-templates-with-multiple-template-types)
-6. [11.6 — Non-type Template Parameters (NTTP)](#116----non-type-template-parameters-nttp)
-7. [11.7 — Using Function Templates in Multiple Files](#117----using-function-templates-in-multiple-files)
+1. [11.1 — Function Overload Differentiation](#111--function-overload-differentiation)
+2. [11.2 — Function Overload Resolution and Ambiguous Matches](#112--function-overload-resolution-and-ambiguous-matches)
+3. [11.3 — Default Arguments](#113--default-arguments)
+4. [11.4 — Function Templates](#114--function-templates)
+5. [11.5 — Function Templates with Multiple Template Types](#115--function-templates-with-multiple-template-types)
+6. [11.6 — Non-type Template Parameters (NTTP)](#116--non-type-template-parameters-nttp)
+7. [11.7 — Using Function Templates in Multiple Files](#117--using-function-templates-in-multiple-files)
 
 ---
 

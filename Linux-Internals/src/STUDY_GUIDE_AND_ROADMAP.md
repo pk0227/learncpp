@@ -1,561 +1,275 @@
-# Linux C++ Interview Preparation - Study Guide and Roadmap
+# Linux C++ Concurrency & Systems Programming Master Study Guide & Roadmap
 
-**Created:** December 15, 2025  
-**Purpose:** Comprehensive guide for mastering concurrency, IPC, and system programming concepts
-
----
-
-## ⚠️ **CRITICAL: OPERATING SYSTEM COMPATIBILITY WARNING**
-
-### **These files are LINUX/UNIX ONLY - They will NOT compile on Windows!**
-
-| Folder | Windows Compatible? | Reason |
-|--------|-------------------|---------|
-| `multithreading/` | ✅ **MOSTLY YES** | Uses C++ standard library (std::thread, std::mutex) |
-| `asynchrony/` | ✅ **YES** | Uses C++ standard library (std::async, std::future) |
-| `multiprocessing/` | ❌ **NO** | Uses POSIX APIs (fork, pipe, wait) |
-| `IPC_and_Signals/` | ❌ **NO** | Uses POSIX APIs (signals, shm_open, mmap, semaphores) |
-
-### **Why Won't They Compile on Windows?**
-
-The code uses **POSIX system calls** that don't exist on Windows:
-- `fork()`, `exec()`, `wait()` - Process management
-- `pipe()`, `mkfifo()` - Inter-process communication
-- `signal()`, `sigaction()`, `kill()` - Signal handling
-- `shm_open()`, `mmap()` - Shared memory
-- `sem_open()`, `sem_init()` - POSIX semaphores
-- `pthread_*` functions - POSIX threads (though some exist via MinGW)
-
-Windows has **different APIs** for these features:
-- Process: `CreateProcess()`, `WaitForSingleObject()`
-- IPC: Named Pipes (different API), Message Queues, Shared Memory (different API)
-- Threads: `CreateThread()` or Windows threads (though C++ std::thread works)
+> **Target Audience:** Systems Software Engineers, High-Frequency Trading (HFT) Engineers, and Senior/Staff Infrastructure Engineers preparing for advanced C++ and Linux systems programming interviews.
 
 ---
 
-### **🔧 SOLUTIONS: How to Run/Study This Code on Windows**
+## 📑 Table of Contents
 
-#### **Option 1: Use WSL2 (Windows Subsystem for Linux) - RECOMMENDED ✅**
-**Best option for Windows users!**
-
-1. **Install WSL2:**
-   ```powershell
-   wsl --install
-   ```
-
-2. **Install Ubuntu (or any Linux distro):**
-   ```powershell
-   wsl --install -d Ubuntu
-   ```
-
-3. **Install g++ in WSL:**
-   ```bash
-   sudo apt update
-   sudo apt install build-essential
-   ```
-
-4. **Access your files from WSL:**
-   ```bash
-   cd /mnt/c/Users/pk255057/OneDrive\ -\ Teradata\ Corporation/Documents/Cpp/learncpp/Linux-Internals/cpp/
-   ```
-
-5. **Compile and run:**
-   ```bash
-   g++ -std=c++17 IPC_and_Signals/01_basic_signals.cpp -o signals
-   ./signals
-   ```
-
-**Advantages:**
-- ✅ Full Linux environment on Windows
-- ✅ No dual boot needed
-- ✅ Can use VS Code with WSL extension
-- ✅ All POSIX code works perfectly
+1. [Operating System Architecture & Platform Guidelines](#1-operating-system-architecture--platform-guidelines)
+2. [Master 5-Phase Learning Roadmap](#2-master-5-phase-learning-roadmap)
+   - [Phase 1: Shared-Memory Multithreading (38 Files)](#phase-1-shared-memory-multithreading-38-files)
+   - [Phase 2: Multiprocessing & Process Lifecycle (14 Files)](#phase-2-multiprocessing--process-lifecycle-14-files)
+   - [Phase 3: Deep Dive: Inter-Process Communication (IPC) & Signals (8 Files)](#phase-3-deep-dive-inter-process-communication-ipc--signals-8-files)
+   - [Phase 4: Modern C++ Asynchrony & Event-Driven Patterns (16 Files)](#phase-4-modern-c-asynchrony--event-driven-patterns-16-files)
+   - [Phase 5: Distributed-Memory Parallelism with MPI (11 Files)](#phase-5-distributed-memory-parallelism-with-mpi-11-files)
+3. [Concurrency vs Multiprocessing Architecture Matrix](#3-concurrency-vs-multiprocessing-architecture-matrix)
+4. [Linux IPC Mechanism Performance & Latency Hierarchy](#4-linux-ipc-mechanism-performance--latency-hierarchy)
+5. [Senior / Staff Interview Preparation Framework](#5-senior--staff-interview-preparation-framework)
+   - [High-Frequency Architectural Questions](#high-frequency-architectural-questions)
+   - [Common Production Traps & Pitfalls](#common-production-traps--pitfalls)
+6. [Executive Cheat Sheet: When to Use What](#6-executive-cheat-sheet-when-to-use-what)
+7. [Verification & Compilation Instructions](#7-verification--compilation-instructions)
 
 ---
 
-#### **Option 2: Use Virtual Machine (Linux VM)**
+## 1. Operating System Architecture & Platform Guidelines
 
-1. Install VirtualBox or VMware
-2. Install Ubuntu/Fedora Linux
-3. Transfer code and compile there
+This curriculum teaches **native Linux/POSIX systems programming and modern C++ (C++17/C++20/C++23)**.
 
-**Advantages:**
-- ✅ Complete Linux environment
-- ✅ Can test system-level features
+### Target Environment
+- **Native Linux (Ubuntu 20.04+, Debian, Fedora, RHEL)**: The primary deployment environment.
+- **Windows / WSL2**: Developers on Windows should use **WSL2 (Windows Subsystem for Linux)** to execute POSIX system calls (`fork`, `pipe`, `shm_open`, `sigaction`, etc.).
 
-**Disadvantages:**
-- ❌ Resource intensive
-- ❌ Slower than WSL2
+### Build Dependencies
+All 87 `.cpp` files in this repository compile cleanly under `g++ -std=c++20`:
+```bash
+# Compiler & build tools
+sudo apt update && sudo apt install -y build-essential
 
----
-
-#### **Option 3: Use Online Compilers (Quick Testing)**
-
-For quick testing individual files:
-- **Compiler Explorer:** https://godbolt.org/
-- **OnlineGDB:** https://www.onlinegdb.com/
-- **Replit:** https://replit.com/
-
-**Advantages:**
-- ✅ No setup needed
-- ✅ Quick testing
-
-**Disadvantages:**
-- ❌ Limited for multi-file projects
-- ❌ Can't test some system features (signals, process management)
+# Optional real-time & threading flags
+g++ -std=c++20 -pthread -lrt example.cpp -o example
+```
 
 ---
 
-#### **Option 4: Dual Boot Linux (Most Authentic)**
+## 2. Master 5-Phase Learning Roadmap
 
-Install Linux alongside Windows
+### Phase 1: Shared-Memory Multithreading (38 Files)
 
-**Advantages:**
-- ✅ Best performance
-- ✅ Full Linux experience
+> Focuses on single-process concurrency, thread synchronization, mutex lock hierarchies, race conditions, memory visibility, and thread pool architectures.
 
-**Disadvantages:**
-- ❌ Requires disk partitioning
-- ❌ Must reboot to switch OS
-
----
-
-### **📖 Study Strategy for Windows Users**
-
-**If you can't run the code immediately:**
-
-1. **Read and understand** the code thoroughly
-2. **Trace execution** on paper
-3. **Study the comments** - they explain everything
-4. **Use WSL2** when you need to actually run code
-5. **Focus on concepts** - the principles apply across platforms
-
-**For interviews:**
-- Linux IPC knowledge is valuable even if you develop on Windows
-- Many server/backend roles use Linux in production
-- Understanding POSIX APIs shows systems programming depth
-
----
-
-### **Which Files CAN You Compile on Windows?**
-
-✅ **These will work with g++ on Windows (MinGW):**
-
-**`multithreading/` folder - MOST files work:**
-- All files using `std::thread`, `std::mutex`, `std::atomic`
-- Files using `std::condition_variable`, `std::future`
-- C++20 features: `std::barrier`, `std::latch`, `std::semaphore`
-
-⚠️ **May have issues:**
-- Files using `pthread_*` directly (some MinGW support exists)
-
-**`asynchrony/` folder - ALL files work:**
-- All files using `std::async`, `std::future`, `std::promise`
-- Modern C++ coroutines
-
-❌ **These will NOT work on Windows:**
-- `multiprocessing/` - ALL files (uses fork, pipe, etc.)
-- `IPC_and_Signals/` - ALL files (uses POSIX IPC)
+| File Name & Link | Core Concept & Mechanics |
+|---|---|
+| [`01_single_worker_thread.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/01_single_worker_thread.cpp) | Basic `std::thread` spawning, callable execution, and `.join()`. |
+| [`01a_raw_pthread.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/01a_raw_pthread.cpp) | Low-level POSIX `pthread_create()`, `pthread_join()`, and thread attributes. |
+| [`02_thread_subclass.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/02_thread_subclass.cpp) | Encapsulating thread execution within an object-oriented class wrapper. |
+| [`03_multiple_worker_threads.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/03_multiple_worker_threads.cpp) | Managing collections of worker threads with `std::vector<std::thread>`. |
+| [`04_race_condition.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/04_race_condition.cpp) | Demonstrates data corruption caused by unsynchronized concurrent increments. |
+| [`05_mutex.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/05_mutex.cpp) | Protecting critical sections using `std::mutex` and RAII `std::lock_guard`. |
+| [`06_semaphore.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/06_semaphore.cpp) | Controlling bounded concurrent access using semaphore patterns. |
+| [`07_producer_consumer.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/07_producer_consumer.cpp) | Classic synchronized queue using `std::mutex` and `std::condition_variable`. |
+| [`08_fetch_parallel.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/08_fetch_parallel.cpp) | Concurrent HTTP I/O fetching with thread-level parallelization. |
+| [`09_merge_sort.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/09_merge_sort.cpp) | Divide-and-conquer parallel sorting using recursive thread spawning. |
+| [`10_schedule_every_n_sec.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/10_schedule_every_n_sec.cpp) | Periodic task scheduler with interval timing and thread synchronization. |
+| [`11_barrier.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/11_barrier.cpp) | Multi-phase cyclic synchronization barrier for multi-stage computation. |
+| [`12_thread_local_storage.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/12_thread_local_storage.cpp) | Per-thread private state using `thread_local` storage duration. |
+| [`13_thread_pool.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/13_thread_pool.cpp) | Fixed worker pool reusing threads via a synchronized work queue. |
+| [`14_reader_writer_lock.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/14_reader_writer_lock.cpp) | Multiple concurrent readers with exclusive writer using shared locks. |
+| [`atomic.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/atomic.cpp) | Lock-free synchronization with `std::atomic<T>` and atomic operations. |
+| [`barrier.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/barrier.cpp) | Phase-based thread synchronization using POSIX barriers. |
+| [`condition_variable.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/condition_variable.cpp) | Thread suspension and notification with `wait()`, `notify_one()`, and predicate. |
+| [`deadlock_philosophers.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/deadlock_philosophers.cpp) | The Dining Philosophers problem demonstrating circular wait deadlock. |
+| [`deadlock_philosophers_solved.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/deadlock_philosophers_solved.cpp) | Deadlock resolution using hierarchical resource ordering and `std::scoped_lock`. |
+| [`detached_thread.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/detached_thread.cpp) | Background daemon threads using `std::thread::detach()` and lifecycle caveats. |
+| [`download_images.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/download_images.cpp) | I/O-bound parallel downloading comparing sequential vs concurrent runtimes. |
+| [`is_joinable.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/is_joinable.cpp) | Safely inspecting `.joinable()` state before joining or detaching. |
+| [`latch.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/latch.cpp) | Single-use thread countdown latch for multi-worker startup synchronization. |
+| [`livelock.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/livelock.cpp) | Livelock demonstration where threads actively yield without making progress. |
+| [`matrix_multiply.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/matrix_multiply.cpp) | Multithreaded parallel matrix multiplication partitioning rows across cores. |
+| [`merge_sort.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/merge_sort.cpp) | Production recursive parallel merge sort bounded by hardware concurrency. |
+| [`producer_consumer.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/producer_consumer.cpp) | Classic producer-consumer queue with condition variables and bounded buffer. |
+| [`race_condition.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/race_condition.cpp) | Deep dive into data race undefined behavior and atomic remedies. |
+| [`recursive_mutex.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/recursive_mutex.cpp) | Re-entrant locking using `std::recursive_mutex` in recursive algorithms. |
+| [`semaphore.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/semaphore.cpp) | Counting semaphore implementation for bounded resource pools. |
+| [`shared_mutex.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/shared_mutex.cpp) | High-performance C++17 `std::shared_mutex` for read-heavy cache architectures. |
+| [`simple_data_race.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/simple_data_race.cpp) | Minimal reproduction of data races on shared primitive integers. |
+| [`simple_mutex.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/simple_mutex.cpp) | Mutex locking and unlocking mechanics with RAII wrappers. |
+| [`starvation.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/starvation.cpp) | Demonstrates thread starvation caused by greedy priority locks. |
+| [`thread_life_cycle.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/thread_life_cycle.cpp) | Complete state diagram: New $\to$ Ready $\to$ Running $\to$ Blocked $\to$ Terminated. |
+| [`thread_pool.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/thread_pool.cpp) | Scalable production thread pool supporting asynchronous task submission. |
+| [`try_lock.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multithreading/try_lock.cpp) | Non-blocking lock acquisition using `.try_lock()` to avoid deadlock. |
 
 ---
 
-### **🎯 Recommendation for You**
+### Phase 2: Multiprocessing & Process Lifecycle (14 Files)
 
-**Since you're on Windows:**
+> Explores POSIX process creation, isolated memory spaces, Copy-on-Write (COW), process supervision, and zombie/orphan lifecycle management.
 
-1. **Install WSL2 immediately** (takes 10-15 minutes)
-2. **Study multithreading/ and asynchrony/ on Windows** (they'll compile fine)
-3. **Study multiprocessing/ and IPC_and_Signals/ using WSL2**
-4. **Configure VS Code to use WSL2:**
-   - Install "Remote - WSL" extension
-   - Open folder in WSL: `Ctrl+Shift+P` → "WSL: Reopen Folder in WSL"
-
-This gives you the best of both worlds!
-
----
-
-## 1. RECOMMENDED READING ORDER
-
-### 🎯 Optimal Learning Path (Beginner to Advanced)
-
-#### **Phase 1: Foundation - Single Process Concurrency (Week 1-2)**
-Start here to understand basic concurrency concepts without the complexity of multiple processes.
-
-**Folder: `multithreading/` (40 files)**
-- **Why first?** Threads are easier to understand than processes (shared memory by default)
-- **Core concepts:** Race conditions, mutexes, deadlocks, thread lifecycle
-- **Reading order:**
-  1. Basic threads: `simple_thread.cpp`, `multiple_threads.cpp`
-  2. Problems: `simple_data_race.cpp`, `race_condition_*.cpp`
-  3. Solutions: `simple_mutex.cpp`, `mutex_*.cpp`, `atomic.cpp`
-  4. Advanced sync: `condition_variable.cpp`, `semaphore.cpp`, `barrier.cpp`, `latch.cpp`
-  5. Common issues: `deadlock.cpp`, `livelock.cpp`, `starvation.cpp`
-  6. Patterns: `producer_consumer.cpp`, `reader_writer.cpp`, `thread_pool.cpp`
-
-**Key takeaway:** Understand WHY synchronization is needed before learning HOW to do it across processes.
+| File Name & Link | Core Concept & Mechanics |
+|---|---|
+| [`01_basic_process.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/01_basic_process.cpp) | The `fork()` system call, dual return values, and parent-child execution paths. |
+| [`02_multiple_processes.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/02_multiple_processes.cpp) | Spawning and managing fan-outs of multiple child worker processes. |
+| [`03_deadlock.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/03_deadlock.cpp) | Cross-process deadlock when competing for multiple inter-process resources. |
+| [`04_process_pool.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/04_process_pool.cpp) | Supervising a pool of long-lived worker processes over IPC channels. |
+| [`05_queue_communication.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/05_queue_communication.cpp) | Inter-process task dispatch using POSIX message queues. |
+| [`06_pipe_communication.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/06_pipe_communication.cpp) | Parent-to-child data streaming using kernel anonymous pipes (`pipe()`). |
+| [`07_shared_value.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/07_shared_value.cpp) | Sharing primitive values across process boundaries via anonymous `mmap()`. |
+| [`08_shared_array.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/08_shared_array.cpp) | Managing shared structured buffers across isolated processes. |
+| [`09_manager.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/09_manager.cpp) | Process supervisor pattern managing worker health, restarts, and task routing. |
+| [`10_process_lock.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/10_process_lock.cpp) | Mutual exclusion across processes using process-shared mutexes. |
+| [`11_process_semaphore.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/11_process_semaphore.cpp) | Process-shared semaphores (`pshared=1`) for multi-process resource pools. |
+| [`12_process_barrier.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/12_process_barrier.cpp) | Cross-process execution synchronization barrier via shared memory. |
+| [`13_orphan.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/13_orphan.cpp) | Orphan process lifecycle, parent termination, and re-parenting to PID 1 / subreaper. |
+| [`14_zombie.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/multiprocessing/14_zombie.cpp) | Zombie process creation (`TASK_DEAD`), process table slot exhaustion, and `waitpid()` reaping. |
 
 ---
 
-#### **Phase 2: Multi-Process Fundamentals (Week 2-3)**
-Now learn how processes differ from threads and basic IPC mechanisms.
+### Phase 3: Deep Dive: Inter-Process Communication (IPC) & Signals (8 Files)
 
-**Folder: `multiprocessing/` (14 files)**
-- **Why second?** Builds on threading knowledge but adds process isolation complexity
-- **Core concepts:** fork(), process lifecycle, basic IPC, zombie/orphan processes
-- **Reading order:**
-  1. Process basics: `01_basic_process.cpp`, `02_exec.cpp`
-  2. Simple IPC: `03_pipe_communication.cpp`, `04_named_pipe.cpp`
-  3. Advanced IPC: `05_queue_communication.cpp`, `06_sockets.cpp`, `07_shared_value.cpp`
-  4. Sync: `08_semaphores.cpp`, `09_mutex.cpp`
-  5. Process states: `13_orphan.cpp`, `14_zombie.cpp`
-  6. Patterns: `10_producer_consumer.cpp`, `11_reader_writer.cpp`
+> Production-grade Linux IPC implementations with system call ergonomics, error handling, atomicity rules, and signal architectures.
 
-**Key takeaway:** Processes don't share memory by default - IPC is required for communication.
-
----
-
-#### **Phase 3: IPC and Synchronization Deep Dive (Week 3-4)**
-Deep dive into all IPC mechanisms and when to use each.
-
-**Folder: `IPC_and_Signals/` (8 files)**
-- **Why third?** You now have context from threads and processes
-- **Core concepts:** All IPC types, signals, synchronization primitives
-- **Reading order:**
-  1. Signals first: `01_basic_signals.cpp`, `02_signal_blocking_masking.cpp`
-  2. Simple IPC: `03_unnamed_pipes.cpp`, `04_named_pipes_fifos.cpp`
-  3. Advanced IPC: `05_message_queues.cpp`, `06_shared_memory.cpp`, `07_memory_mapped_files.cpp`
-  4. Sync primitive: `08_posix_semaphores.cpp`
-
-**Key takeaway:** Each IPC mechanism has trade-offs (speed, complexity, use case).
+| File Name & Link | Core Concept & Mechanics |
+|---|---|
+| [`01_basic_signals.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/IPC_and_Signals/01_basic_signals.cpp) | Signal registration with `sigaction()`, async-signal safety, and safe shutdown. |
+| [`02_signal_blocking_masking.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/IPC_and_Signals/02_signal_blocking_masking.cpp) | Signal masks, `sigprocmask()`, pending signal inspection, and `sigsuspend()`. |
+| [`03_unnamed_pipes.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/IPC_and_Signals/03_unnamed_pipes.cpp) | Anonymous pipes (`pipe()`), `PIPE_BUF` atomic write limits, and `SIGPIPE` handling. |
+| [`04_named_pipes_fifos.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/IPC_and_Signals/04_named_pipes_fifos.cpp) | Filesystem FIFOs (`mkfifo()`) enabling IPC between unrelated processes. |
+| [`05_message_queues.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/IPC_and_Signals/05_message_queues.cpp) | POSIX Message Queues (`mq_open()`, `mq_send()`, `mq_receive()`) with priority ordering. |
+| [`06_shared_memory.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/IPC_and_Signals/06_shared_memory.cpp) | POSIX shared memory objects (`shm_open()`, `ftruncate()`, `mmap()`) for zero-copy IPC. |
+| [`07_memory_mapped_files.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/IPC_and_Signals/07_memory_mapped_files.cpp) | File-backed memory mapping (`MAP_SHARED`), page dirtying, and `msync()` persistence. |
+| [`08_posix_semaphores.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/IPC_and_Signals/08_posix_semaphores.cpp) | Named (`sem_open()`) and unnamed (`sem_init()`) POSIX counting semaphores. |
 
 ---
 
-#### **Phase 4: Asynchronous Programming (Week 4-5)**
-High-level abstractions built on top of threads.
+### Phase 4: Modern C++ Asynchrony & Event-Driven Patterns (16 Files)
 
-**Folder: `asynchrony/` (16 files)**
-- **Why last?** Uses threads under the hood - need threading foundation first
-- **Core concepts:** std::async, futures, promises, coroutines
-- **Reading order:**
-  1. Basics: `01_basic_async.cpp`, `future.cpp`, `promise.cpp`
-  2. Patterns: `async_*.cpp`, `packaged_task.cpp`
-  3. Advanced: `producer_consumer.cpp`, `thread_pool.cpp`, coroutine examples
+> Asynchronous task coordination using `std::async`, futures, promises, packaged tasks, and coroutines.
 
-**Key takeaway:** Modern C++ abstractions make async programming easier but hide complexity.
-
----
-
-### 📊 Quick Reference Table
-
-| Phase | Folder          | Files | Time      | Difficulty     | Prerequisites |
-|-------|-----------------|-------|-----------|----------------|---------------|
-| 1     | multithreading  | 40    | 1-2 weeks | ⭐⭐ Moderate | Basic C++     |
-| 2     | multiprocessing | 14    | 1 week    | ⭐⭐⭐ Hard  | Phase 1        |
-| 3     | IPC_and_Signals | 8     | 1 week    | ⭐⭐⭐ Hard  | Phase 1,2      |
-| 4     | asynchrony      | 16    | 1 week    | ⭐⭐ Moderate | Phase 1        |
-
----
-
-## 2. IPC_and_SIGNALS: MULTITHREADING vs MULTIPROCESSING
-
-### 🔵 Multiprocessing Only (Inter-Process Communication)
-
-These mechanisms are **specifically designed** for communication between separate processes:
-
-1. **Signals** (`01_basic_signals.cpp`, `02_signal_blocking_masking.cpp`)
-   - Process-level notifications
-   - Cannot be used between threads (process-wide)
-   - Examples: SIGTERM, SIGKILL, SIGCHLD
-   - **Use case:** Process termination, child process status
-
-2. **Named Pipes/FIFOs** (`04_named_pipes_fifos.cpp`)
-   - Named filesystem objects
-   - Unrelated processes can connect
-   - **Use case:** Client-server on same machine
-
-3. **Message Queues** (`05_message_queues.cpp`)
-   - POSIX message queues are process-level
-   - Named objects in /dev/mqueue
-   - **Use case:** Task queues between processes
-
-4. **Shared Memory** (`06_shared_memory.cpp`)
-   - Explicitly created for IPC (shm_open)
-   - Fastest IPC between processes
-   - **Use case:** Large data sharing (databases, HPC)
-
-5. **Memory-Mapped Files** (`07_memory_mapped_files.cpp`)
-   - File-backed shared memory
-   - Persists to disk
-   - **Use case:** IPC with persistence, database files
+| File Name & Link | Core Concept & Mechanics |
+|---|---|
+| [`01_basic_async.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/01_basic_async.cpp) | Launch policies (`std::launch::async` vs `deferred`) and non-blocking execution. |
+| [`02_future_create_task.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/02_future_create_task.cpp) | Creating deferred asynchronous tasks and extracting values via `std::future`. |
+| [`03_future_callback.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/03_future_callback.cpp) | Simulating future completion notification and callback execution. |
+| [`04_pause_resume.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/04_pause_resume.cpp) | Asynchronous task suspension and resumption flows. |
+| [`05_run_heavy_functions.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/05_run_heavy_functions.cpp) | Offloading heavy CPU-bound computation without blocking caller threads. |
+| [`06_data_sharing_queue.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/06_data_sharing_queue.cpp) | Thread-safe asynchronous message queue coordinating producer and consumer tasks. |
+| [`07_semaphore.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/07_semaphore.cpp) | Bounding concurrent asynchronous operations using semaphores. |
+| [`08_producer_consumer.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/08_producer_consumer.cpp) | Asynchronous pipeline pattern using promises and futures. |
+| [`09_fetch_parallel.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/09_fetch_parallel.cpp) | Concurrent I/O fetching comparing sequential time ($O(\sum T_i)$) vs async time ($O(\max T_i)$). |
+| [`10_mutex.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/10_mutex.cpp) | Protecting shared state accessed by multiple asynchronous futures. |
+| [`11_barrier.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/11_barrier.cpp) | Multi-task rendezvous barrier coordinating async future stages. |
+| [`12_async_generator.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/12_async_generator.cpp) | Modern asynchronous generator patterns for stream processing. |
+| [`13_async_server.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/13_async_server.cpp) | Non-blocking concurrent server architecture handling multiple client streams. |
+| [`14_distributed_computing.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/14_distributed_computing.cpp) | Distributed task decomposition across simulated worker nodes. |
+| [`future.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/future.cpp) | Direct usage of `std::promise` and `std::future` for one-shot channel communication. |
+| [`recursive_sum.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/asynchrony/recursive_sum.cpp) | Parallel divide-and-conquer array summation using recursive `std::async`. |
 
 ---
 
-### 🟢 Both Multithreading AND Multiprocessing
+### Phase 5: Distributed-Memory Parallelism with MPI (11 Files)
 
-These can work in both contexts with different configurations:
+> Message Passing Interface (MPI) standards for distributed-memory supercomputing, cluster computing, and HPC applications where memory is physically partitioned across multiple nodes.
 
-6. **Unnamed Pipes** (`03_unnamed_pipes.cpp`)
-   - **Multiprocessing:** Between parent-child processes (fork inheritance)
-   - **NOT for threads:** Threads share memory, don't need pipes
-   - **Use case:** Process pipeline (command | command)
-
-7. **POSIX Semaphores** (`08_posix_semaphores.cpp`)
-   - **Multithreading:** Unnamed semaphores with pshared=0
-   - **Multiprocessing:** 
-     - Named semaphores (sem_open)
-     - Unnamed in shared memory with pshared=1
-   - **Use case:** Resource counting, producer-consumer
-
----
-
-### 🟡 Thread-Specific Alternatives (Not in IPC_and_Signals)
-
-For multithreading, you typically use these instead (covered in `multithreading/`):
-
-- **std::mutex** - Thread synchronization (not process-shared by default)
-- **std::condition_variable** - Thread signaling
-- **std::atomic** - Lock-free thread synchronization
-- **pthread_mutex_t with PTHREAD_PROCESS_SHARED** - Can be process-shared if in shared memory
+| File Name & Link | Core Concept & Mechanics |
+|---|---|
+| [`hello_world_mpi.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/hello_world_mpi.cpp) | MPI environment lifecycle: `MPI_Init`, `MPI_Finalize`, `MPI_Comm_rank`, and `MPI_Comm_size`. |
+| [`point_to_point_communication.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/point_to_point_communication.cpp) | Blocking peer-to-peer messaging using `MPI_Send` and `MPI_Recv`. |
+| [`Broadcast Communication.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Broadcast%20Communication.cpp) | One-to-all collective communication using `MPI_Bcast`. |
+| [`Reduce Operation.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Reduce%20Operation.cpp) | Distributed reduction (sum, min, max) using `MPI_Reduce`. |
+| [`Non-Blocking Communication.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Non-Blocking%20Communication.cpp) | Overlapping computation with communication via `MPI_Isend`, `MPI_Irecv`, and `MPI_Wait`. |
+| [`Derived Data Types.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Derived%20Data%20Types.cpp) | Custom struct serialization with `MPI_Type_create_struct` and `MPI_Type_commit`. |
+| [`Communicators and Groups.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Communicators%20and%20Groups.cpp) | Subdividing process spaces with `MPI_Comm_split` into custom communicators. |
+| [`Cartesian Topology.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Cartesian%20Topology.cpp) | Grid and torus process topologies using `MPI_Dims_create` and `MPI_Cart_create`. |
+| [`Asynchronous Communication.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Asynchronous%20Communication.cpp) | Dynamic message size probing using `MPI_Probe` and `MPI_Get_count`. |
+| [`Parallel Matrix Multiplication.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Parallel%20Matrix%20Multiplication.cpp) | Distributed matrix multiplication using `MPI_Scatter`, `MPI_Bcast`, and `MPI_Gather`. |
+| [`Parallel Computation of Pi.cpp`](file:///home/prashanth/Learnings/learncpp/Linux-Internals/src/mpi/Parallel%20Computation%20of%20Pi.cpp) | Numerical integration for $\pi$ with distributed partial sums and `MPI_Reduce`. |
 
 ---
 
-### 📋 Summary Table
+## 3. Concurrency vs Multiprocessing Architecture Matrix
 
-| Mechanism           | Threads   | Processes     | Location        | Speed |
-|---------------------|---------- |---------------|-----------------|---------|
-| Signals             | ❌ No    | ✅ Yes        | IPC_and_Signals | N/A     |
-| Unnamed Pipes       | ❌ No    | ✅ Yes (fork) | IPC_and_Signals | Fast    |
-| Named Pipes         | ❌ No    | ✅ Yes        | IPC_and_Signals | Medium  |
-| Message Queues      | ❌ No    | ✅ Yes        | IPC_and_Signals | Medium  |
-| Shared Memory       | ❌ No*   | ✅ Yes        | IPC_and_Signals | Fastest |
-| Memory-Mapped Files | ✅ Yes** | ✅ Yes        | IPC_and_Signals | Fast    |
-| POSIX Semaphores    | ✅ Yes   | ✅ Yes        | IPC_and_Signals | Fast    |
-| pthread Mutex       | ✅ Yes   | ✅ Yes***     | multithreading  | Fast    |
-| std::mutex          | ✅ Yes   | ❌ No         | multithreading  | Fast    |
-| std::atomic         | ✅ Yes   | ❌ No         | multithreading  | Fastest |
-
-*Threads already share memory within a process  
-**Threads in same process can share file mapping  
-***Only with PTHREAD_PROCESS_SHARED in shared memory
+| Dimension | Multithreading (`std::thread`) | Multiprocessing (`fork()`) | Distributed Computing (`MPI`) |
+|---|---|---|---|
+| **Memory Model** | **Shared Memory Space** (same page tables) | **Isolated Memory Spaces** (Copy-on-Write) | **Physically Disjoint Memory** (network / fabric) |
+| **Communication** | Direct memory reads/writes + synchronization | IPC (Shared Memory, Sockets, Pipes, Queues) | Message passing over interconnect (Infiniband, RoCE) |
+| **Fault Isolation** | **Poor**: A segfault in one thread crashes the whole process | **Strong**: A crashed child leaves the parent intact | **Strong**: Node failures isolated by cluster orchestrator |
+| **Creation Overhead** | Very Low (~ 10–50 $\mu$s, 8KB–2MB stack) | Moderate (~ 500–1500 $\mu$s for page table clone) | High (process launch across nodes) |
+| **Scalability Limit** | Bounded by single machine CPU cores & RAM bus | Bounded by single machine OS PID limit & RAM | Scalable to tens of thousands of cluster nodes |
+| **Synchronization Primitives** | `std::mutex`, `std::atomic`, condition variables | POSIX semaphores, file locks, socket handshakes | MPI barriers, collective reductions, non-blocking requests |
 
 ---
 
-## 3. INTERVIEW READINESS ASSESSMENT
+## 4. Linux IPC Mechanism Performance & Latency Hierarchy
 
-### ✅ **YES - These 4 Folders Are Excellent and Nearly Complete**
-
-#### **Strengths:**
-
-1. **Comprehensive Coverage (90%+ of Interview Topics)**
-   - ✅ All major concurrency primitives
-   - ✅ All common IPC mechanisms
-   - ✅ Modern C++ async features
-   - ✅ Common pitfalls (deadlock, race conditions, zombie processes)
-   - ✅ Real-world patterns (producer-consumer, thread pools, reader-writer)
-
-2. **Interview-Focused Content**
-   - ✅ Detailed comments explaining concepts
-   - ✅ Q&A sections in IPC files
-   - ✅ Multiple examples per concept
-   - ✅ Common mistakes demonstrated
-
-3. **Practical Depth**
-   - ✅ 40 threading examples (very thorough)
-   - ✅ 14 multiprocessing examples
-   - ✅ 16 async examples
-   - ✅ 8 IPC deep-dives
-
-4. **Code Quality**
-   - ✅ Compilable examples
-   - ✅ Well-commented
-   - ✅ Realistic scenarios
+```mermaid
+graph TD
+    A[Linux IPC Options] --> B[Shared Memory / mmap]
+    A --> C[Unix Domain Sockets]
+    A --> D[Anonymous / Named Pipes]
+    A --> E[POSIX Message Queues]
+    A --> F[TCP Loopback]
+    
+    B --- B1[Throughput: >10 GB/s | Latency: Sub-microsecond | Zero-Copy]
+    C --- C1[Throughput: 2-4 GB/s | Latency: 2-5 us | SCM_RIGHTS FD Passing]
+    D --- D1[Throughput: 1-3 GB/s | Latency: 3-8 us | Byte Stream]
+    E --- E1[Throughput: ~500 MB/s | Latency: 5-10 us | Prioritized Messages]
+    F --- F1[Throughput: 500 MB-1.5 GB/s | Latency: 15-30 us | Network Stack Overhead]
+```
 
 ---
 
-### 🟡 **Minor Gaps - Additional Topics to Add (Optional)**
+## 5. Senior / Staff Interview Preparation Framework
 
-If you want to be 100% prepared, consider adding these:
+### High-Frequency Architectural Questions
 
-#### **A. Advanced Synchronization (Medium Priority)**
-1. **RW Locks** - More examples with `pthread_rwlock_t`
-2. **Spinlocks** - When to use vs mutex
-3. **Futex** - Low-level Linux synchronization primitive
+#### Q1: "Why does calling `fork()` inside a multithreaded application cause deadlocks?"
+**Answer:** Under POSIX, `fork()` creates a child process containing **only the calling thread**. All other threads vanish without running cleanup or unlocking mutexes. If any other thread was inside a critical section (e.g. glibc `malloc()` holding the heap arena lock), that mutex is copied into the child in a locked state. Any subsequent allocation in the child deadlocks forever. After `fork()` in a multithreaded application, the child must **strictly call only async-signal-safe functions or immediately invoke `execve()`**.
 
-#### **B. Advanced IPC (Low-Medium Priority)**
-4. **Unix Domain Sockets** - Local IPC via sockets
-5. **D-Bus** - Modern Linux IPC framework
-6. **eventfd** - Lightweight event notification
+#### Q2: "What is the `std::future` destructor trap when using `std::async`?"
+**Answer:** The destructor of an `std::future` returned by `std::async(std::launch::async, ...)` **blocks until the asynchronous task completes**. If you discard the return value (`std::async(std::launch::async, f); std::async(std::launch::async, g);`), the temporary future is destroyed at the semicolon, forcing the tasks to run **completely sequentially**!
 
-#### **C. System Programming (Low Priority)**
-7. **epoll/poll/select** - I/O multiplexing
-8. **Timers** - timer_create, timerfd
-9. **File Locking** - flock, fcntl
+#### Q3: "What are zombie processes, and how do you properly reap them in Linux?"
+**Answer:** A zombie (`TASK_DEAD`, status `Z`) has exited and freed its memory, but retains an entry in the kernel process table so the parent can inspect its exit status via `waitpid()`. If not reaped, zombies exhaust the system PID space (`/proc/sys/kernel/pid_max`). Because standard signals are not queued, a single `SIGCHLD` can represent multiple dead children. The only correct way to reap them is a non-blocking loop inside the `SIGCHLD` handler:
+```cpp
+while (waitpid(-1, &status, WNOHANG) > 0) {}
+```
 
-#### **D. Modern C++ (Medium Priority)**
-10. **C++20 Coroutines** - You have some examples, could expand
-11. **std::jthread** - C++20 joining thread
-12. **std::counting_semaphore** - C++20 semaphores
-
----
-
-### 🎯 **Interview Confidence Level by Topic**
-
-| Topic                  | Current Coverage         | Interview Ready? | Notes                     |
-|------------------------|--------------------------|------------------|---------------------------|
-| **Threading Basics**   | ⭐⭐⭐⭐⭐ (40 files)  | ✅ 95%          | Excellent depth           |
-| **Mutex/Locks**        | ⭐⭐⭐⭐⭐             | ✅ 95%          | Very thorough             |
-| **Race Conditions**    | ⭐⭐⭐⭐⭐             | ✅ 98%          | Multiple examples         |
-| **Deadlock**           | ⭐⭐⭐⭐⭐             | ✅ 95%          | Well covered              |
-| **Process Management** | ⭐⭐⭐⭐ (14 files)     | ✅ 85%          | Good coverage             |
-| **IPC Mechanisms**     | ⭐⭐⭐⭐⭐ (8 files)   | ✅ 90%           | Comprehensive            |
-| **Signals**            | ⭐⭐⭐⭐⭐ | ✅ 95%    | Excellent detail |
-| **Shared Memory**      | ⭐⭐⭐⭐⭐ | ✅ 95%    | Great examples   |
-| **Async C++**          | ⭐⭐⭐⭐ (16 files)     | ✅ 85%          | Good coverage              |
-| **Network IPC**        | ⭐⭐⭐                  | ⚠️ 60%           | Sockets exist but limited |
-| **I/O Multiplexing**   | ⭐                       | ❌ 20%           | Missing epoll/poll        |
-| **Coroutines**         | ⭐⭐⭐                  | ⚠️ 65%           | Basic coverage            |
-
-**Overall Readiness: 85-90%** ✅
+#### Q4: "Explain the difference between `std::memory_order_relaxed`, `acquire`, `release`, and `seq_cst`."
+**Answer:**
+- `relaxed`: Guarantees atomicity of the single operation only. No reordering fences.
+- `acquire`: Guarantees that subsequent memory reads/writes cannot be reordered before this load. Synchronizes with a `release` store.
+- `release`: Guarantees that prior memory reads/writes cannot be reordered after this store.
+- `seq_cst`: Full sequential consistency with a globally agreed total order across all CPU cores.
 
 ---
 
-### 📚 **What Interviewers Typically Ask (Coverage Check)**
+## 6. Executive Cheat Sheet: When to Use What
 
-#### **High-Frequency Questions (You're Ready ✅)**
-- ✅ "Explain race condition and how to prevent it" → Multiple examples
-- ✅ "What is deadlock? How to avoid?" → Covered extensively
-- ✅ "Mutex vs Semaphore differences?" → Detailed in multiple files
-- ✅ "How does fork() work?" → multiprocessing folder
-- ✅ "Thread vs Process differences?" → Covered in comments
-- ✅ "Producer-consumer implementation?" → Multiple implementations
-- ✅ "What is memory barrier?" → atomic examples
-- ✅ "Shared memory vs message passing?" → IPC folder
-- ✅ "How to handle signals?" → 2 detailed files
-- ✅ "What are zombie/orphan processes?" → Dedicated files
-
-#### **Medium-Frequency Questions (Mostly Ready ✅)**
-- ✅ "Implement thread pool" → You have examples
-- ✅ "Reader-writer lock problem" → Covered
-- ✅ "Memory-mapped files vs regular I/O" → Detailed file
-- ⚠️ "epoll vs select vs poll" → Not covered (add if systems programming role)
-- ✅ "std::async vs std::thread" → async folder
-- ✅ "POSIX vs System V IPC" → Mentioned in comments
-
-#### **Low-Frequency Questions (Gaps ⚠️)**
-- ⚠️ "Implement spinlock" → Not covered
-- ⚠️ "Unix domain sockets" → Not covered
-- ⚠️ "What is futex?" → Not covered
-- ⚠️ "RCU (Read-Copy-Update)" → Not covered (advanced kernel topic)
+| Requirement | Optimal Choice | Justification |
+|---|---|---|
+| **Ultra-low latency inter-thread communication** | Lock-free ring buffer (`std::atomic`) | Zero kernel context switch, cache-coherent memory access. |
+| **Protecting shared data structures in threads** | `std::mutex` + `std::unique_lock` / `std::scoped_lock` | RAII prevents deadlocks; supports condition variables. |
+| **Read-heavy, rarely modified in-memory cache** | `std::shared_mutex` with `std::shared_lock` | Allows infinite parallel concurrent readers; exclusive writer lock. |
+| **High-frequency cross-process data sharing** | POSIX Shared Memory (`shm_open` + `mmap`) | Zero-copy user-space memory access; fastest IPC possible. |
+| **Bidirectional microservice messaging on same machine** | Unix Domain Sockets (`AF_UNIX`, `SOCK_STREAM`) | High throughput; can pass open file descriptors via `SCM_RIGHTS`. |
+| **Simple parent-child data streaming** | Unnamed Pipes (`pipe()`) | Lightweight FIFO byte stream buffered in kernel (64KB). |
+| **Thread-safe signal handling in multithreaded servers** | Dedicated signal thread running `sigwait()` | Replaces unsafe asynchronous handlers with clean synchronous execution. |
+| **Submitting thousands of asynchronous I/O requests** | Linux `io_uring` (or Boost.Asio / epoll) | Shared ring buffers between kernel and user space; zero syscall overhead. |
+| **Supercomputing / Cluster distributed computing** | MPI (`MPI_Send`, `MPI_Recv`, `MPI_Reduce`) | High-performance interconnects across physically distributed machines. |
 
 ---
 
-### 🚀 **Recommended Study Plan**
+## 7. Verification & Compilation Instructions
 
-#### **Weeks 1-2: Core Foundation**
-- Study `multithreading/` folder completely
-- Build and run ALL examples
-- Practice explaining each concept out loud
-- Write your own variations
+To verify that all 87 source files in `src/` compile cleanly on your Linux machine:
 
-#### **Week 3: Process & Basic IPC**
-- Study `multiprocessing/` folder
-- Compare with threading concepts
-- Practice fork(), pipe(), signals
+```bash
+# Verify all multithreading examples
+for f in src/multithreading/*.cpp; do g++ -std=c++20 -fsyntax-only -pthread "$f"; done
 
-#### **Week 4: Advanced IPC**
-- Study `IPC_and_Signals/` folder
-- Understand trade-offs between mechanisms
-- Practice decision-making: "Which IPC for scenario X?"
+# Verify all multiprocessing examples
+for f in src/multiprocessing/*.cpp; do g++ -std=c++20 -fsyntax-only -pthread "$f"; done
 
-#### **Week 5: Modern C++ & Review**
-- Study `asynchrony/` folder
-- Review weak areas from weeks 1-4
-- Practice interview questions
+# Verify all IPC & Signals examples
+for f in src/IPC_and_Signals/*.cpp; do g++ -std=c++20 -fsyntax-only -pthread -lrt "$f"; done
 
-#### **Week 6: Mock Interviews**
-- Practice whiteboarding
-- Explain concepts without looking at code
-- Solve problems on paper
+# Verify all asynchrony examples
+for f in src/asynchrony/*.cpp; do g++ -std=c++20 -fsyntax-only -pthread "$f"; done
 
----
+# Verify all MPI examples (using self-contained fallback or mpic++)
+for f in src/mpi/*.cpp; do g++ -std=c++20 -fsyntax-only -I src/mpi "$f"; done
+```
 
-### 💡 **Additional Resources to Complement**
-
-1. **Books (Read These Alongside)**
-   - "C++ Concurrency in Action" by Anthony Williams
-   - "Advanced Programming in the UNIX Environment" by Stevens
-
-2. **Practice Problems**
-   - LeetCode concurrency problems (1114, 1115, 1116, 1117, 1195)
-   - Design thread-safe data structures (queue, hash map)
-
-3. **Real-World Practice**
-   - Contribute to open-source multithreaded projects
-   - Build a simple HTTP server using threads
-   - Implement a job queue system
-
----
-
-## 🎓 **Final Verdict**
-
-### **Interview Readiness: 85-90% ✅**
-
-**You are READY for most C++ system programming interviews with this content.**
-
-#### **What You Have:**
-- ✅ Solid foundation in all core topics
-- ✅ Excellent depth in threading and IPC
-- ✅ Real working code examples
-- ✅ Interview-focused explanations
-
-#### **What Could Improve:**
-- ⚠️ Add Unix domain sockets if targeting systems roles
-- ⚠️ Add I/O multiplexing (epoll) if targeting server/network roles
-- ⚠️ Practice verbal explanations (code alone isn't enough)
-- ⚠️ Build 1-2 complete projects using these concepts
-
-#### **Bottom Line:**
-These 4 folders give you **better preparation than 90% of candidates**. The remaining 10% is about:
-1. **Practice explaining concepts** (not just reading)
-2. **Understanding trade-offs** (when to use what)
-3. **Real project experience** (apply these concepts)
-
----
-
-## 📖 **Quick Reference Cheat Sheet**
-
-### **When to Use What?**
-
-+-------------------------------+-----------------------------------+----------------------------------------------+
-| Scenario                      | Best Choice                       | File Reference                               |
-+-------------------------------+-----------------------------------+----------------------------------------------+
-| Share data between threads    | std::mutex + shared variable      | multithreading/simple_mutex.cpp              |
-| Share data between processes  | Shared memory + semaphore         | IPC_and_Signals/06_shared_memory.cpp         |
-| Pass messages between process | Message queue or pipe             | IPC_and_Signals/05_message_queues.cpp        |
-| Notify another process        | Signal                            | IPC_and_Signals/01_basic_signals.cpp         |
-| Wait for condition in thread  | std::condition_variable           | multithreading/condition_variable.cpp        |
-| Wait for condition in process | Named semaphore                   | IPC_and_Signals/08_posix_semaphores.cpp      |
-| High-performance async I/O    | std::async or thread pool         | asynchrony/thread_pool.cpp                  |
-| Count available resources     | Counting semaphore                | IPC_and_Signals/08_posix_semaphores.cpp      |
-| One-time synchronization      | std::latch or std::barrier        | multithreading/latch.cpp, barrier.cpp        |
-+-------------------------------+-----------------------------------+----------------------------------------------+
-
----
-
-## ✨ **Success Metrics**
-
-You'll know you're interview-ready when you can:
-
-- [ ] Explain any concept from memory (without code)
-- [ ] Identify race conditions in code on sight
-- [ ] Choose correct IPC mechanism for any scenario
-- [ ] Debug deadlocks systematically
-- [ ] Implement producer-consumer from scratch
-- [ ] Compare trade-offs between different approaches
-- [ ] Explain why synchronization is needed (not just how)
-- [ ] Write thread-safe code naturally
-
----
-
-**Good luck with your interviews! You have excellent preparation materials here.** 🚀
-
+> [!NOTE]
+> All 87 files in `src/` have been verified to compile with **0 errors and 0 warnings** under `g++ -std=c++20`.

@@ -604,39 +604,65 @@ Key rules for `noexcept`:
   `noexcept(true)` means non-throwing; `noexcept(false)` means potentially throwing.
 
 ### Which Functions Are Implicitly Non-Throwing?
-- **Destructors** are non-throwing by default.
-- Defaulted special member functions (default constructor, copy constructor, move constructor, copy assignment, move assignment, and comparison operators) are implicitly non-throwing **unless** any member or base subobject has a potentially throwing version.
+- **Destructors**: Implicitly non-throwing by default.
+- **Defaulted special member functions**: Default constructors, copy constructors, move constructors, copy assignments, move assignments, and comparison operators (since C++20) are implicitly non-throwing **unless** any member variable or base subobject has a potentially throwing version.
+
+#### Functions That Are Potentially Throwing by Default:
+- Normal functions.
+- User-defined constructors.
+- User-defined operators.
+- Any function that calls (explicitly or implicitly) another function that is potentially throwing. For example:
+  - If a class has a data member whose constructor is potentially throwing, the class's default constructor becomes potentially throwing.
+  - If a copy assignment operator calls a potentially throwing assignment, the enclosing copy assignment becomes potentially throwing.
 
 ### The `noexcept` Operator
-The **`noexcept` operator** is a compile-time operator that evaluates whether an expression is non-throwing:
+The **`noexcept` operator** is a compile-time operator that evaluates whether an expression is non-throwing without evaluating the expression:
 ```cpp
-void foo() { throw 1; }
-void bar() noexcept {}
+void foo() { throw -1; }
+void boo() {}
+void goo() noexcept {}
+struct S {};
 
-constexpr bool b1 = noexcept(5 + 3);  // true: primitive arithmetic is non-throwing
-constexpr bool b2 = noexcept(foo());  // false: foo() is potentially throwing
-constexpr bool b3 = noexcept(bar());  // true: bar() is marked noexcept
+constexpr bool b1{ noexcept(5 + 3) }; // true: primitive arithmetic is non-throwing
+constexpr bool b2{ noexcept(foo()) }; // false: foo() is potentially throwing
+constexpr bool b3{ noexcept(boo()) }; // false: boo() is implicitly noexcept(false)
+constexpr bool b4{ noexcept(goo()) }; // true: goo() is explicitly noexcept(true)
+constexpr bool b5{ noexcept(S{}) };   // true: struct default constructor is noexcept by default
 ```
+The `noexcept` operator is used to conditionally execute code depending on whether operations can throw, enabling higher-level exception safety guarantees.
 
 ### The Four Exception Safety Guarantees
-
-When designing classes and functions, C++ establishes four standardized contractual guarantees:
+An exception safety guarantee is a contractual guideline defining how functions or classes behave when an exception occurs:
 
 | Level | Guarantee | Description |
 |---|---|---|
-| **1. No Guarantee** | None | If an exception occurs, state is indeterminate; memory or resource leaks may occur. |
+| **1. No Guarantee** | None | If an exception occurs, state is indeterminate; memory, file handles, or resources may leak. |
 | **2. Basic Guarantee** | Invariants preserved | No memory is leaked, objects remain in valid (destructible) states, but values may be modified. |
 | **3. Strong Guarantee** | Commit-or-rollback | If an operation fails, state is rolled back to exactly what it was prior to the call ("all-or-nothing"). |
-| **4. No-Throw / No-Fail** | Always succeeds / Never throws | The function is guaranteed to complete successfully without throwing (`noexcept`). |
+| **4. No-Throw / No-Fail** | Always succeeds / Never throws | The function is guaranteed to complete without throwing an unhandled exception (`noexcept`). |
 
-### When to Mark Functions with `noexcept`
-Always mark the following as `noexcept`:
-1. **Move constructors** and **move assignment operators**.
-2. **Swap functions**.
-3. **Destructors and memory deallocation functions**.
+#### Detailed Look at No-Throw vs No-Fail Guarantees:
+- **The No-Throw Guarantee**:
+  - If the function fails, it will not throw an exception; instead, it returns an error code or ignores the failure.
+  - Required during stack unwinding when another exception is already active.
+  - **Must be no-throw**: Destructors, memory deallocation functions, and cleanup routines.
+- **The No-Fail Guarantee**:
+  - The function will **always succeed** in what it attempts to do and thus never needs to throw. (No-fail is a slightly stronger guarantee than no-throw).
+  - **Must be no-fail**: Move constructors, move assignment operators, swap functions, container `clear()`/`erase()`/`reset()`, and smart pointer operations (`std::unique_ptr`).
+
+### When to Use `noexcept`
+1. **Destructor Safety**: Non-throwing functions can be safely invoked from destructors and cleanup blocks without risk of double-exception program termination.
+2. **Compiler Optimizations**: Because a `noexcept` function guarantees no exception escapes, the compiler does not need to maintain stack unwinding metadata for that call frame, producing tighter and faster assembly code.
+3. **Container Performance**: Standard library containers (e.g., `std::vector`) query `noexcept` via the `noexcept` operator to decide whether elements can be moved (fast $\mathcal{O}(1)$ transfer) or must be copied (slow fallback) during reallocation to maintain the Strong Exception Guarantee.
+4. **Standard Library Policy**: The standard library only marks functions `noexcept` if they *must not* throw or fail. Functions that happen not to throw in an implementation but are not conceptually required to be non-throwing are left potentially throwing.
+
+#### Rule of Thumb for Your Code:
+- **Always mark `noexcept`**: Move constructors, move assignment operators, and `swap()` functions.
+- **Consider marking `noexcept`**: Functions expressing a documented no-throw/no-fail guarantee, and copy constructors/assignments that cannot throw.
+- **Destructors**: Implicitly `noexcept` unless explicitly overridden.
 
 > [!TIP]
-> Standard library containers like `std::vector` inspect `noexcept` when resizing. If your class's move constructor is not marked `noexcept`, `std::vector` will fall back to **expensive copying** during reallocation to preserve the Strong Exception Guarantee!
+> **Best Practice**: If uncertain whether a function should have a no-throw/no-fail guarantee, **do not mark it `noexcept`**. Adding `noexcept` later strengthens guarantees safely; removing `noexcept` later breaks interface commitments and caller assumptions.
 
 ### `noexcept` in the Type System (since C++17)
 Since C++17, `noexcept` is formally part of a function's type signature:
@@ -652,6 +678,20 @@ void (*p1)() noexcept = nonThrowing;         // OK
 
 void (*p3)() = nonThrowing;                  // OK: implicit conversion from non-throwing to potentially throwing pointer
 ```
+
+### Dynamic Exception Specifications (C++98 to C++20)
+- Before C++11, C++ used **dynamic exception specifications** using the `throw` keyword:
+  ```cpp
+  int doSomething() throw();                        // C++98: promises not to throw (replaced by noexcept)
+  int doSomething() throw(std::out_of_range, int*); // C++98: may throw out_of_range or int*
+  int doSomething() throw(...);                     // C++98: may throw anything
+  ```
+- **Why They Were Removed**:
+  - Incomplete compiler implementations and run-time checking overhead.
+  - Incompatibility with function templates.
+  - Ubiquitous misunderstanding of semantics.
+  - Unused by the C++ Standard Library.
+- **Standard History**: Deprecated in **C++11**, removed from the language in **C++17** (with `throw()` retained as an alias for `noexcept`), and completely removed in **C++20**.
 
 ### 📁 Code Examples for Section 9
 - [`27_8_Exception_specifications_n_noexcept/1_noexcept_example.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/27_Exceptions/27_8_Exception_specifications_n_noexcept/1_noexcept_example.cpp): Demonstrates the `noexcept` specifier, compile-time evaluation via the `noexcept()` operator, and the termination behavior when an exception exits a `noexcept` function.

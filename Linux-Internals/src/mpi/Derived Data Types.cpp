@@ -1,5 +1,10 @@
 // Program 6: Derived Data Types
+#if __has_include(<mpi.h>)
 #include <mpi.h>
+#else
+#include "mpi.h"
+#endif
+#include <cstddef>
 #include <iostream>
 struct Particle {
     double x, y, z;

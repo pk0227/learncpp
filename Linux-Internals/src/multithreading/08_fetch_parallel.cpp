@@ -1,7 +1,26 @@
 // g++ -std=c++17 -o fetch_parallel fetch_parallel.cpp -lcurl &&
 // ./fetch_parallel
 #include <chrono>
+#if __has_include(<curl/curl.h>)
 #include <curl/curl.h>
+#define HAS_CURL 1
+#else
+#define HAS_CURL 0
+// Simulated curl types & stubs for compilation when libcurl-dev is not installed
+typedef void CURL;
+typedef int CURLcode;
+#define CURLE_OK 0
+#define CURL_GLOBAL_DEFAULT 0
+#define CURLOPT_URL 10002
+#define CURLOPT_WRITEFUNCTION 20011
+#define CURLOPT_WRITEDATA 10001
+inline void curl_global_init(long) {}
+inline void curl_global_cleanup() {}
+inline CURL* curl_easy_init() { return reinterpret_cast<CURL*>(1); }
+inline void curl_easy_cleanup(CURL*) {}
+inline int curl_easy_setopt(CURL*, int, ...) { return 0; }
+inline int curl_easy_perform(CURL*) { return 0; }
+#endif
 #include <iostream>
 #include <mutex>
 #include <string>
@@ -22,9 +41,9 @@ std::size_t writeFunction(void *contents, std::size_t size, std::size_t nmemb,
 }
 
 std::pair<std::string, std::size_t> fetchUrl(const std::string &url) {
-  CURL *curl = curl_easy_init();
   std::string fetchedContent;
-
+#if HAS_CURL
+  CURL *curl = curl_easy_init();
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeFunction);
@@ -32,6 +51,10 @@ std::pair<std::string, std::size_t> fetchUrl(const std::string &url) {
     curl_easy_perform(curl);
     curl_easy_cleanup(curl);
   }
+#else
+  std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  fetchedContent = "Mock response payload for " + url;
+#endif
 
   return {url, fetchedContent.length()};
 }

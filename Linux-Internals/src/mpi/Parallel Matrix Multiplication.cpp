@@ -1,5 +1,9 @@
 // Program 10: Parallel Matrix Multiplication
+#if __has_include(<mpi.h>)
 #include <mpi.h>
+#else
+#include "mpi.h"
+#endif
 #include <iostream>
 #include <vector>
 int main(int argc, char* argv[]) {

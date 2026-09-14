@@ -5,17 +5,17 @@ Program-defined types—specifically enumerations and structures—allow C++ dev
 ---
 
 ## Table of Contents
-1. [13.0 — Introduction to Program-Defined (User-Defined) Types](#130----introduction-to-program-defined-user-defined-types)
-2. [13.1 — Unscoped Enumerations](#131----unscoped-enumerations)
-3. [13.2 — Converting Enumerations to and from Strings](#132----converting-enumerations-to-and-from-strings)
-4. [13.3 — Overloading the I/O Operators for Enumerations](#133----overloading-the-io-operators-for-enumerations)
-5. [13.4 — Scoped Enumerations (Enum Classes)](#134----scoped-enumerations-enum-classes)
-6. [13.5 — Structs and Aggregate Initialization](#135----structs-and-aggregate-initialization)
-7. [13.6 — Default Member Initialization](#136----default-member-initialization)
-8. [13.7 — Passing and Returning Structs](#137----passing-and-returning-structs)
-9. [13.8 — Struct Miscellany and Member Selection](#138----struct-miscellany-and-member-selection)
-10. [13.9 — Class Templates (Struct Templates)](#139----class-templates-struct-templates)
-11. [13.10 — Class Template Argument Deduction (CTAD) and Deduction Guides](#1310----class-template-argument-deduction-ctad-and-deduction-guides)
+1. [13.0 — Introduction to Program-Defined (User-Defined) Types](#130--introduction-to-program-defined-user-defined-types)
+2. [13.1 — Unscoped Enumerations](#131--unscoped-enumerations)
+3. [13.2 — Converting Enumerations to and from Strings](#132--converting-enumerations-to-and-from-strings)
+4. [13.3 — Overloading the I/O Operators for Enumerations](#133--overloading-the-io-operators-for-enumerations)
+5. [13.4 — Scoped Enumerations (Enum Classes)](#134--scoped-enumerations-enum-classes)
+6. [13.5 — Structs and Aggregate Initialization](#135--structs-and-aggregate-initialization)
+7. [13.6 — Default Member Initialization](#136--default-member-initialization)
+8. [13.7 — Passing and Returning Structs](#137--passing-and-returning-structs)
+9. [13.8 — Struct Miscellany and Member Selection](#138--struct-miscellany-and-member-selection)
+10. [13.9 — Class Templates (Struct Templates)](#139--class-templates-struct-templates)
+11. [13.10 — Class Template Argument Deduction (CTAD) and Deduction Guides](#1310--class-template-argument-deduction-ctad-and-deduction-guides)
 
 ---
 

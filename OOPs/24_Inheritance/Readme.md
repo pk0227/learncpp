@@ -234,43 +234,62 @@ public:
 
 ## 5 — Inheritance and Access Specifiers
 
-Access specifiers determine how members are accessed from within the class hierarchy and by external callers.
+Private members can only be accessed by member functions of the same class or friends. This means derived classes **cannot access private members of the base class directly**.
 
 ### The `protected` Access Specifier
+The `protected` access specifier allows the members declared under it to be accessed by:
+- The **class’s own member functions**.
+- Its **friends**.
+- Its **derived classes**.
 
-The `protected` access specifier provides an intermediate access tier:
-- Accessible by the **class's own member functions**.
-- Accessible by the class's **friends**.
-- Accessible by **derived classes**.
-- **Inaccessible** to external callers / public scope.
+However, protected members are **not accessible from outside the class** (e.g. from `main()` or non-member functions).
+
+### When Should You Use the `protected` Access Specifier?
+In general, it’s better to make your members private if you can, and only use `protected` when derived classes are planned and the cost to build and maintain an interface to those private members is too high.
 
 > [!TIP]
 > **Favor private members over protected members**. Private members ensure strict encapsulation. When members are protected, any derived class can directly mutate base state, increasing coupling and making future modifications to base class internals much harder to maintain.
 
-### Public, Protected, and Private Inheritance Modes
+### Different Kinds of Inheritance, and Their Impact on Access
+When members are inherited, the access specifier for an inherited member may be changed (in the derived class only) depending on the type of inheritance used. Put another way, members that were public or protected in the base class may change access specifiers in the derived class.
 
-When inheriting from a base class, the inheritance access specifier determines the visibility of inherited members in the derived class:
+If we do not choose an inheritance type, **C++ defaults to private inheritance** for classes (`class Derived : Base`), and **public inheritance** for structs.
+
+#### Fundamental Rules of Inheritance Access:
+Keep in mind the following three rules as we analyze inheritance modes:
+1. **A class can always access its own (non-inherited) members**.
+2. **The public accesses members of a class based on the access specifiers of the class it is accessing**.
+3. **A derived class accesses inherited members based on the access specifier inherited from the parent class**. This varies depending on the access specifier and type of inheritance used.
 
 ```cpp
-class Derived1 : public Base    { /* ... */ };
-class Derived2 : protected Base { /* ... */ };
-class Derived3 : private Base   { /* ... */ };
+class Derived1 : public Base    { /* ... */ }; // Public inheritance
+class Derived2 : protected Base { /* ... */ }; // Protected inheritance
+class Derived3 : private Base   { /* ... */ }; // Private inheritance
 ```
 
-- If no inheritance specifier is provided, **C++ defaults to private inheritance** for classes (`class Derived : Base`), and **public inheritance** for structs.
+### Access Level Transformation Matrix
 
-#### Access Level Transformation Matrix
-
-| Access in Base Class | Inherited Publicly (`public Base`) | Inherited Privately (`private Base`) | Inherited Protectedly (`protected Base`) |
+| Access Specifier in Base Class | Inherited Publicly (`public Base`) | Inherited Privately (`private Base`) | Inherited Protectedly (`protected Base`) |
 |---|:---:|:---:|:---:|
 | **Public** | **Public** | **Private** | **Protected** |
 | **Protected** | **Protected** | **Private** | **Protected** |
 | **Private** | *Inaccessible* | *Inaccessible* | *Inaccessible* |
 
-### Summary of Inheritance Types
-- **Public Inheritance**: Used in 99% of object-oriented designs. Represents an authentic "is-a" relationship. Inherited public members remain public.
-- **Private Inheritance**: Used for internal implementation details ("implemented-in-terms-of"). All inherited members become private to the derived class.
-- **Protected Inheritance**: Extremely rare; makes inherited public and protected members protected in the derived class.
+### Detailed Breakdown of Inheritance Modes
+1. **Public Inheritance**:
+   - When you inherit a base class publicly, inherited public members stay public, and inherited protected members stay protected. Inherited private members, which were inaccessible because they were private in the base class, stay inaccessible.
+   - Represents an authentic "is-a" relationship.
+   - **Best Practice**: Use public inheritance unless you have a specific, documented reason to do otherwise.
+2. **Protected Inheritance**:
+   - Protected inheritance is the least common method of inheritance. It is almost never used, except in very particular cases.
+   - With protected inheritance, public and protected members become protected in the derived class, and private members stay inaccessible.
+3. **Private Inheritance**:
+   - With private inheritance, all members from the base class are inherited as private. Protected and public members become private, and private members stay inaccessible.
+   - Useful when the derived class has no obvious "is-a" relationship to the base class, but uses the base class internally for implementation ("implemented-in-terms-of"). In such cases, we do not want the public interface of the base class exposed through derived objects.
+
+### Final Summary
+- **First**: A class (and friends) can always access its own non-inherited members. The access specifiers only affect whether outsiders and derived classes can access those members.
+- **Second**: When derived classes inherit members, those members may change access specifiers in the derived class. This does not affect the derived class's own (non-inherited) members (which have their own access specifiers). It only affects whether outsiders and classes derived from the derived class can access those inherited members.
 
 ### 📁 Code Examples for Section 5
 - [`24_3_Inheritance_n_access_specifiers/1_public_inheritance.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/24_Inheritance/24_3_Inheritance_n_access_specifiers/1_public_inheritance.cpp): Demonstrates access levels under public inheritance.

@@ -1,5 +1,9 @@
 
+#if __has_include(<mpi.h>)
 #include <mpi.h>
+#else
+#include "mpi.h"
+#endif
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
