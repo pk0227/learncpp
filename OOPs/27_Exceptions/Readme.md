@@ -691,7 +691,7 @@ void (*p3)() = nonThrowing;                  // OK: implicit conversion from non
   - Incompatibility with function templates.
   - Ubiquitous misunderstanding of semantics.
   - Unused by the C++ Standard Library.
-- **Standard History**: Deprecated in **C++11**, removed from the language in **C++17** (with `throw()` retained as an alias for `noexcept`), and completely removed in **C++20**.
+- **Standard History**: Deprecated in **C++11**, and all dynamic exception specifications (including `throw()`, `throw(T)`, and `throw(...)`) were **fully removed from the language in C++17**. The `noexcept` specifier is their complete modern replacement.
 
 ### 📁 Code Examples for Section 9
 - [`27_8_Exception_specifications_n_noexcept/1_noexcept_example.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/27_Exceptions/27_8_Exception_specifications_n_noexcept/1_noexcept_example.cpp): Demonstrates the `noexcept` specifier, compile-time evaluation via the `noexcept()` operator, and the termination behavior when an exception exits a `noexcept` function.

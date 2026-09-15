@@ -520,8 +520,9 @@
          int doSomething() throw(...); // may throw anything
 
       -- Due to factors such as incomplete compiler implementations, some incompatibility with template functions, common misunderstandings
-         about how they worked, and the fact that the standard library mostly didn’t use them, the dynamic exception specifications were 
-         deprecated in C++11 and removed from the language in C++17 and C++20.
+         about how they worked, and the fact that the standard library mostly didn't use them, the dynamic exception specifications were 
+         deprecated in C++11 and all of them (including throw(), throw(T), and throw(...)) were fully removed from the language in C++17.
+         The noexcept specifier is their complete modern replacement.
 
 10 — std::move_if_noexcept
    The move constructors exception problem
