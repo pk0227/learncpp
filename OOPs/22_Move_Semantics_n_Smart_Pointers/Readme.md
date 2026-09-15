@@ -348,6 +348,24 @@ Similarly, sorting algorithms (such as quicksort, bubblesort, and `std::sort`) u
 - If the object has a `noexcept` move constructor, it returns an r-value reference (enabling move semantics).
 - If the move constructor might throw an exception, it returns a const l-value reference (falling back to copy semantics).
 
+### Critical Pitfall: `std::move` on `const` Objects Silently Copies!
+
+A frequent and insidious bug occurs when attempting to move an object that is `const`:
+
+```cpp
+const std::string source{"Hello"};
+std::string destination{ std::move(source) }; // SILENT DEEP COPY! Does NOT move!
+```
+
+#### Why This Happens:
+1. `std::move(source)` produces an r-value reference to a `const` object: `const std::string&&`.
+2. The move constructor requires a non-const r-value reference: `std::string(std::string&&)`.
+3. Because `const std::string&&` cannot bind to non-const `std::string&&`, the compiler falls back to the **copy constructor**: `std::string(const std::string&)`.
+4. The code compiles without errors or warnings, but silently performs an expensive deep copy, completely defeating move semantics!
+
+> [!WARNING]
+> Never declare objects as `const` if you intend to move from them later.
+
 ### 📁 Code Examples for Section 4
 - [`22_4_std_move/1_move_over_copy.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/22_Move_Semantics_n_Smart_Pointers/22_4_std_move/1_move_over_copy.cpp): Demonstrates using `std::move` to explicitly cast l-values to r-values to invoke move constructors and move assignment operators.
 - [`22_4_std_move/2_std_move_for_vectors.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/22_Move_Semantics_n_Smart_Pointers/22_4_std_move/2_std_move_for_vectors.cpp): Demonstrates using `std::move` when inserting l-values into `std::vector` to prevent redundant heap allocations.
@@ -391,6 +409,12 @@ if (ptr)
 std::unique_ptr<int> movedPtr = std::move(ptr); // OK: ptr becomes nullptr
 ```
 
+### `std::unique_ptr` and Arrays
+
+Unlike `std::auto_ptr` (which always invoked scalar `delete` and broke catastrophically when used with arrays), `std::unique_ptr` provides a template specialization for dynamically allocated arrays: `std::unique_ptr<T[]>`.
+- It automatically invokes `delete[]` upon destruction and provides `operator[]` for indexing instead of `operator*` and `operator->`.
+- **Best Practice**: Favor `std::vector` (for dynamic resizable arrays), `std::array` (for fixed-size stack/constexpr arrays), or `std::string` (for strings) over a smart pointer managing a raw C-style array. Standard containers provide bounds checking, iterators, and full standard algorithm support.
+
 ### `std::make_unique` (C++14)
 
 C++14 introduced `std::make_unique<T>(args...)`, which constructs the object and returns a `std::unique_ptr`:
@@ -413,6 +437,12 @@ auto res = std::make_unique<Fraction>(3, 5); // Preferred modern C++ syntax
 - **Returning from a function**: `std::unique_ptr` can be safely returned **by value**. Move semantics (or C++17 guaranteed copy elision) efficiently transfers ownership to the caller.
 - **Passing by value**: Pass `std::unique_ptr` by value when the function **intends to take ownership** of the resource. Callers must pass the argument via `std::move`.
 - **Passing for inspection/use**: If a function only needs to use or inspect the resource without claiming ownership, **do not pass `std::unique_ptr`**! Instead, pass the underlying object by reference (`const T&` or `T&`) or raw pointer (`T*`).
+
+### `std::unique_ptr` and Classes
+
+Using `std::unique_ptr` as a **composition member** of a class is a powerful modern idiom (often used in the Pimpl idiom):
+- When the containing class object is destroyed, its member `std::unique_ptr` is automatically destroyed, which in turn deallocates the dynamic memory. No custom destructor is needed!
+- **Caveat**: If the containing class object itself is dynamically allocated and not deallocated properly (e.g., allocated via raw `new` and never `delete`d), its member `std::unique_ptr` will not be destroyed, and the managed resource will leak.
 
 ### Misusing `std::unique_ptr`
 
@@ -515,6 +545,12 @@ Always prefer `std::make_shared<T>()`:
 - When writing `std::shared_ptr<T>(new T)`, **two separate heap allocations** occur: one for `T`, and a second for the control block.
 - `std::make_shared<T>()` combines both the managed object and the control block into **a single contiguous memory allocation**, significantly reducing memory fragmentation and allocator overhead.
 
+#### The Tradeoff of `std::make_shared`: Memory Retention with `std::weak_ptr`
+- Because `std::make_shared` combines the managed object and control block into a single contiguous memory block:
+  - The underlying allocated chunk cannot be returned to the heap via `operator delete` until **both** the strong reference count and the weak reference count drop to zero.
+  - When the last `std::shared_ptr` is destroyed, the managed object's destructor is invoked immediately. However, the memory block holding the object cannot be deallocated as long as at least one `std::weak_ptr` still observes the control block.
+  - **Engineering Tradeoff**: If an application manages very large objects and retains long-lived `std::weak_ptr` observers (e.g., in a cache or registry), allocating via `std::shared_ptr<T>(new T)` allows the object's large memory footprint to be reclaimed immediately when the strong count hits zero, leaving only the small control block behind until the weak pointers expire.
+
 > [!WARNING]
 > Always clone a `std::shared_ptr` by **copying an existing `std::shared_ptr`**, never by passing the raw resource pointer twice!
 > ```cpp
@@ -532,6 +568,23 @@ A `std::unique_ptr` can be seamlessly converted into a `std::shared_ptr` because
 std::unique_ptr<Resource> up = std::make_unique<Resource>();
 std::shared_ptr<Resource> sp = std::move(up); // Ownership transferred to shared_ptr
 ```
+
+#### Why Factory Functions Should Return `std::unique_ptr`
+- A `std::unique_ptr` can be seamlessly converted into a `std::shared_ptr`, but **a `std::shared_ptr` CANNOT be safely converted back into a `std::unique_ptr`** (since shared ownership cannot guarantee no other co-owners exist).
+- Therefore, when designing a factory function that creates an object on the heap, **always return `std::unique_ptr` by value**.
+- This gives the caller complete flexibility: they can retain it as a `std::unique_ptr` for maximum efficiency and single ownership, or move it into a `std::shared_ptr` if shared ownership is truly required.
+
+### The Perils of `std::shared_ptr`
+
+The fundamental difference between `std::unique_ptr` and `std::shared_ptr` lies in **ownership responsibility**:
+- **With `std::unique_ptr`**, there is strictly **one owner**. Responsibility is centralized: you only need to ensure this single smart pointer is destroyed or goes out of scope.
+- **With `std::shared_ptr`**, ownership is **distributed**. The resource is freed only when *all* `std::shared_ptr` instances pointing to it are destroyed. If even one instance remains alive—such as being inadvertently cached in a long-lived container, captured inside an asynchronous lambda callback, or locked in a circular reference—the resource remains alive indefinitely, creating a subtle memory/resource leak.
+
+### `std::shared_ptr` and Arrays
+
+- **C++17 and earlier**: `std::shared_ptr` did NOT have built-in support for managing dynamically allocated arrays (`std::shared_ptr<T[]>`). Attempting to manage an array without providing a custom deleter calling `delete[]` invoked scalar `delete`, causing undefined behavior.
+- **C++20**: Support for `std::shared_ptr<T[]>` was officially introduced, properly invoking array `delete[]` upon destruction and providing `operator[]`.
+- However, as with `std::unique_ptr`, favor standard sequence containers (`std::vector`) over smart pointers managing raw dynamic arrays.
 
 ### Custom Deleters in `std::shared_ptr`
 

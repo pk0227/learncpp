@@ -15,7 +15,7 @@ An **iterator** is an object designed to traverse through a container (such as t
    - [operator< vs operator!= for Iterators](#operator-vs-operator-for-iterators)
    - [How Range-Based For Loops Work Behind the Scenes](#how-range-based-for-loops-work-behind-the-scenes)
    - [Iterator Invalidation (Dangling Iterators)](#iterator-invalidation-dangling-iterators)
-   - [📁 Code Examples](#-code-examples)
+   - [📁 Code Examples](#code-examples)
 
 ---
 
@@ -197,11 +197,11 @@ it = v.erase(it); // 'it' is now valid and points to the next element
 ```
 
 ### 📁 Code Examples
-- [`1_pointers_as_an_iterators.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_(_Under_Construction_)_/1_pointers_as_an_iterators.cpp): Demonstrates raw pointers acting as iterators with `begin` and `end` addresses and pointer arithmetic.
-- [`2_standard_library_iterators.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_(_Under_Construction_)_/2_standard_library_iterators.cpp): Demonstrates standard library container member functions `.begin()` and `.end()`, and explains why `operator!=` is preferred over `operator<`.
-- [`3_global_iterators.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_(_Under_Construction_)_/3_global_iterators.cpp): Demonstrates generic non-member iterator functions `std::begin()` and `std::end()`.
-- [`4_range_based_loop_for_std_array.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_(_Under_Construction_)_/4_range_based_loop_for_std_array.cpp): Demonstrates range-based `for` loops utilizing member iterators under the hood for `std::array`.
-- [`5_range_based_loop_for_C-style_array.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_(_Under_Construction_)_/5_range_based_loop_for_C-style_array.cpp): Demonstrates range-based `for` loops and non-member `std::begin`/`std::end` operating on fixed C-style arrays.
-- [`6_iterator_invalidation.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_(_Under_Construction_)_/6_iterator_invalidation.cpp): Demonstrates the pitfall of modifying a `std::vector` inside a range-based `for` loop causing iterator invalidation.
-- [`7_iterator_invalidation.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_(_Under_Construction_)_/7_iterator_invalidation.cpp): Demonstrates iterator invalidation upon calling `erase()` and the canonical revalidation fix using `it = v.erase(it)`.
-- [`8_const_and_reverse_iterators.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_(_Under_Construction_)_/8_const_and_reverse_iterators.cpp): Demonstrates const iterators (`cbegin`/`cend`) for read-only access, reverse iterators (`rbegin`/`rend`) for backward traversal, and non-member `std::crbegin`/`std::crend`.
+- [`1_pointers_as_an_iterators.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_%28_Under_Construction_%29_/1_pointers_as_an_iterators.cpp): Demonstrates raw pointers acting as iterators with `begin` and `end` addresses and pointer arithmetic.
+- [`2_standard_library_iterators.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_%28_Under_Construction_%29_/2_standard_library_iterators.cpp): Demonstrates standard library container member functions `.begin()` and `.end()`, and explains why `operator!=` is preferred over `operator<`.
+- [`3_global_iterators.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_%28_Under_Construction_%29_/3_global_iterators.cpp): Demonstrates generic non-member iterator functions `std::begin()` and `std::end()`.
+- [`4_range_based_loop_for_std_array.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_%28_Under_Construction_%29_/4_range_based_loop_for_std_array.cpp): Demonstrates range-based `for` loops utilizing member iterators under the hood for `std::array`.
+- [`5_range_based_loop_for_C-style_array.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_%28_Under_Construction_%29_/5_range_based_loop_for_C-style_array.cpp): Demonstrates range-based `for` loops and non-member `std::begin`/`std::end` operating on fixed C-style arrays.
+- [`6_iterator_invalidation.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_%28_Under_Construction_%29_/6_iterator_invalidation.cpp): Demonstrates the pitfall of modifying a `std::vector` inside a range-based `for` loop causing iterator invalidation.
+- [`7_iterator_invalidation.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_%28_Under_Construction_%29_/7_iterator_invalidation.cpp): Demonstrates iterator invalidation upon calling `erase()` and the canonical revalidation fix using `it = v.erase(it)`.
+- [`8_const_and_reverse_iterators.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/18_Iterators_%28_Under_Construction_%29_/8_const_and_reverse_iterators.cpp): Demonstrates const iterators (`cbegin`/`cend`) for read-only access, reverse iterators (`rbegin`/`rend`) for backward traversal, and non-member `std::crbegin`/`std::crend`.

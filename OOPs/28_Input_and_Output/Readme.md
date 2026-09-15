@@ -290,15 +290,53 @@ std::cout << std::dec << 29 << '\n'; // Restores decimal
 | `std::ios_base::precision()` | Returns current floating-point precision |
 | `std::ios_base::precision(int)` | Sets floating-point precision and returns previous precision |
 
-> [!NOTE]
-> If fixed or scientific notation is enabled, precision determines how many **decimal places in the fraction** are displayed. If precision is less than the number of significant digits, the value is rounded.
-> If neither fixed nor scientific is enabled, precision determines the total number of **significant digits**.
+#### Precision Behavior Rules:
+- If **fixed** or **scientific** notation is active, precision determines how many **decimal places in the fraction** are displayed. If precision is less than the number of fractional digits, the number will be rounded:
+  ```cpp
+  std::cout << std::fixed;
+  std::cout << std::setprecision(3) << 123.456 << '\n'; // 123.456
+  std::cout << std::setprecision(4) << 123.456 << '\n'; // 123.4560
+  std::cout << std::setprecision(2) << 123.456 << '\n'; // 123.46 (rounded)
 
-```cpp
-std::cout << std::fixed << std::setprecision(3) << 123.456;      // "123.456"
-std::cout << std::scientific << std::setprecision(3) << 123.456; // "1.235e+02"
-std::cout << std::defaultfloat << std::setprecision(3) << 123.456;// "123"
-```
+  std::cout << std::scientific;
+  std::cout << std::setprecision(3) << 123.456 << '\n'; // 1.235e+002
+  std::cout << std::setprecision(4) << 123.456 << '\n'; // 1.2346e+002
+  std::cout << std::setprecision(5) << 123.456 << '\n'; // 1.23456e+002
+  std::cout << std::setprecision(6) << 123.456 << '\n'; // 1.234560e+002
+  ```
+- If **neither fixed nor scientific** is active (default representation), precision determines the **total count of significant digits**. If precision is less than the number of significant digits, the number is rounded:
+  ```cpp
+  std::cout << std::defaultfloat;
+  std::cout << std::setprecision(3) << 123.456 << '\n'; // 123
+  std::cout << std::setprecision(4) << 123.456 << '\n'; // 123.5
+  std::cout << std::setprecision(5) << 123.456 << '\n'; // 123.46
+  std::cout << std::setprecision(6) << 123.456 << '\n'; // 123.456
+
+  std::cout << std::showpoint;
+  std::cout << std::setprecision(3) << 123.456 << '\n'; // 123.
+  std::cout << std::setprecision(4) << 123.456 << '\n'; // 123.5
+  std::cout << std::setprecision(7) << 123.456 << '\n'; // 123.4560
+  ```
+
+#### Floating-Point Precision Comparison Matrix
+| Option | Precision | `12345.0` Output | `0.12345` Output |
+|---|:---:|---|---|
+| **Normal (Default)** | 3 | `1.23e+004` | `0.123` |
+| **Normal (Default)** | 4 | `1.235e+004` | `0.1235` |
+| **Normal (Default)** | 5 | `12345` | `0.12345` |
+| **Normal (Default)** | 6 | `12345` | `0.12345` |
+| **Showpoint** | 3 | `1.23e+004` | `0.123` |
+| **Showpoint** | 4 | `1.235e+004` | `0.1235` |
+| **Showpoint** | 5 | `12345.` | `0.12345` |
+| **Showpoint** | 6 | `12345.0` | `0.123450` |
+| **Fixed** | 3 | `12345.000` | `0.123` |
+| **Fixed** | 4 | `12345.0000` | `0.1235` |
+| **Fixed** | 5 | `12345.00000` | `0.12345` |
+| **Fixed** | 6 | `12345.000000` | `0.123450` |
+| **Scientific** | 3 | `1.235e+004` | `1.235e-001` |
+| **Scientific** | 4 | `1.2345e+004` | `1.2345e-001` |
+| **Scientific** | 5 | `1.23450e+004` | `1.23450e-001` |
+| **Scientific** | 6 | `1.234500e+004` | `1.234500e-001` |
 
 ### Width, Fill Characters, and Justification
 | Group | Flag | Manipulator | Meaning |
@@ -309,14 +347,33 @@ std::cout << std::defaultfloat << std::setprecision(3) << 123.456;// "123"
 | `<iomanip>` | — | `std::setw(int)` | Sets field width for next I/O operation |
 | `<iomanip>` | — | `std::setfill(char)` | Sets character used to pad width |
 
+| Member Function | Meaning |
+|---|---|
+| `std::basic_ostream::fill()` | Returns the current fill character |
+| `std::basic_ostream::fill(char)` | Sets the fill character and returns the previous fill character |
+| `std::ios_base::width()` | Returns the current field width |
+| `std::ios_base::width(int)` | Sets the current field width and returns the previous field width |
+
+#### Formatting Output Examples:
 ```cpp
-std::cout << std::setfill('*') << std::setw(10) << -12345 << '\n';               // "*****12345"
-std::cout << std::setfill('*') << std::setw(10) << std::left << -12345 << '\n';  // "-12345****"
-std::cout << std::setfill('*') << std::setw(10) << std::internal << -12345 << '\n'; // "-****12345"
+// Default space padding:
+std::cout << -12345 << '\n';                         // "-12345"
+std::cout << std::setw(10) << -12345 << '\n';               // "    -12345"
+std::cout << std::setw(10) << std::left << -12345 << '\n';  // "-12345    "
+std::cout << std::setw(10) << std::right << -12345 << '\n'; // "    -12345"
+std::cout << std::setw(10) << std::internal << -12345 << '\n'; // "-    12345"
+
+// Custom character padding using fill('*'):
+std::cout.fill('*');
+std::cout << -12345 << '\n';                         // "-12345"
+std::cout << std::setw(10) << -12345 << '\n';               // "****-12345"
+std::cout << std::setw(10) << std::left << -12345 << '\n';  // "-12345****"
+std::cout << std::setw(10) << std::right << -12345 << '\n'; // "****-12345"
+std::cout << std::setw(10) << std::internal << -12345 << '\n'; // "-****12345"
 ```
 
 > [!IMPORTANT]
-> Unlike formatting flags and fill characters which are **stateful** (they persist until changed), `std::setw()` is **transient**: it applies only to the very next I/O field and then resets to 0.
+> Unlike formatting flags and fill characters which are **stateful** (they persist until explicitly changed), `std::setw()` is **transient**: it applies only to the very next I/O field and then automatically resets to 0.
 
 ### Modern C++ Alternatives: `std::format` (C++20) and `std::print` (C++23)
 While `iostream` formatting is flexible and extensible for custom user types, it has well-known weaknesses:

@@ -15,13 +15,21 @@ public:
 Foo getFoo()
 {
     // explicit Foo() cases
-    return Foo{ };   // ok
-    return { };      // error: can't implicitly convert initializer list to Foo
+    // return Foo{ };   // ok
+
+    // COMPILE ERROR: can't implicitly convert initializer list to Foo because constructor is explicit:
+    // return { };
 
     // explicit Foo(int) cases
-    return 5;        // error: can't implicitly convert int to Foo
-    return Foo{ 5 }; // ok
-    return { 5 };    // error: can't implicitly convert initializer list to Foo
+    // COMPILE ERROR: can't implicitly convert int to Foo because constructor is explicit:
+    // return 5;
+
+    // return Foo{ 5 }; // ok
+
+    // COMPILE ERROR: can't implicitly convert initializer list to Foo because constructor is explicit:
+    // return { 5 };
+
+    return Foo{ 5 }; // ok: direct list-initialization syntax
 }
 
 int main()

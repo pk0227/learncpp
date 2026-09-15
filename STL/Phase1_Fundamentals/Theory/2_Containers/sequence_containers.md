@@ -4,6 +4,26 @@
 
 ---
 
+## 📑 Table of Contents
+
+1. [Overview](#overview)
+2. [1. std::array - Fixed-Size Array](#1-stdarray---fixed-size-array)
+3. [2. std::vector - Dynamic Array](#2-stdvector---dynamic-array)
+   - [Growth Strategy & Factor Analysis](#growth-strategy)
+   - [Iterator Invalidation](#iterator-invalidation)
+   - [C++20 Uniform Erasure](#c20-uniform-container-erasure)
+   - [Interview Deep Dives](#interview-points-1)
+4. [3. std::deque - Double-Ended Queue](#3-stddeque---double-ended-queue)
+   - [Internal Structure](#internal-structure)
+   - [Iterator Invalidation Rules](#iterator-invalidation-rules-critical-interview-topic)
+5. [4. std::list - Doubly Linked List](#4-stdlist---doubly-linked-list)
+   - [The splice() Operation](#basic-operations-3)
+6. [5. std::forward_list - Singly Linked List](#5-stdforward_list---singly-linked-list)
+7. [Comparison Summary](#comparison-summary)
+8. [Next Steps](#next-steps)
+
+---
+
 ## Overview
 
 Sequence containers store elements in **linear order** with positional access.
@@ -212,26 +232,30 @@ v.erase(v.begin() + 2);  // ⚠️ it is invalid
 
 ### Interview Points
 
-**Q: Why does `vector` have both `size()` and `capacity()`?**  
-**A:** To support amortized O(1) `push_back`. When `size == capacity`, reallocation occurs (typically 1.5× or 2× growth), giving amortized O(1) instead of O(n) per insertion.
+**Q: Why does `vector` grow geometrically (1.5x or 2x)? Why not arithmetically (+100 elements)?**  
+**A:** If a vector grew arithmetically by a fixed constant $K$, appending $N$ elements would require $N/K$ reallocations, resulting in $O(N^2)$ total work (an average of $O(N)$ per `push_back`). Geometric growth guarantees **amortized $O(1)$** insertion time:
+- **GCC / Clang (`libstdc++`, `libc++`)**: Uses a **$2\times$** factor (doubling). Simple and fast bit shifts, but never reuses memory blocks from earlier allocations in standard memory managers.
+- **MSVC (`msvcstl`)**: Uses a **$1.5\times$** factor. A factor below the golden ratio ($\phi \approx 1.618$) mathematically permits the memory allocator to reuse memory previously allocated and freed by earlier reallocations of the same vector once sufficient steps have passed.
 
-**Q: How to truly free `vector` memory?**
+### C++20 Uniform Container Erasure
+
+In C++20, the verbose Erase-Remove idiom has been superseded by non-member functions in `<vector>`:
 ```cpp
-std::vector<int> v(1000);
-v.clear();  // size = 0, but capacity still 1000!
+std::vector<int> v = {1, 2, 3, 4, 5, 6};
 
-// Option 1: Swap idiom (guaranteed)
-std::vector<int>().swap(v);
+// C++20: Erase all occurrences of value 3
+std::erase(v, 3);
 
-// Option 2: shrink_to_fit (request, not guaranteed)
-v.shrink_to_fit();
+// C++20: Erase all matching a predicate (even numbers)
+std::erase_if(v, [](int x) { return x % 2 == 0; });
 ```
 
 **Q: `vector<bool>` is special?**  
-**A:** Yes! It's a **space-optimized specialization** that stores bits, not bools. This means:
-- ❌ `operator[]` doesn't return `bool&` (returns proxy object)
-- ❌ Can't take address of elements
-- ✅ Use `vector<char>` or `deque<bool>` if you need real bools
+**A:** Yes! It is a **space-optimized template specialization** that packs 8 boolean flags per byte instead of using a full byte per bool. Consequence:
+- ❌ `operator[]` cannot return `bool&` (a hardware address cannot point to an individual bit). It returns a temporary proxy object `std::vector<bool>::reference`.
+- ❌ Code like `auto& ref = v[0];` fails to compile!
+- ❌ Not thread-safe for concurrent writes to distinct indices on the same byte!
+- ✅ Use `std::vector<char>` or `std::deque<bool>` if real `bool&` references or concurrent writes are required.
 
 ---
 
@@ -241,7 +265,7 @@ v.shrink_to_fit();
 - **Segmented storage** (chunks of contiguous memory)
 - **Random access** O(1) (slightly slower than `vector`)
 - **Fast insert/delete** at both ends O(1)
-- **No reallocation** (iterators stable on growth, except middle ops)
+- **No element relocation on growth**: Chunks are allocated independently; pointers and references to existing elements remain valid upon `push_front`/`push_back`, though iterators are invalidated.
 
 ### When to Use
 ✅ Need fast front AND back insertion  
@@ -294,19 +318,30 @@ d.erase(d.begin() + 2);       // O(n) - middle deletion
 | `insert()` (middle) | O(n) | |
 | `erase()` (middle) | O(n) | |
 
-### Iterator Invalidation
+### Iterator Invalidation Rules (Critical Interview Topic)
+
+> [!WARNING]
+> **Common Misconception Alert:**
+> Many developers mistakenly believe that inserting at the ends of a `std::deque` preserves iterators.
+> Under the ISO C++ Standard (`[deque.modifiers]`):
+> - **Insertion at either end (`push_front`, `push_back`, `emplace_front`, `emplace_back`)**: **INVALIDATES ALL ITERATORS** to the deque, but **REFERENCES AND POINTERS REMAIN VALID**!
+> - **Insertion in the middle**: **INVALIDATES ALL iterators, references, and pointers**.
+> - **Erasure at either end (`pop_front`, `pop_back`)**: Invalidates **only** iterators, references, and pointers to the erased element.
+> - **Erasure in the middle**: **INVALIDATES ALL iterators, references, and pointers**.
 
 ```cpp
 std::deque<int> d = {1, 2, 3, 4, 5};
-auto it = d.begin() + 2;
+int& ref = d[2];         // Reference to element '3'
+auto it = d.begin() + 2; // Iterator to element '3'
 
-// Front/back operations don't invalidate iterators
-d.push_back(6);   // ✅ it still valid
-d.push_front(0);  // ✅ it still valid (but points to different index!)
+d.push_back(6);   // ⚠️ 'it' is INVALIDATED! (Undetected UB if dereferenced)
+                  // ✅ 'ref' remains 100% VALID! (Memory chunk wasn't moved)
 
-// Middle operations invalidate ALL iterators
-d.insert(d.begin() + 2, 99);  // ⚠️ it is invalid
-d.erase(d.begin() + 2);       // ⚠️ it is invalid
+std::cout << ref << "\n"; // Safe: prints 3
+// *it;                   // Undefined Behavior: iterator was invalidated!
+
+// Middle operations invalidate EVERYTHING (iterators AND references):
+d.insert(d.begin() + 2, 99); // ⚠️ BOTH 'it' and 'ref' are completely invalid!
 ```
 
 ### Interview Points

@@ -344,6 +344,7 @@ OOP brings a number of other useful concepts to the table:
     Converting constructors
         -- A constructor that can be used to perform an implicit conversion is called a converting constructor. 
         -- By default, all constructors are converting constructors.
+        -- In C++98, only single-argument constructors could be converting constructors. Since C++11 (list initialization), constructors taking MULTIPLE parameters can also act as converting constructors when an object is initialized using a braced initializer list (e.g. Foo f = { 1, 2.0 };). Marking such constructors explicit prevents this implicit list conversion.
         -- Only one user-defined conversion may be applied.
         -- An implicit conversion (that would otherwise use a converting constructor) can be made explicit at the call site by using direct initialization or direct list initialization instead of copy initialization.
     

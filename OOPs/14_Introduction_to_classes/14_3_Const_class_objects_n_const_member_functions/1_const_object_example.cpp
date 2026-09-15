@@ -24,11 +24,14 @@ int main()
 {
     const Date today{2025, 11, 18};     // Const objects must be initialized at the time of creation.
 
-    today.day += 1;                     // changing member variables directly (if they are public) NOT allowed.
+    // COMPILE ERROR: changing member variables directly (if they are public) NOT allowed on const object.
+    // today.day += 1;
 
-    today.incrementDay();               // calling member functions that set the value of member variables NOT allowed
+    // COMPILE ERROR: calling non-const member functions that set the value of member variables NOT allowed on const object.
+    // today.incrementDay();
 
-    today.print();                      // Const objects may not call non-const member functions.
+    // COMPILE ERROR: Const objects may not call non-const member functions.
+    // today.print();
 
     return 0;
 }

@@ -78,6 +78,7 @@
 #include <sys/wait.h>
 #include <cstring>
 #include <cerrno>
+#include <climits>
 
 /*
  * EXAMPLE 1: Simple Parent-Child Communication

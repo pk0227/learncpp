@@ -4,7 +4,32 @@
 
 ---
 
-## 🎯 Introduction
+## 📑 Table of Contents
+
+1. [Introduction](#introduction)
+2. [Core Design Principles](#core-design-principles)
+   - [1. Generic Programming](#1-generic-programming)
+   - [2. Separation of Concerns](#2-separation-of-concerns)
+   - [3. Zero-Overhead Abstraction](#3-zero-overhead-abstraction)
+   - [4. Iterator Abstraction](#4-iterator-abstraction)
+   - [5. Policy-Based Design](#5-policy-based-design)
+3. [Key Design Decisions and Trade-offs](#key-design-decisions-and-trade-offs)
+   - [Decision 1: Why Templates, Not Inheritance?](#decision-1-why-templates-not-inheritance)
+   - [Decision 2: Why Iterators, Not Indices?](#decision-2-why-iterators-not-indices)
+   - [Decision 3: Why Separate std::sort() and list::sort()?](#decision-3-why-separate-stdsort-and-listsort)
+   - [Decision 4: Why vector Doesn't Shrink Automatically?](#decision-4-why-vector-doesnt-shrink-automatically)
+   - [Decision 5: Why remove() Doesn't Actually Remove?](#decision-5-why-remove-doesnt-actually-remove)
+4. [STL Design Patterns](#stl-design-patterns)
+   - [1. RAII (Resource Acquisition Is Initialization)](#1-raii-resource-acquisition-is-initialization)
+   - [2. Value Semantics](#2-value-semantics)
+   - [3. Copy-and-Swap Idiom](#3-copy-and-swap-idiom)
+5. [Interview Questions on Design Philosophy](#interview-questions-on-design-philosophy)
+6. [Key Takeaways](#key-takeaways)
+7. [Next Steps](#next-steps)
+
+---
+
+## Introduction
 
 Understanding **why** STL is designed the way it is separates senior developers from juniors. Interviewers want to know you understand the **trade-offs and principles** behind the design decisions.
 
@@ -283,7 +308,7 @@ std::unordered_set<Person, PersonHash> s2;
 
 ---
 
-## 🎯 Key Design Decisions & Trade-offs
+## Key Design Decisions and Trade-offs
 
 ### Decision 1: Why Templates, Not Inheritance?
 
@@ -517,8 +542,8 @@ STL provides both because:
 
 ## 📚 Next Steps
 
-1. [**Iterators Deep Dive**](file:///home/prashanth/learncpp_workspace/STL/03_Iterators_Deep_Dive.md) - Understand the glue layer
-2. [**Container Selection Guide**](file:///home/prashanth/learncpp_workspace/STL/04_Container_Selection_Guide.md) - Apply design principles to choose containers
+1. [**Iterators Deep Dive**](../3_Iterators/03_Iterators_Deep_Dive.md) - Understand the glue layer
+2. [**Container Selection Guide**](../../../Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md) - Apply design principles to choose containers
 
 ---
 

@@ -7,7 +7,25 @@
 
 #include <thread>
 #include <cstring>
+#if __has_include(<curl/curl.h>)
 #include <curl/curl.h> 
+#define HAS_CURL 1
+#else
+#define HAS_CURL 0
+typedef void CURL;
+typedef int CURLcode;
+typedef int64_t curl_off_t;
+#define CURLE_OK 0
+#define CURLOPT_URL 10002
+#define CURLOPT_WRITEFUNCTION 20011
+#define CURLINFO_SIZE_DOWNLOAD_T (0x300000 + 8)
+inline CURL* curl_easy_init() { return reinterpret_cast<CURL*>(1); }
+inline void curl_easy_cleanup(CURL*) {}
+inline int curl_easy_setopt(CURL*, int, ...) { return 0; }
+inline int curl_easy_perform(CURL*) { return 0; }
+inline int curl_easy_getinfo(CURL*, int, ...) { return 0; }
+inline const char* curl_easy_strerror(int) { return "OK"; }
+#endif
 #include <future>
 #include <list>
 #include <chrono>
@@ -47,6 +65,7 @@ size_t download_image(int image_num) {
     char url[256];
     sprintf(url, "https://example.com/image_%d.jpg", ((image_num % 50) + 1));
 
+#if HAS_CURL
     CURLcode res;
     curl_off_t num_bytes = 0;
     CURL *curl = curl_easy_init();
@@ -64,6 +83,10 @@ size_t download_image(int image_num) {
         curl_easy_cleanup(curl);
     }
     return num_bytes;
+#else
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    return 1024 * ((image_num % 10) + 1);
+#endif
 }
 
 // Callback function for cURL to handle data received from the server

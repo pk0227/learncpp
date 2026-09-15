@@ -754,6 +754,16 @@ However, downcasting is justified when:
 - You need access to derived-specific accessors that do not conceptually belong in the base interface.
 - Adding a virtual function to the base class makes no sense because there is no reasonable default implementation.
 
+### Cases Where `dynamic_cast` Does Not Work
+There are several specific scenarios where downcasting with `dynamic_cast` will not work:
+1. **With protected or private inheritance**:
+   - `dynamic_cast` relies on public inheritance that establishes an externally visible "is-a" relationship.
+   - When inheritance is `protected` or `private`, that "is-a" relationship is intentionally encapsulated, so runtime downcasting is disallowed from outside the class hierarchy.
+2. **For non-polymorphic classes**:
+   - Classes that do not declare or inherit at least one virtual function lack a virtual table (`vtable`) and type metadata pointer, meaning no RTTI is generated for the compiler to query at runtime.
+3. **Certain complex hierarchies with virtual base classes**:
+   - In ambiguous virtual inheritance configurations where dynamic paths cannot be uniquely resolved.
+
 ### A Warning About RTTI
 `dynamic_cast` relies on **Runtime Type Information (RTTI)**. Because RTTI increases binary size and memory overhead, some embedded compilers or performance-critical projects allow disabling RTTI (`-fno-rtti`). If RTTI is disabled, `dynamic_cast` will fail to compile or function correctly.
 

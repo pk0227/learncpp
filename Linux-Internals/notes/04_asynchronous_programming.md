@@ -1,4 +1,25 @@
-## Asynchrony
+# Asynchronous Programming — Linux Async I/O & Modern C++ Engineering Guide
+
+> In-depth exploration of non-blocking I/O, event loops, coroutines, futures, promises, and the evolution from epoll to io_uring in high-throughput systems.
+
+---
+
+## 📑 Table of Contents
+
+1. [Building Blocks of Asynchronous Programming](#building-blocks-of-asynchronous-programming)
+   - [Function vs Coroutine](#function-vs-coroutine)
+   - [Event Loop](#event-loop)
+2. [Asynchrony vs. Multithreading](#asynchrony-vs-multithreading)
+3. [Challenges and Considerations](#challenges-and-considerations)
+4. [Typical Applications](#typical-applications)
+5. [Code Examples by Language](#examples)
+6. [Summary Matrix](#summary)
+7. [Advanced Linux Asynchrony and Modern C++ Internals Deep Dive](#advanced-linux-asynchrony-and-modern-c-internals-deep-dive)
+   - [1. The `std::future` Destructor Trap with `std::async`](#1-the-stdfuture-destructor-trap-with-stdasync)
+   - [2. C++20 Coroutines Architecture](#2-c20-coroutines-architecture)
+   - [3. Linux Kernel Asynchronous I/O Evolution](#3-linux-kernel-asynchronous-io-evolution)
+
+---
 
 Asynchronous programming is a technique used to achieve concurrency, where tasks can be executed independently without waiting for other tasks to finish. It allows for nonblocking behavior, in contrast to synchronous execution that waits for one task to complete before starting the next task.
 
@@ -8,7 +29,7 @@ Asynchronous programming is particularly useful for tasks that involve I/O opera
 
 Asynchronous programming offers non-blocking execution, which is especially beneficial for I/O-bound operations. The two main pillars of this paradigm are the event loop and async functions.
 
-#### Function vs Corutine
+#### Function vs Coroutine
 
 - In programming, a **function** is a block of code that encapsulates a specific task, allowing it to be reused throughout the program. It usually accepts inputs called arguments and may produce a result or output by returning a value.
 - Functions help in breaking down complex problems into smaller, manageable pieces, making the code easier to understand and maintain. They follow a synchronous execution model, meaning the program flow waits for a function to complete before proceeding to the next line of code.
@@ -832,3 +853,115 @@ Here is a table comparing asynchronous programming features in C++, Python, and 
 | **Await**      | `co_await` (C++20)                                                 | `await` (used inside `async def`)                 | `await` (used inside async functions)                          |
 | **Async Call** | `std::async` or custom implementation with Boost.Asio             | `asyncio.create_task()`, `asyncio.gather()`, etc. | Callbacks, Promises, or `async/await` syntax                   |
 | **Task**       | `std::packaged_task` (wraps a callable target)                    | `asyncio.Task` (wraps a coroutine)              | Promises, async functions, or callbacks                      |
+
+---
+
+## Advanced Linux Asynchrony and Modern C++ Internals Deep Dive
+
+### 1. The `std::future` Destructor Trap with `std::async`
+
+A notorious trap in C++ asynchronous programming is the behavior of the `std::future` destructor when created via `std::async`:
+
+#### The Hidden Blocking Rule
+According to the C++ standard [temp.destr]:
+> If the future obtained from `std::async` is the last reference to the shared state, and the asynchronous task was launched with `std::launch::async`, the `std::future` **destructor blocks until the asynchronous task finishes**.
+
+#### The Sequential Execution Bug
+Consider this seemingly concurrent code:
+```cpp
+// INTENDED: Run task1 and task2 concurrently in the background
+std::async(std::launch::async, task1);
+std::async(std::launch::async, task2);
+```
+
+**What Actually Happens**:
+1. `std::async` launches `task1` and returns a temporary `std::future`.
+2. Because the return value is discarded, the temporary `std::future` reaches the end of the full-expression (the semicolon `;`).
+3. The destructor of the temporary runs **and blocks the calling thread until `task1` finishes completely**!
+4. Only after `task1` is 100% finished does the program proceed to the next line to launch `task2`.
+5. **Result: Zero concurrency! The tasks executed completely sequentially!**
+
+#### The Remedy
+Always store returned futures in named variables or a collection:
+```cpp
+// CORRECT: Both tasks run concurrently
+auto fut1 = std::async(std::launch::async, task1);
+auto fut2 = std::async(std::launch::async, task2);
+
+fut1.get();
+fut2.get();
+```
+
+---
+
+### 2. C++20 Coroutines Architecture
+
+C++20 introduced **stackless coroutines**. Unlike traditional functions, a coroutine can suspend its execution state and return control to the caller without unwinding its stack frame, and later resume from that exact suspension point.
+
+#### Core Keywords
+- **`co_await <expr>`**: Suspends execution until the awaitable operation is ready.
+- **`co_yield <expr>`**: Yields a value to the caller and suspends execution (ideal for generators).
+- **`co_return <expr>`**: Returns a final value and terminates the coroutine.
+
+#### The Coroutine Triad
+Every C++20 coroutine relies on three foundational components:
+
+```
+                  ┌───────────────────────────────┐
+                  │         Caller / Consumer     │
+                  └───────────────┬───────────────┘
+                                  │ owns
+                                  ▼
+┌──────────────────────────────────────────────────────────────────┐
+│ Coroutine Return Object (e.g. Task<T>, Generator<T>)             │
+│                                                                  │
+│  Contains: std::coroutine_handle<promise_type>                   │
+│  - Non-owning pointer to the Heap Coroutine Frame                │
+│  - Enables manual .resume() and .destroy()                       │
+└─────────────────────────────────┬────────────────────────────────┘
+                                  │ manages
+                                  ▼
+┌──────────────────────────────────────────────────────────────────┐
+│ Heap Coroutine Frame (Allocated via HALO optimization)           │
+│                                                                  │
+│  1. promise_type:                                                │
+│     - initial_suspend() -> std::suspend_always / suspend_never   │
+│     - final_suspend() -> std::suspend_always                     │
+│     - yield_value() / return_value()                             │
+│     - unhandled_exception()                                      │
+│                                                                  │
+│  2. Local variables and parameters captured across suspension    │
+│  3. Awaiter (await_ready, await_suspend, await_resume)           │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+#### The Awaiter Interface
+To `co_await` an expression `expr`, it must implement the Awaiter contract:
+1. `bool await_ready()`: Returns `true` if the result is already available (avoids suspension overhead).
+2. `void/bool/coroutine_handle await_suspend(coroutine_handle<> h)`: Called when the coroutine suspends; passes the handle to an event loop or background thread.
+3. `auto await_resume()`: Evaluates to the result of the `co_await` expression.
+
+---
+
+### 3. Linux Kernel Asynchronous I/O Evolution
+
+High-throughput asynchronous servers in Linux rely on OS-level I/O multiplexing:
+
+| Generation | System Call | Mechanism | Complexity | Bottleneck |
+|---|---|---|---|---|
+| **1st Gen** | `select()` | Bitmask of FDs (max 1024) | $O(N)$ scan | User/kernel array copy every call; linear scan of all descriptors. |
+| **2nd Gen** | `poll()` | Array of `struct pollfd` | $O(N)$ scan | No 1024 limit, but still copies array and scans all FDs every call. |
+| **3rd Gen** | `epoll` (`epoll_create`, `epoll_ctl`, `epoll_wait`) | Kernel Red-Black Tree + Ready List | $O(1)$ event check | Kernel stateful interest list. Only returns active ready FDs. |
+| **4th Gen** | `io_uring` (Linux 5.1+) | Lock-free shared ring buffers in mapped memory | $O(1)$ zero-syscall | True asynchronous disk and network I/O; zero system call overhead. |
+
+#### epoll: Level-Triggered (LT) vs Edge-Triggered (ET)
+- **Level-Triggered (Default)**: `epoll_wait()` notifies you as long as the file descriptor has data available to read. Safe, but generates repeated wakeups.
+- **Edge-Triggered (`EPOLLET`)**: `epoll_wait()` notifies you **only when the state changes** (e.g. new data arrives).
+  - *Mandatory Rule*: When using `EPOLLET`, you must configure the socket as non-blocking (`O_NONBLOCK`) and read in a loop until `read()` returns `EAGAIN` or `EWOULDBLOCK`, otherwise remaining unread data will never trigger a new notification!
+
+#### Modern High-Performance: io_uring
+Introduced by Jens Axboe in Linux 5.1, `io_uring` solves the fundamental limitation that `epoll` cannot perform asynchronous disk file I/O:
+1. **Submission Queue (SQ)**: User space writes I/O requests (e.g., read, write, accept, connect) directly into a shared ring buffer.
+2. **Completion Queue (CQ)**: Kernel posts completed I/O results directly into a shared ring buffer.
+3. **Zero Syscall Mode (`IORING_SETUP_SQPOLL`)**: A dedicated kernel thread continuously polls the Submission Queue. The application submits I/O operations by writing to user-space memory **without executing a single system call!**
+

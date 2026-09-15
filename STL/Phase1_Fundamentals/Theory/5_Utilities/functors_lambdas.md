@@ -4,6 +4,23 @@
 
 ---
 
+## 📑 Table of Contents
+
+1. [Overview](#overview)
+2. [1. Function Pointers](#1-function-pointers)
+3. [2. Functors (Function Objects)](#2-functors-function-objects)
+4. [3. Lambdas (Modern C++)](#3-lambdas-modern-c)
+5. [Standard Functors](#standard-functors)
+6. [Common Use Cases](#common-use-cases)
+7. [Strict Weak Ordering: The Mandatory Rules](#strict-weak-ordering-the-mandatory-rules)
+   - [The 4 Axioms](#the-4-axioms)
+   - [The Classic <= Bug](#the-classic--bug)
+   - [Transparent Comparators](#transparent-comparators-and-heterogeneous-lookup)
+8. [Key Takeaways](#key-takeaways)
+9. [See Also](#see-also)
+
+---
+
 ## Overview
 
 STL algorithms can be customized using **function objects** (functors) and **lambdas**.
@@ -293,6 +310,57 @@ std::string result = std::accumulate(words.begin(), words.end(), std::string("")
         return acc + s;
     });
 // result = "Hello World"
+```
+
+---
+
+## Strict Weak Ordering: The Mandatory Rules
+
+Every custom comparator passed to `std::sort`, `std::set`, `std::map`, or `std::priority_queue` **MUST satisfy Strict Weak Ordering**. Violating these rules invokes **Undefined Behavior** (crashes, segmentation faults, or corrupted Red-Black trees).
+
+### The 4 Axioms
+For a comparison predicate `comp(a, b)`:
+1. **Irreflexivity**: `comp(a, a) == false` (no element is strictly less than itself).
+2. **Asymmetry**: If `comp(a, b) == true`, then `comp(b, a) == false`.
+3. **Transitivity**: If `comp(a, b) == true` and `comp(b, c) == true`, then `comp(a, c) == true`.
+4. **Transitivity of Equivalence**: Equivalence is defined as:
+   $$a \equiv b \iff (!comp(a, b) \land !comp(b, a))$$
+   If $a \equiv b$ and $b \equiv c$, then $a \equiv c$.
+
+### The Classic `<=` Bug
+
+```cpp
+// ❌ CATASTROPHIC BUG: Using <= instead of <
+struct BadComparator {
+    bool operator()(int a, int b) const {
+        return a <= b; // ⚠️ VIOLATES IRREFLEXIVITY! BadComparator()(x, x) returns true!
+    }
+};
+
+std::vector<int> v = {5, 2, 8, 2, 1};
+std::sort(v.begin(), v.end(), BadComparator{}); 
+// 💥 RESULT: Memory corruption, index out of bounds, or infinite loop in Introsort!
+```
+
+> [!CAUTION]
+> **Why `<=` Crashes `std::sort`**:
+> Quicksort partition loops test `while (comp(*it, pivot)) ++it;`. When comparing an element equal to the pivot against itself, a correct `<` comparator returns `false`, halting the pointer. A `<=` comparator returns `true`, causing the loop to march past the array boundaries into invalid memory!
+
+### Transparent Comparators and Heterogeneous Lookup
+
+In C++14/C++20, mark custom comparator structs with `using is_transparent = void;` to enable lookup with foreign types (like `std::string_view` on a map with `std::string` keys):
+```cpp
+struct StringCompare {
+    using is_transparent = void; // Enables heterogeneous lookup!
+
+    bool operator()(std::string_view a, std::string_view b) const {
+        return a < b;
+    }
+};
+
+std::set<std::string, StringCompare> name_set;
+// find with string_view avoids heap allocations:
+auto it = name_set.find(std::string_view("Alice"));
 ```
 
 ---

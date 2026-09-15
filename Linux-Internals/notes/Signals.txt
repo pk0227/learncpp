@@ -39,6 +39,48 @@ Installed using:
     sigaction()  (preferred)
 
 --------------------------------------------------
+2a. SIGNALS THAT CANNOT BE CAUGHT, BLOCKED, OR IGNORED
+--------------------------------------------------
+There are two signals in POSIX that CANNOT be caught, blocked, or ignored:
+1. SIGKILL (Signal 9):
+   - Immediate, unconditional process termination enforced by the kernel.
+   - The target process cannot execute any cleanup code or destructors.
+2. SIGSTOP (Signal 19):
+   - Immediate, unconditional process suspension (stop) enforced by the kernel.
+   - Puts process into TASK_STOPPED until SIGCONT is received.
+
+CRITICAL RULE:
+Attempting to pass SIGKILL or SIGSTOP to signal(), sigaction(), sigprocmask(),
+or pthread_sigmask() will fail immediately, returning -1 with errno = EINVAL.
+
+--------------------------------------------------
+2b. ESSENTIAL LINUX SIGNALS TAXONOMY
+--------------------------------------------------
+- SIGINT (2):
+  Terminal interrupt (Ctrl+C). Polite request to stop interactive process.
+  Default: Terminate. Can be caught, blocked, or ignored.
+- SIGQUIT (3):
+  Terminal quit (Ctrl+\). Like SIGINT, but generates a core dump by default.
+- SIGKILL (9):
+  Forced kernel kill. Default: Terminate. CANNOT be caught or blocked.
+- SIGSEGV (11):
+  Segmentation violation (invalid memory access / page fault).
+  Default: Terminate + Core dump.
+- SIGPIPE (13):
+  Broken pipe (writing to pipe/socket/FIFO with no active readers).
+  Default: Terminate! (Must ignore with SIG_IGN in network servers).
+- SIGTERM (15):
+  Polite termination request sent by kill(pid) or systemd shutdown.
+  Allows process to flush buffers and clean up resources.
+- SIGCHLD (17):
+  Sent to parent when child process terminates, stops, or continues.
+  Default: Ignore (parent must call waitpid to prevent zombies).
+- SIGSTOP (19):
+  Forced suspension. CANNOT be caught or blocked.
+- SIGTSTP (20):
+  Terminal stop (Ctrl+Z). Can be caught or ignored (used by text editors).
+
+--------------------------------------------------
 3. sigaction() – WHY IT IS PREFERRED
 --------------------------------------------------
 sigaction() atomically installs:
@@ -289,6 +331,74 @@ Use sigwait():
 "In multithreaded programs, signal handlers are process-wide, signal
 masks are per-thread, and sigwait with a dedicated signal thread is the
 preferred and safest design."
+
+--------------------------------------------------
+21. REAL-TIME SIGNALS vs STANDARD SIGNALS
+--------------------------------------------------
+Standard Signals (Signals 1 to 31):
+- NOT queued: If a signal is generated multiple times while blocked,
+  only ONE instance is recorded in the pending bitmask.
+- Delivery order is unspecified.
+- No accompanying data payload.
+
+Real-Time Signals (SIGRTMIN to SIGRTMAX, typically 32 to 64):
+- QUEUED: Multiple instances of the same signal generated while
+  blocked are queued and delivered in order.
+- Guaranteed order: Lower signal numbers are delivered before higher.
+  For the same signal number, signals are delivered in FIFO order.
+- Can carry user data: Sent using sigqueue(pid, sig, union sigval).
+- Read using sa_flags = SA_SIGINFO handler or sigwaitinfo() / sigtimedwait().
+
+--------------------------------------------------
+22. SIGNALS ACROSS fork() AND execve()
+--------------------------------------------------
+Across fork():
+- Child inherits parent's signal dispositions (handlers, ignore, default).
+- Child inherits parent's signal mask (blocked signals).
+- Child's pending signal set is CLEARED (pending signals do not propagate).
+
+Across execve():
+- Signals with custom handlers are RESET to SIG_DFL (default) because
+  the old address space and handler code no longer exist.
+- Signals set to SIG_IGN (ignored) REMAIN IGNORED in the new program!
+  (Common pitfall: if parent ignores SIGINT, child program also ignores it).
+- The signal mask (blocked signals) is PRESERVED across execve().
+- The pending signal set is PRESERVED across execve().
+
+--------------------------------------------------
+23. sigaction FLAGS IN DEPTH (sa_flags)
+--------------------------------------------------
+- SA_RESTART:
+  Automatically restarts interrupted system calls (e.g. read(), write(),
+  waitpid(), accept()) rather than failing with errno = EINTR.
+  Critical for transparent signal handling in network/file I/O.
+- SA_NODEFER:
+  Do not automatically block the signal while its handler is executing.
+  Allows recursive signal invocation.
+- SA_NOCLDSTOP:
+  Prevents SIGCHLD generation when child processes stop (SIGSTOP) or resume (SIGCONT).
+  Only generates SIGCHLD on actual child termination.
+- SA_SIGINFO:
+  Changes handler signature to:
+  void handler(int sig, siginfo_t *info, void *ucontext);
+  Provides sender PID (info->si_pid), UID (info->si_uid), fault address (info->si_addr
+  for SIGSEGV/SIGBUS), and signal value (info->si_value).
+
+--------------------------------------------------
+24. REENTRANCY & SIGNAL SAFETY RULES
+--------------------------------------------------
+Why functions like printf() and malloc() cause deadlocks:
+- malloc() and free() acquire internal heap mutexes.
+- If a thread holding the heap lock is interrupted by a signal, and the
+  signal handler calls malloc() or printf() (which allocates buffer memory),
+  the handler tries to re-acquire the heap mutex held by the interrupted code -> DEADLOCK!
+- Always preserve errno:
+  int saved_errno = errno;
+  /* invoke async-signal-safe calls */
+  errno = saved_errno;
+- Shared flag types:
+  - volatile sig_atomic_t (guaranteed atomic read/write on CPU word)
+  - std::atomic<T> only if atomic<T>::is_lock_free() == true.
 
 ===========================
 END OF NOTES

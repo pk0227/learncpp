@@ -1,7 +1,8 @@
 #include <iostream>
 
 class outer;         // okay: can forward declare non-nested type
-class outer::inner1; // error: can't forward declare nested type prior to outer class definition
+// COMPILE ERROR: can't forward declare nested type prior to outer class definition (outer is incomplete):
+// class outer::inner1;
 
 class outer
 {

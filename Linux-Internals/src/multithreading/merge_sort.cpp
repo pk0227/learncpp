@@ -29,7 +29,7 @@ void sequential_merge_sort(int *array, unsigned int left, unsigned int right) {
 }
 
 // Parallel implementation of merge sort
-void parallel_merge_sort(int *array, unsigned int left, unsigned int right, unsigned int depth = 0) {
+void parallel_merge_sort(int *array, unsigned int left, unsigned int right, unsigned int depth) {
     if (depth >= std::log(std::thread::hardware_concurrency())) {
         sequential_merge_sort(array, left, right);
     } else {

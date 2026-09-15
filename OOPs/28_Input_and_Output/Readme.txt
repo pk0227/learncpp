@@ -202,7 +202,7 @@
         +-----------------------+-----------------------+---------------------------------------------------------------+
         | std::ios::floatfield  | std::ios::fixed       | Uses decimal notation for floating-point numbers              |
         | std::ios::floatfield  | std::ios::scientific  | Uses scientific notation for floating-point numbers           |
-        | std::ios::floatfield  | (none)                | Uses fixed for small numbers, scientific for larger numbers   |
+        | std::ios::floatfield  | (none)                | Uses fixed for small numbers, scientific for larger numbers (std::defaultfloat in C++11) |
         | std::ios::floatfield  | std::ios::showpoint   | Always show decimal point and trailing 0s for floating-point  |
         +-----------------------+-----------------------+---------------------------------------------------------------+
 

@@ -4,6 +4,23 @@
 
 ---
 
+## 📑 Table of Contents
+
+1. [Overview](#overview)
+2. [1. std::stack - LIFO](#1-stdstack---lifo-last-in-first-out)
+3. [2. std::queue - FIFO](#2-stdqueue---fifo-first-in-first-out)
+4. [3. std::priority_queue - Heap](#3-stdpriority_queue---heap-max-heap-by-default)
+   - [Basic Operations & Min-Heap Configuration](#basic-operations-2)
+   - [Heap Operations Explained](#heap-operations-explained)
+   - [Common Patterns: Top K, Dijkstra](#common-patterns-2)
+5. [Underlying Container Choices](#underlying-container-choices)
+6. [Common Interview Questions](#common-interview-questions)
+7. [C++23 Container Adaptors: Flat Containers](#c23-container-adaptors-flat-containers)
+8. [Key Takeaways](#key-takeaways)
+9. [Next Steps](#next-steps)
+
+---
+
 ## Overview
 
 Container adaptors provide **restricted interfaces** built on top of other containers.
@@ -513,6 +530,13 @@ while (!temp.empty()) {
 
 **Use `priority_queue` if:** Only need top element  
 **Use `set` if:** Need to iterate or search
+
+---
+
+## C++23 Container Adaptors: Flat Containers
+
+In C++23, `std::flat_set`, `std::flat_map`, `std::flat_multiset`, and `std::flat_multimap` were added to the standard library as **container adaptors**.
+- Instead of adapting restricted interfaces (like stack/queue), they adapt standard sequence containers (by default `std::vector`) to expose sorted associative interfaces with contiguous cache locality.
 
 ---
 

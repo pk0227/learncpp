@@ -710,6 +710,9 @@
         -- Functions handling raw C-style strings → avoids unnecessary conversion to std::string_view 
            when performance or compatibility with APIs matters.
 
+    Code Examples:
+        -- 17_7_C_style_arrays_and_decay/2_c_style_array_decay.cpp: Demonstrates C-style array-to-pointer decay, length loss, and std::span (C++20).
+
 9 — Pointer arithmetic and subscripting
     What is pointer arithmetic?
         -- Pointer arithmetic means doing arithmetic on a pointer so that it points to a different element of the same array, not to 

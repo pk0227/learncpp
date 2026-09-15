@@ -7,14 +7,14 @@ The value of an object is stored as a sequence of bits, and the data type tells 
 ---
 
 ## Table of Contents
-1. [10.0 — Introduction to Type Conversion and Implicit Type Conversion](#100----introduction-to-type-conversion-and-implicit-type-conversion)
-2. [10.1 — Numeric Promotions](#101----numeric-promotions)
-3. [10.2 — Numeric Conversions](#102----numeric-conversions)
-4. [10.3 — Narrowing Conversions, List Initialization, and Constexpr Initializers](#103----narrowing-conversions-list-initialization-and-constexpr-initializers)
-5. [10.4 — Arithmetic Conversions (Usual Arithmetic Conversions)](#104----arithmetic-conversions-usual-arithmetic-conversions)
-6. [10.5 — Explicit Type Conversion and Casting](#105----explicit-type-conversion-and-casting)
-7. [10.6 — Type Aliases](#106----type-aliases)
-8. [10.7 — Type Deduction for Variables and Functions (auto)](#107----type-deduction-for-variables-and-functions-auto)
+1. [10.0 — Introduction to Type Conversion and Implicit Type Conversion](#100--introduction-to-type-conversion-and-implicit-type-conversion)
+2. [10.1 — Numeric Promotions](#101--numeric-promotions)
+3. [10.2 — Numeric Conversions](#102--numeric-conversions)
+4. [10.3 — Narrowing Conversions, List Initialization, and Constexpr Initializers](#103--narrowing-conversions-list-initialization-and-constexpr-initializers)
+5. [10.4 — Arithmetic Conversions (Usual Arithmetic Conversions)](#104--arithmetic-conversions-usual-arithmetic-conversions)
+6. [10.5 — Explicit Type Conversion and Casting](#105--explicit-type-conversion-and-casting)
+7. [10.6 — Type Aliases](#106--type-aliases)
+8. [10.7 — Type Deduction for Variables and Functions (auto)](#107--type-deduction-for-variables-and-functions-auto)
 
 ---
 

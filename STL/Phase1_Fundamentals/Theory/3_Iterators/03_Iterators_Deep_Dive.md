@@ -4,7 +4,29 @@
 
 ---
 
-## 🎯 What Are Iterators?
+## 📑 Table of Contents
+
+1. [What Are Iterators?](#what-are-iterators)
+2. [Iterator Categories: The Hierarchy](#iterator-categories---the-hierarchy)
+   - [Category Capabilities Matrix](#category-capabilities-matrix)
+3. [1. Input Iterator](#1-input-iterator)
+4. [2. Output Iterator](#2-output-iterator)
+   - [Special Output Inserters](#special-output-iterators)
+5. [3. Forward Iterator](#3-forward-iterator)
+6. [4. Bidirectional Iterator](#4-bidirectional-iterator)
+7. [5. Random Access Iterator](#5-random-access-iterator)
+8. [6. Contiguous Iterator (C++20)](#6-contiguous-iterator-c20)
+9. [Iterator Traits](#iterator-traits)
+10. [Special Iterators (reverse, const, move)](#special-iterators)
+11. [Iterator Requirements for Algorithms](#iterator-requirements-for-algorithms)
+12. [Iterator Invalidation Preview](#iterator-invalidation---preview)
+13. [Common Interview Questions](#common-interview-questions)
+14. [Key Takeaways](#key-takeaways)
+15. [Next Steps](#next-steps)
+
+---
+
+## What Are Iterators?
 
 **Iterators are generalized pointers** that provide a uniform interface for traversing different container types.
 
@@ -511,7 +533,7 @@ Different operations invalidate iterators in different ways. This is covered in 
 | Container | Invalidates on Insert | Invalidates on Erase |
 |-----------|----------------------|---------------------|
 | `vector` | All (if reallocation) | From erase point to end |
-| `deque` | All | All (unless at ends) |
+| `deque` | All iterators (references remain valid if inserted at ends) | All (unless at ends) |
 | `list` | None | Only erased element |
 | `set/map` | None | Only erased element |
 | `unordered_*` | All (if rehash) | Only erased element |

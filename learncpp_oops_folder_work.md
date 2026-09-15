@@ -309,16 +309,16 @@ rather than *preserve and enhance*. The fix is to treat every sentence in Readme
 
 | Folder | Status | Readme.txt | Readme.md | TOC & Links | Code Snippets | Code Examples Verified |
 |---|---|:---:|:---:|:---:|:---:|:---:|
-| **14_Introduction_to_classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10 added | ✅ 22 files linked |
-| **15_More_on_Classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 8 added | ✅ 15 files linked |
-| **16_Dynamic_arrays_std_vector** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ Complete | ✅ 15 files linked |
-| **17_Fixed-size_arrays...** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 25+ added | ✅ 14 files linked (6 new) |
+| **14_Introduction_to_classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 12+ added | ✅ 41 files verified / linked (2 new) |
+| **15_More_on_Classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 14+ added | ✅ 23 files verified / linked (1 new) |
+| **16_Dynamic_arrays_std_vector** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ Complete | ✅ 19 files verified / linked |
+| **17_Fixed-size_arrays...** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 25+ added | ✅ 15 files verified / linked (6 new) |
 | **18_Iterators...** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 6+ added | ✅ 8 files linked (1 new) |
 | **19_Dynamic_Allocation...** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 5 files linked (4 new) |
 | **20_Functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 12+ added | ✅ 11 files linked (1 new) |
 | **21_Operator_Overloading** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 21 files verified / linked |
-| **22_Move_Semantics_n_Smart_Pointers** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 23 files verified / linked (2 new) |
-| **23_Object_Relationships** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 11 files verified / linked (2 new) |
+| **22_Move_Semantics_n_Smart_Pointers** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 22 files verified / linked (2 new) |
+| **23_Object_Relationships** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 9 files verified / linked (2 new) |
 | **24_Inheritance** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 22 files verified / linked (1 new) |
 | **25_Virtual_Functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 32 files verified / linked (1 new) |
 | **26_Templates_and_Classes** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 16 files verified / linked (1 new) |
@@ -327,10 +327,10 @@ rather than *preserve and enhance*. The fix is to treat every sentence in Readme
 | **F_Constexpr_functions** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 10+ added | ✅ 10 files verified / linked (2 new) |
 | **5_Constants_and_Strings** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 20 files verified / linked |
 | **10_TypeConversion_TypeAliases_TypeDeduction** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 15+ added | ✅ 22 files verified / linked (1 new) |
-| **11_Function_Overloading_and_Function_Templates** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 20+ added | ✅ 43 files verified / linked |
+| **11_Function_Overloading_and_Function_Templates** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 20+ added | ✅ 45 files verified / linked |
 | **12_References_and_Pointers** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 20+ added | ✅ 42 files verified / linked |
 | **13_Enums_and_Structs** | ✅ Completed | ✅ Synced | ✅ Formatted | ✅ Complete | ✅ 20+ added | ✅ 39 files verified / linked |
 
 ---
 
-*Steering file created: 2026-09-09 | Updated: 2026-09-13*
+*Steering file created: 2026-09-09 | Updated: 2026-09-14*

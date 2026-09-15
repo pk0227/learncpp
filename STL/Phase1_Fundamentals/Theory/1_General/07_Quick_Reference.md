@@ -1,6 +1,26 @@
 # ⚡ STL Quick Reference - Cheat Sheet
 
-> **Last-Minute Review for Interviews**
+> **Last-Minute Review for Senior C++ Interviews**
+
+---
+
+## 📑 Table of Contents
+
+1. [📦 Container Complexity Table](#-container-complexity-table)
+2. [🔁 Iterator Categories Matrix](#-iterator-categories-matrix)
+3. [⚠️ Iterator Invalidation Rules](#️-iterator-invalidation-rules)
+4. [🎯 Container Selection Flowchart](#-container-selection-flowchart)
+5. [🧮 Common Algorithm Complexities](#-common-algorithm-complexities)
+6. [💡 Essential Idioms](#-essential-idioms)
+7. [🔥 Common Interview Questions](#-common-interview-questions)
+8. [📊 Memory Overhead Comparison](#-memory-overhead-comparison)
+9. [🎯 Container Selection Decision Matrix](#-container-selection-decision-matrix)
+10. [🧰 Useful Utility Types](#-useful-utility-types)
+11. [🔧 Custom Comparators](#-custom-comparators)
+12. [⚡ Performance Tips](#-performance-tips)
+13. [🎓 One-Liners for Interviews](#-one-liners-for-interviews)
+14. [📁 Code Examples](#-code-examples)
+15. [📚 See Also](#-see-also)
 
 ---
 
@@ -8,295 +28,323 @@
 
 ### Sequence Containers
 
-| Container | Access | Insert (end) | Insert (front) | Insert (middle) | Find | Erase | Memory |
-|-----------|--------|--------------|----------------|-----------------|------|-------|--------|
-| `array` | O(1) | N/A | N/A | N/A | O(n) | N/A | Minimal |
-| `vector` | O(1) | O(1)* | O(n) | O(n) | O(n) | O(n) | Low |
-| `deque` | O(1) | O(1) | O(1) | O(n) | O(n) | O(n) | Medium |
-| `list` | O(n) | O(1) | O(1) | O(1)† | O(n) | O(1)† | High |
-| `forward_list` | O(n) | O(1)‡ | O(1) | O(1)† | O(n) | O(1)† | Medium |
+| Container | Access | Insert (End) | Insert (Front) | Insert (Middle) | Find | Erase | Memory Overhead |
+|---|---|---|---|---|---|---|---|
+| `std::array` | $O(1)$ | N/A | N/A | N/A | $O(N)$ | N/A | None (0 bytes overhead) |
+| `std::vector` | $O(1)$ | Amortized $O(1)^*$ | $O(N)$ | $O(N)$ | $O(N)$ | $O(N)$ | Low (3 pointers: 24 bytes) |
+| `std::deque` | $O(1)$ | Amortized $O(1)$ | Amortized $O(1)$ | $O(N)$ | $O(N)$ | $O(N)$ | Medium (map of fixed chunks) |
+| `std::list` | $O(N)$ | $O(1)$ | $O(1)$ | $O(1)^\dagger$ | $O(N)$ | $O(1)^\dagger$ | High (2 pointers per node: 16 bytes) |
+| `std::forward_list` | $O(N)$ | $O(1)^\ddagger$ | $O(1)$ | $O(1)^\dagger$ | $O(N)$ | $O(1)^\dagger$ | Low/Medium (1 pointer per node: 8 bytes) |
 
-\* Amortized  
-† If you have iterator  
-‡ No direct end access
+$^*$ Amortized due to capacity doubling when full.  
+$^\dagger$ Constant time $O(1)$ only when iterator to the insertion/deletion position is already held.  
+$^\ddagger$ Requires maintaining an iterator/pointer to the last node.
 
-### Associative Containers
+### Associative & Unordered Containers
 
-| Container | Insert | Find | Erase | Iterate (sorted) | Memory |
-|-----------|--------|------|-------|------------------|--------|
-| `set/map` | O(log n) | O(log n) | O(log n) | O(n) | High |
-| `multiset/multimap` | O(log n) | O(log n) | O(log n) | O(n) | High |
-| `unordered_set/map` | O(1)** | O(1)** | O(1)** | O(n log n) | High |
-| `unordered_multiset/multimap` | O(1)** | O(1)** | O(1)** | O(n log n) | High |
-
-** Average case; worst case O(n)
+| Container | Insert | Find / Count | Erase | Sorted Iteration | Underlying Structure |
+|---|---|---|---|---|---|
+| `std::set` / `std::map` | $O(\log N)$ | $O(\log N)$ | $O(\log N)$ | $O(N)$ (in-order traversal) | Red-Black Tree (balanced BST) |
+| `std::multiset` / `std::multimap` | $O(\log N)$ | $O(\log N)$ | $O(\log N)$ | $O(N)$ | Red-Black Tree |
+| `std::unordered_set` / `std::unordered_map` | Avg $O(1)$, Worst $O(N)$ | Avg $O(1)$, Worst $O(N)$ | Avg $O(1)$, Worst $O(N)$ | $O(N \log N)$ (requires sort) | Hash Table (separate chaining) |
+| `std::unordered_multiset` / `std::unordered_multimap` | Avg $O(1)$, Worst $O(N)$ | Avg $O(1)$, Worst $O(N)$ | Avg $O(1)$, Worst $O(N)$ | $O(N \log N)$ (requires sort) | Hash Table (separate chaining) |
+| `std::flat_map` / `std::flat_set` (C++23) | $O(N)$ | $O(\log N)$ | $O(N)$ | $O(N)$ (contiguous scan) | Sorted contiguous vectors |
 
 ---
 
 ## 🔁 Iterator Categories Matrix
 
+```
+Input Iterator ──┐
+                 ├──► Forward Iterator ──► Bidirectional Iterator ──► Random Access Iterator ──► Contiguous Iterator (C++20)
+Output Iterator ─┘
+```
+
 | Container | Iterator Category | Invalidation Risk |
-|-----------|------------------|-------------------|
-| `array` | Random Access, Contiguous | Never |
-| `vector` | Random Access, Contiguous | High (realloc) |
-| `deque` | Random Access | Medium |
-| `list` | Bidirectional | Low |
-| `forward_list` | Forward | Low |
-| `set/map` | Bidirectional | Low |
-| `unordered_*` | Forward | Medium (rehash) |
+|---|---|---|
+| `std::array` | Random Access, Contiguous | Never (fixed size) |
+| `std::vector` | Random Access, Contiguous | High (reallocation invalidates all; insertion/erasure invalidates downstream) |
+| `std::deque` | Random Access | Medium (insertion at ends invalidates all iterators; middle operations invalidate all) |
+| `std::list` | Bidirectional | Low (only erased node invalidated; iterators never move) |
+| `std::forward_list` | Forward | Low (only erased node invalidated) |
+| `std::set` / `std::map` | Bidirectional | Low (only erased node invalidated) |
+| `std::unordered_*` | Forward | Medium (rehash invalidates all iterators; element pointers/references remain stable) |
 
-### Iterator Capabilities
+### Iterator Capabilities Comparison
 
-```
-Input ──┐
-        ├──► Forward ──► Bidirectional ──► Random Access ──► Contiguous
-Output ─┘
-```
-
-| Category | Read | Write | Multi-pass | ++/-- | +/-/[] | Contiguous |
-|----------|------|-------|------------|-------|--------|------------|
-| Input | ✅ | ❌ | ❌ | ++ | ❌ | ❌ |
-| Output | ❌ | ✅ | ❌ | ++ | ❌ | ❌ |
-| Forward | ✅ | ✅ | ✅ | ++ | ❌ | ❌ |
-| Bidirectional | ✅ | ✅ | ✅ | ++/-- | ❌ | ❌ |
-| Random Access | ✅ | ✅ | ✅ | ++/-- | ✅ | ❌ |
-| Contiguous | ✅ | ✅ | ✅ | ++/-- | ✅ | ✅ |
+| Capability | Input | Output | Forward | Bidirectional | Random Access | Contiguous (C++20) |
+|---|---|---|---|---|---|---|
+| Read (`*it`) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Write (`*it = val`) | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Multi-pass traversal | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Pre/Post-increment (`++it`) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Pre/Post-decrement (`--it`) | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| Random offset (`it + n`, `it - n`, `it[n]`) | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Relational comparisons (`<`, `>`, `<=`, `>=`) | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Contiguous memory math (`*(it + n) == *(&*it + n)`) | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
 ## ⚠️ Iterator Invalidation Rules
 
-| Container | Insert | Erase | Notes |
-|-----------|--------|-------|-------|
-| **vector** | All (if realloc), else from insert point → end | From erase point → end | Check `capacity()` |
-| **deque** | All (middle), none (ends) | All (middle), only erased (ends) | Safe only at ends |
-| **list** | None | Only erased | Most stable |
-| **forward_list** | None | Only erased | Most stable |
-| **set/map** | None | Only erased | Stable |
-| **unordered_*** | All (if rehash) | Only erased | Check `load_factor()` |
+| Container | Operation | Iterator Validity | Reference / Pointer Validity |
+|---|---|---|---|
+| **`std::vector`** | `push_back` / `insert` with realloc (`size == capacity`) | ❌ **All invalidated** | ❌ **All invalidated** |
+| | `insert` without realloc | ❌ Invalidation from insertion point to end | ❌ Invalidation from insertion point to end |
+| | `erase` | ❌ Invalidation from erase point to end | ❌ Invalidation from erase point to end |
+| **`std::deque`** | `push_front` / `push_back` / `insert` at ends | ❌ **All iterators invalidated** | ✅ **All references remain valid** |
+| | `insert` in middle | ❌ **All iterators invalidated** | ❌ **All references invalidated** |
+| | `pop_front` / `pop_back` at ends | ❌ Only erased element & `end()` iterator | ❌ Only erased element |
+| | `erase` in middle | ❌ **All iterators invalidated** | ❌ **All references invalidated** |
+| **`std::list`** | `insert` / `push_*` anywhere | ✅ **All valid** | ✅ **All valid** |
+| | `erase` / `pop_*` | ❌ Only erased element invalidated | ❌ Only erased element invalidated |
+| **`std::set` / `std::map`** | `insert` / `emplace` | ✅ **All valid** | ✅ **All valid** |
+| | `erase` | ❌ Only erased element invalidated | ❌ Only erased element invalidated |
+| **`std::unordered_*`** | `insert` / `rehash` triggering rehash | ❌ **All iterators invalidated** | ✅ **All references/pointers remain valid** |
+| | `insert` without rehash | ✅ **All valid** | ✅ **All valid** |
+| | `erase` | ❌ Only erased element invalidated | ❌ Only erased element invalidated |
+
+> [!WARNING]
+> **Classic Interview Pitfall: Deque iterator invalidation vs reference validity!**
+> Inserting at either end of a `std::deque` invalidates **all iterators**, but **references and pointers to elements remain completely valid**. Conversely, inserting in the middle invalidates both.
 
 ---
 
 ## 🎯 Container Selection Flowchart
 
 ```
-Need key-value? ──YES──► Ordered? ──YES──► Duplicates? ──YES──► multimap
-                │                   │                    └─NO───► map
-                │                   └─NO───► Duplicates? ──YES──► unordered_multimap
-                │                                        └─NO───► unordered_map
+Need key-value? ──YES──► Ordered? ──YES──► Duplicates? ──YES──► std::multimap
+                │                   │                    └─NO───► std::map
+                │                   └─NO───► Duplicates? ──YES──► std::unordered_multimap
+                │                                        └─NO───► std::unordered_map
                 │
-                └─NO───► Unique elements? ──YES──► Ordered? ──YES──► set
-                         │                                  └─NO───► unordered_set
+                └─NO───► Unique elements? ──YES──► Ordered? ──YES──► std::set
+                         │                                  └─NO───► std::unordered_set
                          │
                          └─NO───► Access pattern?
-                                  ├─ Random access ──► Fixed size? ──YES──► array
-                                  │                                └─NO───► vector
-                                  ├─ Front/back ──────────────────────────► deque
-                                  ├─ Middle insert/delete ────────────────► list
-                                  ├─ LIFO ────────────────────────────────► stack
-                                  ├─ FIFO ────────────────────────────────► queue
-                                  └─ Priority ────────────────────────────► priority_queue
+                                  ├─ Random access ──► Fixed size? ──YES──► std::array
+                                  │                                └─NO───► std::vector
+                                  ├─ Front/back push & pop ───────────────► std::deque
+                                  ├─ Frequent middle insert/delete ───────► std::list
+                                  ├─ LIFO (Stack) ────────────────────────► std::stack
+                                  ├─ FIFO (Queue) ────────────────────────► std::queue
+                                  └─ Priority / Top element ──────────────► std::priority_queue
 ```
 
 ---
 
 ## 🧮 Common Algorithm Complexities
 
-| Algorithm | Complexity | Iterator Requirement |
-|-----------|-----------|---------------------|
-| `find` | O(n) | Input |
-| `count` | O(n) | Input |
-| `sort` | O(n log n) | Random Access |
-| `stable_sort` | O(n log n) | Random Access |
-| `binary_search` | O(log n) | Forward (but O(n) without random access) |
-| `lower_bound` | O(log n) | Forward (but O(n) without random access) |
-| `upper_bound` | O(log n) | Forward (but O(n) without random access) |
-| `copy` | O(n) | Input (source), Output (dest) |
-| `transform` | O(n) | Input (source), Output (dest) |
-| `remove` | O(n) | Forward |
-| `reverse` | O(n) | Bidirectional |
-| `accumulate` | O(n) | Input |
+| Algorithm | Header | Time Complexity | Required Iterator Category | Notes |
+|---|---|---|---|---|
+| `std::find`, `std::count` | `<algorithm>` | $O(N)$ | Input Iterator | Linear scan |
+| `std::sort` | `<algorithm>` | $O(N \log N)$ worst-case | Random Access | Introsort (Quicksort + Heapsort + Insertion Sort) |
+| `std::stable_sort` | `<algorithm>` | $O(N \log N)$ | Random Access | Merge Sort (preserves equivalent order) |
+| `std::partial_sort` | `<algorithm>` | $O(N \log K)$ | Random Access | Heapsort on top $K$ elements |
+| `std::nth_element` | `<algorithm>` | $O(N)$ average | Random Access | Quickselect (partitions $n$-th element) |
+| `std::lower_bound` | `<algorithm>` | $O(\log N)$ random, $O(N)$ forward | Forward Iterator | First element $\ge$ value |
+| `std::upper_bound` | `<algorithm>` | $O(\log N)$ random, $O(N)$ forward | Forward Iterator | First element $>$ value |
+| `std::binary_search` | `<algorithm>` | $O(\log N)$ random, $O(N)$ forward | Forward Iterator | Returns `bool` existence |
+| `std::reverse` | `<algorithm>` | $O(N)$ | Bidirectional | In-place swap |
+| `std::accumulate` | `<numeric>` | $O(N)$ | Input Iterator | Sequential left fold |
+| `std::reduce` | `<numeric>` | $O(N)$ | Forward Iterator (C++17) | Out-of-order parallel associative reduction |
 
 ---
 
 ## 💡 Essential Idioms
 
-### 1. Erase-Remove Idiom
+### 1. Erase-Remove Idiom (Pre-C++20 vs Modern C++20)
 
 ```cpp
-// Remove all elements equal to value
-v.erase(std::remove(v.begin(), v.end(), value), v.end());
+#include <vector>
+#include <algorithm>
 
-// Remove all elements satisfying predicate
-v.erase(std::remove_if(v.begin(), v.end(), 
-    [](int x) { return x % 2 == 0; }), v.end());
+std::vector<int> v = {1, 2, 3, 2, 4, 2, 5};
+
+// Pre-C++20: Two-step erase-remove idiom
+v.erase(std::remove(v.begin(), v.end(), 2), v.end());
+
+// Pre-C++20 with predicate:
+v.erase(std::remove_if(v.begin(), v.end(), [](int x) { return x % 2 == 0; }), v.end());
+
+// Modern C++20: Uniform container erasure (clean and bug-free)
+std::erase(v, 2);
+std::erase_if(v, [](int x) { return x % 2 == 0; });
 ```
 
-### 2. Safe Erase While Iterating
+### 2. Safe Erase While Iterating (Single-Pass)
 
 ```cpp
-// For vector, deque, list, set, map
+// Works uniformly on std::vector, std::deque, std::list, std::set, std::map
 for (auto it = container.begin(); it != container.end(); ) {
     if (should_erase(*it)) {
-        it = container.erase(it);  // Returns next iterator
+        it = container.erase(it);  // erase returns next valid iterator!
     } else {
         ++it;
     }
 }
 ```
 
-### 3. Swap Idiom (Shrink to Fit)
+### 3. Vector Deallocation (Swap Trick vs shrink_to_fit)
 
 ```cpp
-// Guaranteed to free memory
-std::vector<int>().swap(v);
+std::vector<int> v(1000000);
+v.clear(); // size becomes 0, but capacity remains 1,000,000!
 
-// Or modern C++
-v.shrink_to_fit();  // Request (not guaranteed)
+// C++98/03: Swap with empty temporary to forcefully free heap memory
+std::vector<int>().swap(v); // capacity is now 0
+
+// C++11+: Non-binding request to shrink capacity to size
+v.shrink_to_fit();
 ```
 
-### 4. Reserve to Prevent Reallocation
+### 4. Emplace vs Insert/Push
 
 ```cpp
-std::vector<int> v;
-v.reserve(1000);  // Pre-allocate capacity
+struct Widget {
+    Widget(int id, std::string name);
+};
 
-// Now push_back won't reallocate until 1000 elements
-```
+std::vector<Widget> w;
+// push_back: constructs temporary Widget, moves/copies into vector, destructs temporary
+w.push_back(Widget(1, "Alpha"));
 
-### 5. Emplace vs Insert/Push
-
-```cpp
-// Construct in-place (more efficient)
-v.emplace_back(arg1, arg2);  // Calls constructor directly
-
-// Constructs temporary, then moves
-v.push_back(MyClass(arg1, arg2));
+// emplace_back: forwards constructor arguments directly into uninitialized storage in-place
+w.emplace_back(1, "Alpha");
 ```
 
 ---
 
 ## 🔥 Common Interview Questions
 
-### Q: `vector` vs `list`?
-**A:** `vector` for random access and cache efficiency. `list` only if frequent middle insert/delete on large containers.
+### Q: `std::vector` vs `std::list`?
+**A:** `std::vector` is the default choice because contiguous memory provides superior hardware cache line utilization and hardware prefetching. Even with $O(N)$ shifts, `vector` often beats `list` for middle insertions up to tens of thousands of elements. Choose `std::list` only when **iterator stability** across insertions/deletions is strictly required, or when large nodes must be spliced ($O(1)$ node relinking) between lists without copying.
 
-### Q: `map` vs `unordered_map`?
-**A:** `map` for ordering or range queries. `unordered_map` for pure lookup speed.
+### Q: `std::map` vs `std::unordered_map`?
+**A:** `std::map` provides ordered traversal, range queries (`lower_bound`, `upper_bound`), and guaranteed $O(\log N)$ worst-case time using Red-Black Trees. `std::unordered_map` provides average $O(1)$ lookup using a hash table, but has worse worst-case complexity ($O(N)$ under hash collisions or rehash) and requires defining a custom hash function for user-defined keys.
 
-### Q: Why can't `std::sort` work on `list`?
-**A:** `std::sort` needs random-access iterators. `list` has bidirectional. Use `list::sort()` instead (merge sort).
+### Q: Why can't `std::sort` work on `std::list`?
+**A:** `std::sort` requires random-access iterators for Introsort partitioning. `std::list` only provides bidirectional iterators. Use `list::sort()` which executes an in-place $O(N \log N)$ merge sort.
 
-### Q: What's the erase-remove idiom?
-**A:** `v.erase(std::remove(...), v.end())` - `remove` moves elements to end, `erase` actually removes them.
-
-### Q: When does `vector` reallocate?
-**A:** When `size() == capacity()` and you insert. Typically grows by 1.5× or 2×.
-
-### Q: How to avoid iterator invalidation?
-**A:** 
-- Use indices instead of iterators when modifying
-- Use erase return value
-- Reserve capacity for `vector`/`unordered_map`
-- Use `list`/`set`/`map` for stable iterators
+### Q: What is Node Extraction (C++17 Node Handles)?
+**A:** C++17 introduced `.extract()`, allowing a node to be extracted from an associative or unordered container without copying or allocating memory. The node handle can then be modified and inserted into another compatible container (`.merge()` or `.insert(std::move(node))`).
 
 ---
 
 ## 📊 Memory Overhead Comparison
 
-| Container | Overhead per Element | Notes |
-|-----------|---------------------|-------|
-| `array` | 0 bytes | Fixed size, stack allocated |
-| `vector` | ~0 bytes | Contiguous, may have unused capacity |
-| `deque` | ~8 bytes | Pointers to chunks |
-| `list` | ~16 bytes | 2 pointers (prev/next) |
-| `forward_list` | ~8 bytes | 1 pointer (next) |
-| `set/map` | ~24-32 bytes | Red-Black Tree node (3 pointers + color) |
-| `unordered_set/map` | ~8-16 bytes | Bucket pointer + hash |
+| Container | Typical Overhead per Element | Memory Layout |
+|---|---|---|
+| `std::array<T, N>` | 0 bytes | Pure contiguous array on stack/data segment |
+| `std::vector<T>` | ~0 bytes (plus unused capacity buffer) | 24 bytes stack overhead (3 pointers: begin, end, end-of-storage) |
+| `std::deque<T>` | ~8–16 bytes per chunk pointer | Map of pointers pointing to fixed-size array chunks (typically 512 bytes) |
+| `std::list<T>` | 16 bytes (64-bit: 2 pointers `prev` and `next`) | Dispersed individual heap node allocations |
+| `std::forward_list<T>` | 8 bytes (64-bit: 1 pointer `next`) | Dispersed individual heap node allocations |
+| `std::set<T>` / `std::map<K, V>` | 24–32 bytes (3 pointers: `parent`, `left`, `right` + color bit + alignment padding) | Dispersed Red-Black Tree heap nodes |
+| `std::unordered_set<T>` / `map<K, V>` | 8–16 bytes (bucket array pointer + node pointer + cached hash) | Dispersed heap nodes chained from bucket vector |
 
 ---
 
 ## 🎯 Container Selection Decision Matrix
 
-| Requirement | Container |
-|-------------|-----------|
-| Fixed size, compile-time | `array` |
-| Dynamic array, random access | `vector` |
-| Fast front/back insert | `deque` |
-| Frequent middle insert/delete | `list` |
-| Unique, sorted | `set` |
-| Unique, fast lookup | `unordered_set` |
-| Key-value, sorted | `map` |
-| Key-value, fast lookup | `unordered_map` |
-| LIFO | `stack` |
-| FIFO | `queue` |
-| Priority-based | `priority_queue` |
+| Concrete Requirement | Optimal Container Choice | Rationale |
+|---|---|---|
+| Compile-time fixed size, maximum cache locality | `std::array` | Zero heap overhead, stack allocated, contiguous memory |
+| General dynamic sequence, random access | `std::vector` | Amortized $O(1)$ push_back, minimum memory overhead, cache-friendly |
+| Frequent push/pop at both front and back | `std::deque` | Amortized $O(1)$ at both ends without reallocating existing elements |
+| Stable iterators with frequent middle insert/delete | `std::list` | $O(1)$ node insertion/removal with existing iterator; no element shifting |
+| Sorted unique keys with range queries | `std::set` | In-order traversal, logarithmic operations via Red-Black Tree |
+| Fast unique key lookup without ordering | `std::unordered_set` | Average $O(1)$ lookup via hash bucketing |
+| Sorted key-value association | `std::map` | Logarithmic lookup, structured range searching |
+| Maximum speed key-value lookup | `std::unordered_map` | Average $O(1)$ hash table lookup |
+| LIFO discipline | `std::stack` | Restricted container adaptor (defaults to `deque`) |
+| FIFO discipline | `std::queue` | Restricted container adaptor (defaults to `deque`) |
+| Min/Max extraction priority | `std::priority_queue` | Binary heap adaptor over `vector` |
 
 ---
 
 ## 🧰 Useful Utility Types
 
-### `std::pair`
+### `std::string_view` (C++17) & `std::span` (C++20) - Non-owning Views
 ```cpp
-std::pair<int, std::string> p{1, "hello"};
-auto [key, value] = p;  // Structured binding (C++17)
+#include <string_view>
+#include <span>
+#include <vector>
+#include <iostream>
+
+// Zero-copy string inspection (no heap allocation)
+void print_string(std::string_view sv) {
+    std::cout << sv << "\n";
+}
+
+// Zero-copy contiguous sequence view over array, vector, or raw pointer
+void print_span(std::span<const int> s) {
+    for (int x : s) std::cout << x << " ";
+}
 ```
 
-### `std::tuple`
+### `std::pair` & `std::tuple` (Structured Bindings C++17)
 ```cpp
-std::tuple<int, std::string, double> t{1, "hello", 3.14};
-auto [a, b, c] = t;  // Structured binding
+#include <tuple>
+#include <string>
+
+std::tuple<int, std::string, double> record{42, "Alice", 99.5};
+auto [id, name, score] = record;  // Structured binding unpacks in-place
 ```
 
 ### `std::optional` (C++17)
 ```cpp
-std::optional<int> find(const std::vector<int>& v, int target) {
-    auto it = std::find(v.begin(), v.end(), target);
-    if (it != v.end()) return *it;
-    return std::nullopt;
+#include <optional>
+
+std::optional<int> try_parse(std::string_view s) {
+    if (s.empty()) return std::nullopt;
+    return std::stoi(std::string(s));
 }
 ```
 
-### `std::variant` (C++17)
+### `std::variant` & `std::visit` (C++17)
 ```cpp
-std::variant<int, std::string> v = 42;
-v = "hello";
-std::visit([](auto&& arg) { std::cout << arg; }, v);
+#include <variant>
+#include <iostream>
+
+std::variant<int, std::string> data = "Hello";
+std::visit([](const auto& val) { std::cout << val << "\n"; }, data);
 ```
 
 ---
 
 ## 🔧 Custom Comparators
 
-### For Sorting
+### For Sorting Algorithms
 ```cpp
-// Lambda
+#include <vector>
+#include <algorithm>
+
+// 1. Lambda
 std::sort(v.begin(), v.end(), [](int a, int b) { return a > b; });
 
-// Function object
-struct Greater {
-    bool operator()(int a, int b) const { return a > b; }
-};
-std::sort(v.begin(), v.end(), Greater{});
+// 2. Standard functor
+std::sort(v.begin(), v.end(), std::greater<int>{});
 
-// Function pointer
-bool greater(int a, int b) { return a > b; }
-std::sort(v.begin(), v.end(), greater);
+// 3. Custom functor struct
+struct Person { std::string name; int age; };
+struct AgeCmp {
+    bool operator()(const Person& a, const Person& b) const {
+        return a.age < b.age; // Strict weak ordering: must use <, never <=
+    }
+};
+std::sort(people.begin(), people.end(), AgeCmp{});
 ```
 
-### For Containers
+### For Ordered Containers & Heaps
 ```cpp
-// set with custom comparator
-std::set<int, std::greater<int>> s;  // Descending order
+#include <set>
+#include <queue>
 
-// map with custom comparator
-auto cmp = [](int a, int b) { return a > b; };
-std::map<int, std::string, decltype(cmp)> m(cmp);
+// set with descending order
+std::set<int, std::greater<int>> desc_set;
 
-// priority_queue (max-heap by default)
-std::priority_queue<int> max_heap;
-
-// priority_queue (min-heap)
+// priority_queue default is max-heap; min-heap requires underlying container + comparator:
 std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap;
 ```
 
@@ -304,30 +352,37 @@ std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap;
 
 ## ⚡ Performance Tips
 
-1. **Use `reserve()` for `vector`** when you know approximate size
-2. **Use `emplace` over `insert`/`push`** for in-place construction
-3. **Use `const_iterator`** when not modifying
-4. **Use `++it` over `it++`** (avoid temporary copy)
-5. **Prefer `vector` over `list`** (cache-friendly)
-6. **Use `unordered_map` for large datasets** (O(1) vs O(log n))
-7. **Reserve capacity for `unordered_map`** to avoid rehashing
-8. **Use `std::move` for large objects** to avoid copies
+1. **Always `reserve()` for `std::vector`** when estimated element count is known to prevent redundant heap reallocations.
+2. **Prefer `emplace_back` over `push_back`** to construct objects in-place and bypass temporary copy/move operations.
+3. **Use `std::string_view` (C++17) and `std::span` (C++20)** as read-only function parameters instead of `const std::string&` and `const std::vector<T>&`.
+4. **Use `std::erase` / `std::erase_if` (C++20)** instead of the verbose pre-C++20 erase-remove idiom.
+5. **Prefer pre-increment (`++it`) over post-increment (`it++`)** to eliminate redundant iterator copies.
+6. **Prefer `std::vector` over `std::list`** even when insertions occur in the middle, unless element size is large or iterator stability is mandatory.
+7. **Reserve buckets for `std::unordered_map`** via `.reserve(N)` to avoid expensive rehashing.
+8. **Never use `<=` in comparators** — strict weak ordering requires `comp(x, x) == false`. Using `<=` causes undefined behavior, buffer overflows, and segmentation faults in `std::sort`.
 
 ---
 
 ## 🎓 One-Liners for Interviews
 
-**STL:** Generic C++ library with containers, iterators, algorithms, and utilities using templates for zero-overhead abstraction.
+- **STL:** A generic C++ framework consisting of containers, iterators, algorithms, and functors designed with templates for zero-overhead abstraction.
+- **Iterators:** Generalized pointer-like abstractions that decouple containers from algorithms, achieving $O(N + M)$ library design.
+- **Erase-Remove Idiom:** Moves unwanted elements to the back and shortens the container via `erase` (superseded in C++20 by `std::erase`).
+- **Iterator Invalidation:** Occurs when container modifications cause existing iterators to refer to relocated, repurposed, or deleted memory.
+- **Vector vs Deque:** Vector guarantees single contiguous memory with amortized $O(1)$ push_back; Deque uses segmented chunks allowing $O(1)$ push/pop at both front and back without full reallocation.
+- **Map vs Unordered Map:** Map uses Red-Black Trees guaranteeing $O(\log N)$ sorted order; Unordered Map uses hash bucketing providing average $O(1)$ search.
 
-**Iterators:** Generalized pointers that decouple containers from algorithms through a uniform traversal interface.
+---
 
-**Erase-Remove Idiom:** `remove` moves unwanted elements to end, `erase` actually removes them.
+## 📁 Code Examples
 
-**Iterator Invalidation:** Iterators become invalid after container modifications (varies by container).
-
-**`vector` vs `list`:** `vector` for random access and cache efficiency; `list` for stable iterators and frequent middle operations.
-
-**`map` vs `unordered_map`:** `map` for ordering/range queries (O(log n)); `unordered_map` for speed (O(1) average).
+- [`Phase1_Fundamentals/Code/containers/vector_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/vector_examples.cpp): Vector capacity growth, shrink_to_fit, and memory management.
+- [`Phase1_Fundamentals/Code/containers/deque_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/deque_examples.cpp): Deque operations, chunk indexing, and front/back operations.
+- [`Phase1_Fundamentals/Code/containers/list_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/list_examples.cpp): Doubly linked list splicing and node pointer operations.
+- [`Phase1_Fundamentals/Code/containers/set_map_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/set_map_examples.cpp): Ordered map and set operations, lower_bound/upper_bound.
+- [`Phase1_Fundamentals/Code/containers/unordered_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/unordered_examples.cpp): Hash table bucketing, load factors, and custom hash functions.
+- [`Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp): Sorting, partition, binary search, and numeric algorithms.
+- [`Phase1_Fundamentals/Code/algorithms/erase_remove_idiom.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/algorithms/erase_remove_idiom.cpp): Safe element removal in sequence containers.
 
 ---
 
@@ -337,7 +392,3 @@ std::priority_queue<int, std::vector<int>, std::greater<int>> min_heap;
 - [Container Selection Guide](../../../Phase2_Selection_Application/Theory/04_Container_Selection_Guide.md)
 - [Iterator Invalidation](../../../Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md)
 - [Interview Problems](../../../Phase2_Selection_Application/Theory/06_Interview_Problems.md)
-
----
-
-**Print this for quick review before interviews! 🚀**

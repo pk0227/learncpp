@@ -5,7 +5,24 @@
 
 ---
 
-## 📖 How to Use This Guide
+## 📑 Table of Contents
+
+1. [How to Use This Guide](#how-to-use-this-guide)
+2. [Core Concepts](#core-concepts)
+3. [Containers](#containers)
+   - [Sequence Containers](#sequence-containers)
+   - [Associative Containers](#associative-containers-ordered)
+   - [Unordered Containers](#unordered-containers-hash-based)
+   - [Container Adaptors](#container-adaptors)
+4. [Algorithms](#algorithms)
+5. [Advanced Topics (Senior Level)](#advanced-topics-senior-level)
+6. [Practical Examples](#practical-examples)
+7. [Interview Problems](#interview-problems)
+8. [Quick Reference](#quick-reference)
+
+---
+
+## How to Use This Guide
 
 This material is designed for **progressive learning**:
 1. Start with **Core Concepts** if you need a refresher
@@ -74,48 +91,65 @@ This material is designed for **progressive learning**:
 2. [**Iterator Invalidation & Pitfalls**](../../../Phase2_Selection_Application/Theory/05_Iterator_Invalidation.md) ⭐  
    Common bugs and safe patterns
 
-### Utilities
+### Utilities & Advanced Optimizations
 1. [**Functors & Lambdas**](../5_Utilities/functors_lambdas.md)  
-   Function objects, predicates, custom comparators
+   Function objects, predicates, custom comparators, and transparent lookup
 
 2. [**Utility Types**](../5_Utilities/utility_types.md)  
-   `pair`, `tuple`, `optional`, `variant`, `any`
+   `pair`, `tuple`, `optional`, `variant`, `any`, `string_view`, `span`, and `bitset`
 
-3. [**Memory & Allocators**](../../../Phase3_Optimization/Memory-Optimization/README.md)  
-   Allocator concepts, RAII principles
+3. [**Memory & Allocators (std::pmr)**](../../../Phase3_Optimization/Memory-Optimization/README.md)  
+   Polymorphic memory resources, monotonic buffer resources, and pool allocators
+
+4. [**Modern C++20 Ranges**](../../../Phase3_Optimization/Ranges/README.md)  
+   Pipe syntax, lazy views, projections, and constrained algorithms
+
+5. [**Parallel Algorithms & Execution Policies**](../../../Phase3_Optimization/Parallel-Algorithms/README.md)  
+   C++17/C++20 execution policies (`seq`, `par`, `par_unseq`, `unseq`), `std::reduce`, and vectorization rules
+
+6. [**Thread-Safe Containers**](../../../Phase3_Optimization/Thread-Safe/README.md)  
+   Concurrent queues, readers-writer maps with `std::shared_mutex`, and avoiding reference traps
 
 ---
 
 ## 💻 Practical Examples
 
 ### Container Examples (Compilable Code)
-- [array_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/array_examples.cpp)
-- [vector_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/vector_examples.cpp)
-- [deque_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/deque_examples.cpp)
-- [list_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/list_examples.cpp)
-- [forward_list_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/forward_list_examples.cpp)
-- [set_map_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/set_map_examples.cpp)
-- [unordered_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/unordered_examples.cpp)
-- [adaptors_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/containers/adaptors_examples.cpp)
+- [`array_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/array_examples.cpp): Fixed-size array operations, structured bindings, and algorithm interoperability.
+- [`vector_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/vector_examples.cpp): Dynamic array memory layout, capacity vs size, reallocation, and iterator invalidation.
+- [`deque_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/deque_examples.cpp): Double-ended queue chunked buffers and sliding window implementations.
+- [`list_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/list_examples.cpp): Doubly linked list node splicing, member `sort()`, and iterator stability.
+- [`forward_list_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/forward_list_examples.cpp): Singly linked list minimal memory footprint and `insert_after` patterns.
+- [`set_map_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/set_map_examples.cpp): Ordered Red-Black tree operations, range queries, and custom comparators.
+- [`unordered_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/unordered_examples.cpp): Hash table buckets, load factors, rehashing, and custom hash functions.
+- [`adaptors_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/adaptors_examples.cpp): `std::stack`, `std::queue`, and `std::priority_queue` min/max-heap configurations.
+- [`span_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/containers/span_examples.cpp): `std::span` (C++20) static/dynamic extents, subspan slicing, and `std::string_view` (C++17).
 
 ### Algorithm Examples
-- [algorithm_examples.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp)
-- [erase_remove_idiom.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/algorithms/erase_remove_idiom.cpp)
-- [custom_comparators.cpp](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Code/algorithms/custom_comparators.cpp)
+- [`algorithm_examples.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/algorithms/algorithm_examples.cpp): 30+ core algorithms covering sorting, searching, transforms, and heap operations.
+- [`erase_remove_idiom.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/algorithms/erase_remove_idiom.cpp): Evolution from C++98 `std::remove` + `erase()` to C++20 `std::erase_if`.
+- [`custom_comparators.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Code/algorithms/custom_comparators.cpp): Strict weak ordering, functor structs, lambdas, priority queue min-heaps, and transparent lookup.
+
+### Optimization & Parallel Examples
+- [`pmr_benchmark.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase3_Optimization/Memory-Optimization/pmr_benchmark.cpp): Micro-benchmark comparing heap allocations with stack-backed `std::pmr::monotonic_buffer_resource`.
+- [`ranges_demo.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase3_Optimization/Ranges/ranges_demo.cpp): C++20 ranges pipe syntax, projections, and lazy evaluation pipelines.
+- [`parallel_algorithms_demo.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase3_Optimization/Parallel-Algorithms/parallel_algorithms_demo.cpp): Parallel sort, parallel reduction with `std::reduce`, and map-reduce with `std::transform_reduce`.
+- [`thread_safe_queue.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase3_Optimization/Thread-Safe/thread_safe_queue.cpp): Thread-safe queue using condition variables and RAII locks.
+- [`thread_safe_map_rwlock.cpp`](file:///home/prashanth/Learnings/learncpp/STL/Phase3_Optimization/Thread-Safe/thread_safe_map_rwlock.cpp): Concurrent map using `std::shared_mutex` readers-writer locks.
 
 ---
 
 ## 🏆 Interview Problems
 
-[**Real Interview Problems with Solutions**](file:///home/prashanth/learncpp_workspace/STL/Phase2_Selection_Application/Theory/06_Interview_Problems.md) ⭐⭐⭐
+[**Real Interview Problems with Solutions**](file:///home/prashanth/Learnings/learncpp/STL/Phase2_Selection_Application/Theory/06_Interview_Problems.md) ⭐⭐⭐
 
 ### Problem Categories
-- **LRU Cache** - Classic design problem
-- **Sliding Window** - Array/deque techniques
-- **Interval Problems** - Sorting + merging
-- **Top K Elements** - Heap/priority_queue
-- **Custom Data Structures** - Combining containers
-- **Iterator Safety** - Advanced debugging
+- **LRU Cache** - Classic design problem using `std::unordered_map` + `std::list`
+- **Sliding Window** - Array/deque techniques for running maximums
+- **Interval Problems** - Sorting + merging scheduling intervals
+- **Top K Elements** - Heap/priority_queue optimal k-element selection
+- **Custom Data Structures** - Combining containers for complex operations
+- **Iterator Safety** - Advanced debugging of invalidation traps
 
 Each problem includes:
 - Problem statement
@@ -128,7 +162,7 @@ Each problem includes:
 
 ## ⚡ Quick Reference
 
-[**STL Quick Reference Cheat Sheet**](file:///home/prashanth/learncpp_workspace/STL/Phase1_Fundamentals/Theory/07_Quick_Reference.md)
+[**STL Quick Reference Cheat Sheet**](file:///home/prashanth/Learnings/learncpp/STL/Phase1_Fundamentals/Theory/1_General/07_Quick_Reference.md)
 
 Perfect for last-minute review:
 - Complexity tables

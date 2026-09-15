@@ -43,7 +43,8 @@ int main()
 	Employee joe { "Joe" };
 	std::cout << joe.getName() << '\n'; // Joe is an lvalue, so this calls std::string& getName() & (returns a reference)
 
-	std::cout << createEmployee("Frank").getName() << '\n'; // Frank is an rvalue, so this calls std::string getName() && (makes a copy)
+	// COMPILE ERROR: createEmployee("Frank") produces an rvalue, but getName() const && is explicitly deleted:
+	// std::cout << createEmployee("Frank").getName() << '\n';
 
 	return 0;
 }
