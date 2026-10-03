@@ -59,12 +59,34 @@ Point p{10, 20};   // p.x == 10, p.y == 20  -- aggregate initialization
 | `struct` | `public` |
 | `class` | `private` |
 
-- You can even have an **aggregate declared with `class`** if it satisfies the requirements:
+- You can have an **aggregate declared with `class`** if it satisfies the requirements:
 
 ```cpp
-class Point { public: int x; int y; };
-Point p{10, 20};   // still aggregate initialization
+class Point { 
+public: 
+    int x; 
+    int y; 
+};
+
+Point p{10, 20};   // still aggregate initialization (all members public, no ctors)
 ```
+
+- Conversely, a **`struct` with `private` (or `protected`) data members is NOT an aggregate**:
+
+```cpp
+struct SecretPoint {
+    int x;       // public by default
+private:
+    int y;       // private member -> immediately disqualifies SecretPoint from being an aggregate!
+};
+
+// Attempting aggregate initialization:
+// SecretPoint sp{10, 20}; // COMPILE ERROR: cannot aggregate-initialize SecretPoint (has private member 'y')
+```
+
+> [!IMPORTANT]
+> According to C++ standard `[dcl.init.aggr]`, an aggregate cannot have any `private` or `protected` non-static data members. Therefore, adding even a single `private:` member to a `struct` immediately destroys its aggregate status, making `{}` aggregate initialization impossible unless a matching constructor is provided.
+
 
 ### Aggregate Initialization vs. Constructor (List) Initialization
 
@@ -131,6 +153,7 @@ For class types which include structs, classes, and unions:
 
 ### 📁 Code Examples for Section 1
 - [`classes_need.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_1_Introduction_to_classes/classes_need.cpp) — Demonstrates the class invariant problem: struct with a zero-denominator fraction causing divide-by-zero
+- [`1_struct_with_private_not_aggregate.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_1_Introduction_to_classes/1_struct_with_private_not_aggregate.cpp) — Demonstrates `struct` with private members is NOT an aggregate; verified via `std::is_aggregate_v` and compiler rejection of brace init
 - [`2_partial_brace_init.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_1_Introduction_to_classes/2_partial_brace_init.cpp) — Partial brace initialization: remaining members value-initialized (zeroed), not left indeterminate
 - [`3_cpp14_default_member_init.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_1_Introduction_to_classes/3_cpp14_default_member_init.cpp) — C++14: default member initializers are allowed in aggregates; defaults vs. explicit override
 - [`4_cpp20_designated_initializers.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_1_Introduction_to_classes/4_cpp20_designated_initializers.cpp) — C++20 designated initializers (`.x = 10`) on aggregates; only works on aggregates, order rules

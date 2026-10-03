@@ -28,7 +28,16 @@ OOP brings a number of other useful concepts to the table:
         -- A type is an aggregate only if it satisfies the language's aggregate requirements (see Section 4).
         -- You can even have an aggregate declared with the class keyword if it satisfies those requirements:
                class Point { public: int x; int y; };
-               Point p{10, 20};   // still aggregate initialization
+               Point p{10, 20};   // still aggregate initialization (all members public, no ctors)
+        -- Conversely, a struct with private (or protected) data members is NOT an aggregate:
+               struct SecretPoint
+               {
+                   int x;           // public by default
+               private:
+                   int y;           // private member!
+               };
+               SecretPoint sp{10, 20}; // COMPILE ERROR: cannot aggregate-initialize SecretPoint (has private members)
+        -- In C++, aggregate status depends strictly on member access and characteristics ([dcl.init.aggr]), NOT on the struct or class keyword.
 
     Aggregate initialization vs. constructor (list) initialization
         -- The syntax can look identical, but the mechanism is completely different.
