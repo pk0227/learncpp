@@ -7,9 +7,71 @@ OOP brings a number of other useful concepts to the table:
 1. Introduction to classes
     -- structs are aggregates. As useful as structs are, structs have a number of deficiencies.
 
+    What is an aggregate?
+        -- An aggregate is a class/struct that is simple enough that C++ allows its members to be initialized
+           directly using {} without requiring a user-defined constructor.
+        -- The key idea: an aggregate exposes its data members for direct initialization.
+           Example:
+               struct Point { int x; int y; };
+               Point p{10, 20};   // p.x == 10, p.y == 20  -- aggregate initialization
+
+    Why does C++ have aggregates?
+        -- C++ retained C-style struct direct initialization so that simple data-holder types can be
+           initialized naturally with braces without the overhead of writing a constructor.
+        -- Aggregates are particularly useful for data-oriented types whose main purpose is to hold data.
+
+    Important correction: struct does NOT mean aggregate.
+        -- struct and class are not fundamentally different kinds of types in C++. Both are class types.
+        -- The only language-level difference is the default access level:
+               struct -> public by default
+               class  -> private by default
+        -- A type is an aggregate only if it satisfies the language's aggregate requirements (see Section 4).
+        -- You can even have an aggregate declared with the class keyword if it satisfies those requirements:
+               class Point { public: int x; int y; };
+               Point p{10, 20};   // still aggregate initialization
+
+    Aggregate initialization vs. constructor (list) initialization
+        -- The syntax can look identical, but the mechanism is completely different.
+        -- Aggregate:     struct Point { int x; int y; };  Point p{10, 20}; -> members initialized directly
+        -- Constructor:   struct Point { int x; int y; Point(int x, int y): x(x), y(y){} }; Point p{10, 20};
+                          -> {10, 20} invokes Point(int, int) -- this is NO LONGER aggregate initialization.
+        -- Once a user-declared constructor is added, brace-init calls the constructor, not aggregate init.
+
+    Partial brace initialization (important behavior)
+        -- If fewer initializers are provided than there are members, the remaining members are
+           value-initialized (zero-initialized for scalars, default-constructed for class types).
+           Example:
+               struct Point { int x; int y; };
+               Point p{5};     // p.x == 5, p.y == 0  (y is value-initialized to 0)
+               Point q{};      // q.x == 0, q.y == 0  (both value-initialized)
+        -- This is different from leaving members uninitialized (which produces indeterminate values).
+
+    C++14: default member initializers are allowed in aggregates
+        -- Before C++14, a class with brace-or-equal default member initializers was NOT an aggregate.
+        -- Since C++14, default member initializers are permitted in aggregates.
+           Example (C++14+):
+               struct Config { int width = 800; int height = 600; };
+               Config c{};         // width=800, height=600  (uses defaults)
+               Config c2{1920};    // width=1920, height=600  (second member uses default)
+               Config c3{1920, 1080}; // width=1920, height=1080
+        -- If an explicit initializer is provided for a member, it overrides the default member initializer.
+
+    C++20: designated initializers work with aggregates
+        -- C++20 introduced designated initializers, allowing members to be initialized by name.
+           Example:
+               struct Point { int x; int y; };
+               Point p{.x = 10, .y = 20};   // C++20 designated initializer -- clearer than {10, 20}
+               Point q{.y = 5};              // x is value-initialized to 0
+        -- Designated initializers only work on aggregates (not on types with constructors).
+        -- Order must match declaration order in C++20 (unlike C99 which allowed out-of-order).
+
     The class invariant problem for class types which include structs, classes, and unions.
-        -- Perhaps the biggest difficulty with structs is that they do not provide an effective way to document and enforce class invariants.
-        -- A class invariant is a condition that must be true throughout the lifetime of an object in order for the object to remain in a valid state. An object that has a violated class invariant is said to be in an invalid state, and unexpected or undefined behavior may result from further use of that object.
+        -- Perhaps the biggest difficulty with structs is that they do not provide an effective way to
+           document and enforce class invariants.
+        -- A class invariant is a condition that must be true throughout the lifetime of an object in order
+           for the object to remain in a valid state. An object that has a violated class invariant is said
+           to be in an invalid state, and unexpected or undefined behavior may result from further use of
+           that object.
 
 2. Member functions
     -- Functions that belong to a class type are called member functions.
@@ -91,14 +153,35 @@ OOP brings a number of other useful concepts to the table:
 
     -- structs inherit from other class types publicly and classes inherit privately.
 
-    Conditions to be an aggregate:
-        1. The class type should not have any private or protected members.
-        2. The class type should not have any user-declared constructors (including defaulted or deleted constructors).
+    Conditions to be an aggregate (C++20 rules -- the most current):
+        1. No private or protected non-static data members.
+        2. No user-declared constructors (including =default and =delete in C++20).
+        3. No virtual functions.
+        4. No virtual, private, or protected base classes.
+           (C++11: no base classes at all; C++17+ relaxed to allow public non-virtual base classes.)
+
+    NOTE: "user-declared" vs. "user-provided" -- how the constructor rule evolved:
+        -- C++11/14/17: the rule was "no user-PROVIDED constructors".
+             A user-provided constructor is one that is user-declared AND not explicitly defaulted or
+             deleted on its first declaration.
+             Therefore in C++11-17: struct Foo { Foo() = default; }; was STILL an aggregate
+             because Foo() = default is not user-PROVIDED.
+        -- C++20: the rule was tightened to "no user-DECLARED constructors".
+             In C++20: struct Foo { Foo() = default; }; is NO LONGER an aggregate,
+             because Foo() is user-declared, even though it's defaulted.
+        -- In practice for learncpp purposes: avoid any constructor in structs to keep them aggregates.
 
         A class with private members or user-declared constructors is no longer an aggregate.
         Therefore, the class cannot use aggregate initialization.
         In such cases, brace initialization will attempt to call a matching constructor.
         If a constructor taking std::initializer_list is defined, it will take precedence over other constructors.
+
+        Examples of losing aggregate status:
+            struct A { int x; int y; };            // aggregate -- A a{10, 20}; OK
+            struct B { private: int x; int y; };   // NOT aggregate (private members)
+            struct C { C() = default; };           // NOT aggregate in C++20 (user-declared ctor)
+            struct D { virtual void f(); };        // NOT aggregate (virtual function)
+            class  E { public: int x; int y; };   // IS aggregate (class keyword, but public members, no ctors)
 
     Access Functions
     -- is a trivial public member function whose job is to retrieve or change the value of a private member variable.
@@ -147,8 +230,73 @@ OOP brings a number of other useful concepts to the table:
     -- Data hiding allows us to maintain invariants.
 
     Class invariants
-        -- are conditions that must be true throughout the lifetime of an object in order for the object to stay in a valid state.
-    
+        -- are conditions that must be true throughout the lifetime of an object in order for the object to
+           stay in a valid state.
+        -- If an invariant is violated, the object is in an invalid state; further use may cause undefined
+           behavior or program logic errors.
+
+        Concrete examples of class invariants:
+            BankAccount: balance >= 0       (a negative balance violates the invariant)
+            Rectangle:   width > 0 && height > 0
+            RGB color:   0 <= red <= 255, 0 <= green <= 255, 0 <= blue <= 255
+            Fraction:    denominator != 0
+            SortedVector: elements must remain sorted at all times
+
+        Structs cannot enforce invariants because all members are public -- anyone can set
+        Fraction.denominator = 0 directly. Classes enforce invariants through:
+            1. Private data members (external code cannot modify them directly)
+            2. Constructors that validate initial values before storing them
+            3. Setters that validate new values before accepting them
+
+        Example -- struct with no invariant protection (BAD):
+            struct Fraction { int num; int denom; };  // anyone can set denom = 0
+            Fraction f{1, 0};  // compiles fine -- denominator is 0, invariant broken immediately!
+
+        Example -- class that enforces its invariant (GOOD):
+            class Fraction {
+                int num, denom;
+            public:
+                Fraction(int n, int d) {
+                    if (d == 0) throw std::invalid_argument("denom cannot be 0");
+                    num = n; denom = d;
+                }
+            };
+
+    Invariant lifecycle: Establish, Maintain, Never Externally Observable Broken
+        -- Constructor ESTABLISHES the invariant.
+             The constructor's job is to bring the object into a valid state from the start.
+             If that is impossible (e.g., invalid arguments), it should throw an exception.
+        -- Member functions MAINTAIN the invariant.
+             Every public member function must leave the object in a valid state when it returns.
+             Before a public function returns, the invariant must hold again.
+        -- The invariant must hold between any two consecutive public function calls on the object.
+
+    Invariants can be temporarily broken INSIDE a member function (this is normal and expected):
+        -- During the execution of a member function, the object may be in an intermediate state
+           where the invariant is momentarily violated.
+        -- This is acceptable as long as the invariant is fully restored before the function returns.
+        -- The key rule: the invariant is NEVER externally observable as broken.
+           Example: a swap() that temporarily holds two values in one place before assigning the other.
+
+    Invariants vs. Preconditions vs. Postconditions:
+        -- Precondition:  a condition that must be true BEFORE a function is called (on the caller).
+                          Example: withdraw(amount) requires amount > 0
+        -- Postcondition: a condition that must be true AFTER a function returns.
+                          Example: after deposit(x), balance == old_balance + x
+        -- Class invariant: a condition that must be true throughout the ENTIRE LIFETIME of an object
+                            (before AND after every public operation), not just for a single function.
+        -- These are complementary: preconditions and postconditions describe function contracts;
+           invariants describe object-level correctness constraints.
+
+    Aggregate vs. class invariant -- the design connection:
+        -- An aggregate is suitable when its members can be freely set without breaking validity.
+           Example: struct Point { int x; int y; } -- almost any x/y values are valid; little or no invariant.
+        -- When a class has a meaningful invariant, encapsulation is necessary.
+           Private members prevent arbitrary modification; the constructor and member functions protect state.
+        -- Design intuition:
+               Aggregate (simple data, public members)  -> direct {} initialization, no invariant enforcement
+               Encapsulated class (invariants matter)   -> constructor + member functions protect validity
+
     -- Data hiding allows us to do better error detection (and handling).
     -- Data hiding makes it possible to change implementation details without breaking existing programs.
 
