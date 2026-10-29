@@ -219,6 +219,9 @@ struct Widget2
 - [`1_member_function_example.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/1_member_function_example.cpp) — Basic member function usage
 - [`2_member_funtions_overload.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/2_member_funtions_overload.cpp) — Member function overloading
 - [`3_member_order_and_init_order.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/3_member_order_and_init_order.cpp) — Complete-class context (member function bodies are order-independent) vs. initialization order (declaration-order dependent; using a later member in an initializer is UB)
+- [`4_member_vs_nonmember.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/4_member_vs_nonmember.cpp) — Same operation as a member function (implicit object) vs. a non-member function (object passed explicitly); also shows member functions on a `class`, not only a `struct`
+- [`5_struct_ctor_breaks_aggregate_and_namespace.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/5_struct_ctor_breaks_aggregate_and_namespace.cpp) — A user-declared constructor removes a struct's aggregate status (verified via `std::is_aggregate_v`); and when a type would have no data members, prefer a namespace
+- [`6_odr_implicit_inline/`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/6_odr_implicit_inline) — **Multi-file example:** two translation units both include a class whose member functions are defined in-class; they link with no "multiple definition" error because in-class member functions are implicitly `inline` (ODR-exempt). See the folder's `README.md` for the build command and the non-inline contrast that *does* fail to link.
 
 ---
 
