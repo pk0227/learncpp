@@ -92,9 +92,42 @@ OOP brings a number of other useful concepts to the table:
     -- With non-member functions, we have to explicitly pass an object to the function to work with, and members are explicitly accessed through that object.
     -- Member variables and functions can be defined in any order.
 
+    Why "any order" works: the complete-class context
+        -- Normally in C++, a name must be declared before it is used. Inside a class, there is an important
+           exception: the body of a member function is analyzed as if the ENTIRE class were already complete.
+        -- This means that inside a member function body you may freely use data members and call other member
+           functions that are declared TEXTUALLY BELOW the function. The compiler has already seen the whole
+           class definition before it compiles any member function body, so forward declarations are not needed.
+           Example:
+               struct Widget
+               {
+                   int getDouble() { return value * 2; } // OK: 'value' is declared later, below
+                   int value{ 5 };                        // declared after the function that uses it
+               };
+        -- The same applies to calling a member function declared later:
+               struct Widget
+               {
+                   int a() { return b(); } // OK: b() is declared below a()
+                   int b() { return 42; }
+               };
+        -- This "complete-class context" applies to member function BODIES and default arguments only.
+
+    IMPORTANT: the complete-class context does NOT apply to initialization order.
+        -- Being able to NAME a member that is declared later (allowed inside a function body) is a completely
+           separate thing from the ORDER in which members are actually initialized (fixed, and covered below).
+        -- A member function body runs long after the object has been fully constructed, so by the time the
+           body executes, every member already exists -- order is irrelevant there.
+        -- Default member initializers and the constructor's member initializer list run DURING construction,
+           where declaration order is strictly enforced (see the Warning).
+
     Warning
     -- Data members are initialized in order of declaration. If the initialization of a data member accesses another data member that isn’t declared until later (and thus hasn’t been initialized yet), the initialization will result in undefined behavior.
     -- For this reason, it’s generally a good idea to avoid using other members inside default member initializers.
+    -- Contrast the two rules:
+           Inside a member function BODY      -> order-independent (complete-class context). Using a member
+                                                 declared later is fine; it is already fully constructed.
+           Inside a default member initializer -> order-DEPENDENT. Using a member declared later reads it
+           or a member initializer list           before it is initialized -> undefined behavior.
 
     -- Member functions can be overloaded.
     -- Member functions can be used with both structs and classes.

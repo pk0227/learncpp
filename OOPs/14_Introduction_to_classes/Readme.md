@@ -171,9 +171,43 @@ For class types which include structs, classes, and unions:
 - With non-member functions, we have to explicitly pass an object to the function to work with, and members are explicitly accessed through that object.
 - **Member variables and functions can be defined in any order.**
 
+### Why "Any Order" Works: The Complete-Class Context
+
+Normally in C++, a name must be **declared before it is used**. Inside a class there is an important exception: the **body of a member function is analyzed as if the entire class were already complete**.
+
+- Inside a member function body you may freely use data members and call other member functions that are declared **textually below** the function. The compiler has already seen the whole class definition before it compiles any member function body, so **forward declarations are not needed**.
+
+```cpp
+struct Widget
+{
+    int getDouble() { return value * 2; } // OK: 'value' is declared later, below
+    int value{ 5 };                        // declared after the function that uses it
+};
+
+struct Widget2
+{
+    int a() { return b(); } // OK: b() is declared below a()
+    int b() { return 42; }
+};
+```
+
+> [!NOTE]
+> The complete-class context applies to member function **bodies** and **default arguments** only.
+
+> [!CAUTION]
+> **The complete-class context does NOT apply to initialization order.**
+> Being able to *name* a member declared later (allowed inside a function body) is a **completely separate thing** from the **order in which members are initialized**. A member function body runs long after the object is fully constructed, so every member already exists by then. But default member initializers and the constructor's member initializer list run **during construction**, where declaration order is strictly enforced.
+
 > [!WARNING]
 > - Data members are initialized **in order of declaration**. If the initialization of a data member accesses another data member that isn't declared until later (and thus hasn't been initialized yet), the initialization will result in **undefined behavior**.
 > - For this reason, it's generally a good idea to **avoid using other members inside default member initializers**.
+
+**Contrast the two rules:**
+
+| Where | Order rule | Using a member declared later |
+|---|---|---|
+| Inside a member function **body** | Order-independent (complete-class context) | Fine — it is already fully constructed |
+| Inside a **default member initializer** or **member initializer list** | Order-**dependent** | Reads it before it is initialized → **undefined behavior** |
 
 - Member functions can be **overloaded**.
 - Member functions can be used with both structs and classes.
@@ -184,6 +218,7 @@ For class types which include structs, classes, and unions:
 ### 📁 Code Examples
 - [`1_member_function_example.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/1_member_function_example.cpp) — Basic member function usage
 - [`2_member_funtions_overload.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/2_member_funtions_overload.cpp) — Member function overloading
+- [`3_member_order_and_init_order.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_2_Member%20functions/3_member_order_and_init_order.cpp) — Complete-class context (member function bodies are order-independent) vs. initialization order (declaration-order dependent; using a later member in an initializer is UB)
 
 ---
 
