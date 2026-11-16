@@ -250,7 +250,46 @@ struct Widget2
 ### Mutable Data Members
 In C++, the **`mutable` keyword** can be applied to a non-static, non-const class member variable:
 - A `mutable` data member **can be modified even when the object is const**, and can be modified inside `const` member functions.
-- This is intended for members that represent internal implementation details that do not affect the observable logical state of the object (**bitwise constness vs logical constness**), such as internal caches, memoization tables, access counters, or thread synchronization primitives (`std::mutex`):
+
+**In simple words:** `const` normally locks every data member of the object. `mutable` exempts **one** member from that lock. Everything else stays locked.
+
+```cpp
+struct Date
+{
+    int year{};
+    int month{};
+    mutable int day{};                     // exempt from the const lock
+
+    void incrementDay() const { day++; }   // OK: day is mutable
+};
+
+const Date today{2025, 11, 18};
+today.day += 1;         // OK: direct modification of a mutable member on a const object
+today.incrementDay();   // OK: a const member function may modify a mutable member
+// today.year = 2026;   // ERROR: year is not mutable
+// today.month += 1;    // ERROR: month is not mutable
+```
+
+**Where to use it:** for hidden bookkeeping that is not part of what the object represents. Typical uses:
+- a counter of how many times a getter was called
+- a cache holding a result that was already calculated
+- a `std::mutex` that must be locked inside `const` member functions
+
+Changing this data does not change what the object means to the caller, so the object still "looks unchanged" from outside even though it was `const`.
+
+**Two meanings of "const":**
+
+| Term | Meaning | Who checks it |
+|---|---|---|
+| **Bitwise constness** | Not a single bit of the object's memory changes | The compiler |
+| **Logical constness** | The object looks and behaves the same to the caller | The programmer |
+
+`mutable` lets a class stay *logically* const even when some hidden bits (a counter, a cache) change.
+
+> [!WARNING]
+> The `Date` example above compiles, but it is a poor use of `mutable`. The day is part of what a `Date` means, so changing it on a `const Date` breaks the promise that `const` makes. Use `mutable` only for hidden bookkeeping (counters, caches, mutexes), never for the real data of the object.
+
+A realistic example, where the visible data (`m_data`) stays locked and only the hidden counter changes:
 
 ```cpp
 class DataViewer
@@ -277,6 +316,7 @@ public:
 - [`3_obj_via_const_ref.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/3_obj_via_const_ref.cpp) — Passing const objects via const reference
 - [`4_const_member_function_overloading.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/4_const_member_function_overloading.cpp) — Overloading const vs non-const member functions
 - [`5_mutable_data_members.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/5_mutable_data_members.cpp) — Using the `mutable` keyword to allow state updates inside `const` member functions
+- [`6_mutable_date_misuse.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/6_mutable_date_misuse.cpp) — Misuse example: a `mutable` `day` changes on a `const Date`, both directly and through a `const` member function, while `year` and `month` stay locked
 
 ---
 

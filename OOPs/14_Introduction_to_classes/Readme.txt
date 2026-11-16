@@ -161,7 +161,40 @@ OOP brings a number of other useful concepts to the table:
     Mutable data members
         -- In C++, the mutable keyword can be applied to a non-static, non-const class data member.
         -- A mutable data member can be modified even when the object itself is const, and can be modified inside const member functions.
-        -- This is useful for members that do not affect the observable logical state ("bitwise constness vs logical constness"), such as internal caches, calculation memoization, access counters, or thread synchronization primitives (e.g. std::mutex).
+        -- In simple words: const normally locks every data member of the object. mutable exempts ONE member
+           from that lock. Everything else stays locked.
+           Example:
+               struct Date
+               {
+                   int year{};
+                   int month{};
+                   mutable int day{};                 // exempt from the const lock
+
+                   void incrementDay() const { day++; }   // OK: day is mutable
+               };
+
+               const Date today{2025, 11, 18};
+               today.day += 1;         // OK: direct modification of a mutable member on a const object
+               today.incrementDay();   // OK: a const member function may modify a mutable member
+               // today.year = 2026;   // ERROR: year is not mutable
+               // today.month += 1;    // ERROR: month is not mutable
+
+        -- Where to use it: for hidden bookkeeping that is not part of what the object represents.
+           Typical uses are:
+               -- a counter of how many times a getter was called
+               -- a cache holding a result that was already calculated
+               -- a std::mutex that must be locked inside const member functions
+           Changing this data does not change what the object means to the caller, so the object still
+           "looks unchanged" from outside even though it was const.
+
+        -- Two meanings of "const":
+               Bitwise constness : not a single bit of the object's memory changes. This is what the compiler checks.
+               Logical constness : the object looks and behaves the same to the caller. This is what the programmer cares about.
+           mutable lets a class stay logically const even when some hidden bits (counter, cache) change.
+
+        -- Caution: the Date example above compiles, but it is a poor use of mutable. The day is part of what a Date
+           means, so changing it on a const Date breaks the promise that const makes. Use mutable only for hidden
+           bookkeeping (counters, caches, mutexes), never for the real data of the object.
 
 4. Public and private members and access specifiers and access functions
     -- Member access : Each member of a class type has a property called an access level that determines who can access that member.
