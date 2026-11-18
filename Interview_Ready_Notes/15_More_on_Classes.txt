@@ -7,8 +7,8 @@
         - Every non-static member function has `this` pointer.
         - `this` = const pointer to current object (implicit object).
 
-        const Date* const this;  // For non-const member functions
-        const Date* const this;  // For const member functions (const object)
+        Date* const this;        // For non-const member functions (object CAN be modified)
+        const Date* const this;  // For const member functions (object can NOT be modified)
 
         Uses:
             • Disambiguate members from parameters:

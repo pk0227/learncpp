@@ -234,6 +234,45 @@ struct Widget2
 - **Const objects may not call non-const member functions.**
 - **A const object can only call const member functions (and static functions).**
 
+### Const Objects and Default Initialization
+"Must be initialized" has a precise meaning for class types. A const object written with no initializer at all (`const T obj;`) uses **default-initialization**, and it compiles only if `T` is **const-default-constructible**:
+1. `T` has a **user-provided** default constructor, **or**
+2. every data member of `T` has a **default member initializer**.
+
+**Why:** otherwise the members would hold indeterminate values, and because the object is const, those garbage values could never be fixed.
+
+> [!NOTE]
+> A defaulted constructor (`T() = default;` on its first declaration) is **not** user-provided, so it does not satisfy rule 1.
+
+> [!TIP]
+> Adding `{}` (**value-initialization**) always works, because it zero-initializes the members.
+
+```cpp
+struct NoInitializers { int x; int y; };
+struct WithInitializers { int x{}; int y{ 5 }; };
+
+const WithInitializers a;    // OK: every member has a default member initializer
+// const NoInitializers b;   // ERROR: uninitialized 'const b'
+const NoInitializers c{};    // OK: value-initialization zeroes x and y
+```
+
+### When Does an Object Become Const? (Construction and Destruction)
+- `const` does **not** apply while the constructor runs. The constructor of a const object can (and must) write to the members. Constness begins only when the constructor of the most derived object **finishes**.
+- `const` stops applying when the destructor **starts**. The destructor of a const object can modify members (release resources, reset handles).
+- That is why constructors and destructors are always called with a non-const `this`, and why neither can be declared `const`.
+
+```cpp
+class Counter
+{
+    int m_value{};
+public:
+    Counter(int start) { m_value = start; m_value *= 2; } // OK for a const Counter: not const yet
+    ~Counter() { m_value = 0; }                            // OK for a const Counter: no longer const
+};
+
+const Counter c{ 21 };   // const only between the end of the ctor and the start of the dtor
+```
+
 ### Const Member Functions
 - A **const member function** is a member function that **guarantees it will not modify the object** or call any non-const member functions (as they may modify the object).
 - For member functions defined outside of the class definition, the `const` keyword **must be used on both** the function declaration in the class definition, and on the function definition outside the class definition.
@@ -246,6 +285,168 @@ struct Widget2
 - Const member functions **may be called on non-const objects**.
 - Const objects via pass by const reference.
 - Member function const and non-const overloading.
+
+### Static Member Functions Cannot Be Const
+- The trailing `const` of a member function qualifies the **implicit object** (`*this`).
+- A static member function has **no `this` pointer**, so there is nothing to make const.
+- For the same reason, static member functions cannot be `volatile` or ref-qualified (`&` / `&&`).
+- A const object may still call a static member function: the function cannot touch any object's non-static members, so the call is always safe.
+
+```cpp
+class Config
+{
+    static inline int s_instances{ 0 };
+public:
+    static int instances() { return s_instances; }          // no 'this', so no const
+    // static int instances() const { return s_instances; } // ERROR: cannot have cv-qualifier
+};
+```
+
+### Overload Resolution: Calling the Const Overload from a Non-const Object
+- A non-const object **always** picks the non-const overload (it is an exact match, no `const` has to be added).
+- A const object can only pick the const overload.
+- To call the const overload on a non-const object, view the object through a const reference:
+
+```cpp
+Document doc{};
+doc.view();                                 // non-const overload
+std::as_const(doc).view();                  // const overload. C++17, <utility>. Preferred: intent is obvious
+static_cast<const Document&>(doc).view();   // const overload, any standard
+```
+
+> [!NOTE]
+> `std::as_const` is deleted for rvalues (`as_const(const T&&) = delete`), so it cannot hand out a dangling reference to a temporary.
+
+### Avoiding Duplicated Logic in Const and Non-const Overloads
+A const/non-const overload pair often contains the same logic (bounds checks, logging, lookups). Writing it twice means fixing every bug twice.
+
+**Idiom** (Scott Meyers, *Effective C++* Item 3): write the logic **once** in the const version, and make the non-const version call it and cast the const away from the result:
+
+```cpp
+const int& at(std::size_t i) const
+{
+    if (i >= m_data.size()) throw std::out_of_range{ "at" };  // the ONE copy of the logic
+    return m_data[i];
+}
+int& at(std::size_t i)
+{
+    return const_cast<int&>(std::as_const(*this).at(i));      // reuse the const version
+}
+```
+
+- **Why this is safe:** the non-const version can only be called on a non-const object, so the object we cast const away from was never really const.
+
+> [!WARNING]
+> Never do the reverse (the const version calling the non-const one). That would let a const object run code that is allowed to modify it.
+
+**C++23 alternative:** **deducing `this`** (explicit object parameter) replaces the pair with **one** function. `self` is deduced as `T&` or `const T&`, so the return type follows automatically:
+
+```cpp
+auto& at(this auto& self, std::size_t i) { /* checks */ return self.m_data[i]; }
+```
+
+> [!NOTE]
+> Deducing `this` requires GCC 14+, Clang 18+, or MSVC 19.32+. Explicit object parameters are introduced in Chapter 15.
+
+### Casting Const Away from `this`: Legal vs Undefined Behavior
+- Inside a const member function, `this` has type `const T*`.
+- `const_cast<T*>(this)` **always compiles**. Whether **modifying** the object through it is legal depends on how the object was created, not on the function:
+
+| How the object was created | Modifying through `const_cast<T*>(this)` |
+|---|---|
+| **Non-const**, called through a const function or const reference | Legal |
+| **Const** | **Undefined behavior** |
+
+- **Why UB:** the compiler may place a const object in read-only memory, or assume its value never changes and optimize based on that.
+
+```cpp
+int read() const { ++const_cast<Sensor*>(this)->m_reads; return 42; } // BAD PRACTICE
+
+Sensor s{};          const Sensor& view{ s };  view.read();  // legal: s was never const
+const Sensor cs{};   // cs.read();                           // UB: cs was created const
+```
+
+> [!WARNING]
+> A const member function cannot tell which case it is in, so modifying through `const_cast<T*>(this)` is a bug waiting to happen. Use `mutable` for hidden state instead. The only routine safe use is the duplication idiom above, where the object is known to be non-const.
+
+### Shallow Constness: Pointer and Reference Members
+`const` is **shallow**. It protects the members themselves, not what they point or refer to. Inside a const member function:
+
+| Member | Becomes | Can the const function modify the data? |
+|---|---|---|
+| `int* m_ptr` | `int* const` | **Yes**: the pointer is locked, the pointee is still writable |
+| `int& m_ref` | (unchanged) | **Yes**: the referent is still writable (a reference can never be reseated anyway) |
+| `std::unique_ptr<int> m_up` | `const std::unique_ptr<int>` | **Yes**: `operator*` still returns `int&` |
+| `std::vector<int> m_vec` | `const std::vector<int>` | **No**: vector is deep-const, its const `operator[]` returns `const int&` |
+
+So a const member function can silently change data the object "owns" through a pointer:
+
+```cpp
+void sneaky() const
+{
+    *m_ptr = 100;        // compiles: the pointee is not const
+    // m_ptr = nullptr;  // ERROR: the pointer itself is const
+}
+```
+
+**Fixes:**
+1. Expose the pointed-to data only through a const/non-const accessor pair returning `const T&` / `T&`.
+2. **`std::experimental::propagate_const<std::unique_ptr<T>>`** (Library Fundamentals TS v2) makes the pointee const inside const member functions.
+
+```cpp
+#include <experimental/propagate_const>
+std::experimental::propagate_const<std::unique_ptr<int>> m_up{ std::make_unique<int>(3) };
+void tryModify() const { /* *m_up = 300; */ }   // ERROR if uncommented: pointee is const here
+```
+
+> [!NOTE]
+> `propagate_const` ships with libstdc++ and libc++ in `<experimental/propagate_const>`, but is not part of the C++ standard yet.
+
+> [!IMPORTANT]
+> Interview angle: *"Can a const member function modify data?"* Yes: `mutable` members, and anything reached through pointer or reference members.
+
+### Returning by Const Value Is an Anti-pattern
+
+```cpp
+const std::string getName() const;   // BAD: the returned temporary is const
+std::string getName() const;         // GOOD
+```
+
+- A const temporary cannot bind to `T&&` (the parameter of the move constructor and move assignment), so the caller's `x = obj.getName();` falls back to a **copy**.
+- The trailing `const` (on the function) is fine. Only `const` on the **return type** hurts.
+
+> [!NOTE]
+> **Historical note:** pre-C++11 advice was to return const values from operators such as `operator+` so that `(a + b) = c;` would not compile. In C++11 and later, ref-qualify the assignment operator instead: `T& operator=(const T&) &;` (assignment only allowed on lvalues). Ref-qualifiers are covered in Chapter 15. Move semantics are covered in Chapter 22.
+
+### `constexpr` Member Functions Are Not Implicitly Const (Since C++14)
+- **C++11:** a `constexpr` non-static member function was implicitly `const`.
+- **C++14:** that rule was removed, so `constexpr` functions can modify members during compile-time evaluation. `constexpr` and `const` are now **independent**.
+
+```cpp
+constexpr int getX() const { return m_x; }   // callable on const (and constexpr) objects
+constexpr int getXNoConst() { return m_x; }  // C++14+: NOT const
+```
+
+> [!CAUTION]
+> Code that relied on the C++11 rule stops compiling on const objects in C++14 and later, unless `const` is written explicitly.
+
+- `constexpr` objects are implicitly const, so they can only call the const ones. (Constexpr classes are covered in [Section 15](#15-constexpr-aggregates-and-classes) of this chapter.)
+
+### `volatile` and `const volatile` Member Functions
+The trailing qualifier of a member function sets the type of `this`:
+
+| Declaration | Type of `this` |
+|---|---|
+| `void f();` | `T*` |
+| `void f() const;` | `const T*` |
+| `void f() volatile;` | `volatile T*` |
+| `void f() const volatile;` | `const volatile T*` |
+
+- All four can be overloaded. A `volatile` object can only call `volatile` (or `const volatile`) member functions, exactly as a const object can only call const ones.
+- Use case: classes modeling memory-mapped hardware registers. Rare in application code.
+
+> [!WARNING]
+> `volatile` is **not** a thread-synchronization tool. Use `std::atomic` or a mutex for threads.
 
 ### Mutable Data Members
 In C++, the **`mutable` keyword** can be applied to a non-static, non-const class member variable:
@@ -310,6 +511,63 @@ public:
 };
 ```
 
+**Where `mutable` is NOT allowed:**
+
+| Member kind | Why `mutable` is rejected |
+|---|---|
+| `static` members | A static member does not belong to any object, so object constness never applies |
+| `const` members | "mutable const" contradicts itself |
+| Reference members | A reference can never be reseated, so there is nothing to exempt (the referent is already modifiable, see [shallow constness](#shallow-constness-pointer-and-reference-members)) |
+| Member functions | `mutable` applies only to data members |
+
+A `mutable` member of class type may have its non-const member functions called inside const functions (e.g. `note.append("x")` on a `mutable std::string`).
+
+**Caching (lazy evaluation) with `mutable`:**
+
+```cpp
+class Polygon
+{
+    double m_width{}, m_height{};
+    mutable std::optional<double> m_cachedArea{};   // hidden bookkeeping
+public:
+    double area() const
+    {
+        if (!m_cachedArea) m_cachedArea = m_width * m_height;   // computed once
+        return *m_cachedArea;
+    }
+    void setWidth(double w) { m_width = w; m_cachedArea.reset(); }   // invalidate
+};
+```
+
+Whether the cache is filled or empty, the caller sees the same value, so `area()` stays logically const.
+
+> [!IMPORTANT]
+> Every function that changes the real data must invalidate the cache.
+
+### Const, Mutable, and Thread Safety
+- The C++ standard library guarantees that calling const member functions on the same object from several threads at once is **race-free**. It assumes const functions only **read**. Your own types are expected to keep the same promise; this is often summarized as **"const means thread-safe"**.
+- A `mutable` member breaks that assumption: two threads in the same const function can both **write** it, which is a data race and therefore undefined behavior.
+
+> [!WARNING]
+> The caching `Polygon` above is **not** thread-safe.
+
+**Fix ("M&M rule": `mutable` and mutex go together):**
+- Protect the mutable state with a **`mutable std::mutex`**. `lock()` is a non-const function, so the mutex itself must be `mutable` to be locked inside a const member function.
+- For a single counter or flag, a **`mutable std::atomic<T>`** is enough.
+
+```cpp
+mutable std::mutex m_mutex{};
+double area() const
+{
+    std::lock_guard<std::mutex> lock{ m_mutex };   // OK: m_mutex is mutable
+    if (!m_cachedArea) m_cachedArea = m_width * m_height;
+    return *m_cachedArea;
+}
+```
+
+> [!NOTE]
+> `std::mutex` is neither copyable nor movable, so a class with a mutex member loses its implicit copy and move operations. They must be written by hand if needed.
+
 ### 📁 Code Examples
 - [`1_const_object_example.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/1_const_object_example.cpp) — ⚠️ Intentional compile errors: demonstrates what's disallowed on const objects
 - [`2_const_member_function_example.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/2_const_member_function_example.cpp) — Const member functions: what they can/cannot do
@@ -317,6 +575,19 @@ public:
 - [`4_const_member_function_overloading.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/4_const_member_function_overloading.cpp) — Overloading const vs non-const member functions
 - [`5_mutable_data_members.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/5_mutable_data_members.cpp) — Using the `mutable` keyword to allow state updates inside `const` member functions
 - [`6_mutable_date_misuse.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/6_mutable_date_misuse.cpp) — Misuse example: a `mutable` `day` changes on a `const Date`, both directly and through a `const` member function, while `year` and `month` stay locked
+- [`7_const_default_initialization.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/7_const_default_initialization.cpp) — When `const T obj;` compiles without an initializer: user-provided ctor or default member initializers; `= default` doesn't count; `{}` always works
+- [`8_constness_during_construction_destruction.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/8_constness_during_construction_destruction.cpp) — Constructor and destructor of a const object modify members; constness lasts only between them
+- [`9_static_member_functions_cannot_be_const.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/9_static_member_functions_cannot_be_const.cpp) — Static member functions have no `this`, so they can't be const, yet const objects may call them
+- [`10_forcing_const_overload_as_const.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/10_forcing_const_overload_as_const.cpp) — Which overload a const/non-const object picks, and forcing the const one with `std::as_const` or `static_cast<const T&>`
+- [`11_avoid_const_nonconst_duplication.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/11_avoid_const_nonconst_duplication.cpp) — Meyers idiom: the non-const overload reuses the const one via `std::as_const` + `const_cast`; C++23 deducing `this` shown in comments
+- [`12_const_cast_this_legal_vs_ub.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/12_const_cast_this_legal_vs_ub.cpp) — `const_cast<T*>(this)` is legal on a non-const object and UB on an object created const
+- [`13_shallow_constness_pointer_members.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/13_shallow_constness_pointer_members.cpp) — A const member function modifies data through raw pointer, reference, and `unique_ptr` members; `std::vector` is deep-const; `propagate_const` fixes it
+- [`14_return_by_const_value_inhibits_move.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/14_return_by_const_value_inhibits_move.cpp) — Tracer output proves `const T` return values are copy-assigned while plain `T` return values are move-assigned
+- [`15_constexpr_member_not_implicitly_const.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/15_constexpr_member_not_implicitly_const.cpp) — Since C++14, `constexpr` member functions aren't implicitly const; a non-const constexpr function modifies members at compile time
+- [`16_cv_qualified_member_functions.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/16_cv_qualified_member_functions.cpp) — Four overloads (plain, `const`, `volatile`, `const volatile`) chosen by the object's cv-qualification
+- [`17_mutable_restrictions.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/17_mutable_restrictions.cpp) — `mutable` is rejected on static, const, and reference members and on functions; mutable class-type members allow non-const calls
+- [`18_mutable_cache_lazy_evaluation.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/18_mutable_cache_lazy_evaluation.cpp) — A `mutable std::optional` cache inside a const getter, with invalidation when the real data changes
+- [`19_mutable_mutex_thread_safety.cpp`](file:///home/prashanth/Learnings/learncpp/OOPs/14_Introduction_to_classes/14_3_Const_class_objects_n_const_member_functions/19_mutable_mutex_thread_safety.cpp) — "M&M rule": 8 threads call a const getter on one shared object, protected by a `mutable std::mutex` and a `mutable std::atomic` counter
 
 ---
 
